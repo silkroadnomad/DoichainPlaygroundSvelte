@@ -1,0 +1,50 @@
+version: "2"
+services:
+  regtest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: "doichain/core"
+    container_name: regtest
+    environment:
+      - REGTEST=true
+      - RPC_ALLOW_IP=0.0.0.0/0
+      - RPC_PASSWORD=adminpw
+    ports:
+      - "8338:8338"
+      - "8339:8339"
+      - "18332:18332"
+    stdin_open: true
+    tty: true
+    privileged: true
+    networks:
+      static:
+        ipv4_address: 172.22.0.5
+
+  electrumx-doi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /home/electrumx
+    image: "stallingerl/electrumx-doi"
+    hostname: electrumx-doi
+    volumes:
+      - .:/electrumx-doi/
+    command: bash -c "./startServer.sh"
+    container_name: electrumx-doi
+    ports:
+      - "8334:8334"
+    stdin_open: true
+    tty: true
+    privileged: true
+    networks:
+      static:
+        ipv4_address: 172.22.0.6
+
+networks:
+  static:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
+          gateway: 172.22.0.1
