@@ -1,8 +1,8 @@
-# MultiSig Doichain 
+# Doichain Svelte Playground
 
 ## Todos:
+- [x] create mnemonic
+- [x] create HDKey from mnemonic (masterseed, private key and public key )
+- [] create new wallet from a derivation path 
+- [] display balance
 
-1. Create Mnemonic
-2. Create HDKey from Mnemonic
-3. Create new wallet 
-4. Display Balance of a MultiSig-Address 
