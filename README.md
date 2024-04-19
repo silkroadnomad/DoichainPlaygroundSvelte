@@ -3,6 +3,7 @@
 This is should be a reference and example on how to develop web apps without the need of a server or dApp with Svelte.
 
 ## Todos:
+- [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX
 - [x] create mnemonic
 - [x] create HDKey from mnemonic (masterseed, private key and public key )
 - [ ] create new wallet from a derivation path 
