@@ -13,5 +13,5 @@ This is should be a reference and example on how to develop web apps without the
   - Doichain-NFTs
 - [ ] create a multisig address
 - [ ] spend from a multisig address
-- [ ] automate spending from a multisgi addrss
+- [ ] automate spending from a multisig address
 
