@@ -1,4 +1,4 @@
-# Doichain Playgroundn Svelte
+# Doichain Playground Svelte
 
 This is should be a reference and example on how to develop web apps without the need of a server or dApp with Svelte.
 
@@ -9,8 +9,8 @@ This is should be a reference and example on how to develop web apps without the
 - [ ] create new wallet from a derivation path 
 - [ ] display balance
 - [ ] create a simple DOI transaction 
-- [ ] create name_doi, name_first, name_update transaction and store a
-  - proof-of-existence
+- [ ] create name_doi, name_first, name_update transaction and store
+  - a proof-of-existence
   - Doichain-NFTs
 - [ ] create a multisig address
 - [ ] spend from a multisig address
