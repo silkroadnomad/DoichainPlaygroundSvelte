@@ -1,4 +1,4 @@
-# Doichain Svelte Playground
+# Doichain Playgroundn Svelte
 
 This is should be a reference and example on how to develop web apps without the need of a server or dApp with Svelte.
 
