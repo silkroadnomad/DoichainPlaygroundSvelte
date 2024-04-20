@@ -40,6 +40,8 @@
 		root = bip32.fromSeed(seed,network);
 		xpriv = root.toBase58();
 		xpub = root.neutered().toBase58();
+
+		p2pkh(derivationPath)
 	}
 	$:createKeys(mnemonic,password) //calculate keys when mnemonic or password changes
 
@@ -55,7 +57,7 @@
 		<Column>&nbsp;</Column>
 	</Row>
 	<Row>
-		<Column><h2>1. Create a new mnemonic for a new hd wallet </h2></Column>
+		<Column><h2>1. Create a new mnemonic for a new Doichain wallet </h2></Column>
 		<Column><TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} class="formElement" /></Column>
 		<Column><Button on:click={async () => {mnemonic = generateMnemonic()}} class="formElement" >Generate Mnemonic</Button></Column>
 	</Row>
@@ -75,9 +77,6 @@
 	<Row>
 		<Column><h2>3. Create wallet from derivation path</h2></Column>
 		<Column><TextInput labelText="Derivation Path" bind:value={derivationPath}  class="formElement" /></Column>
-<!--		<Column><Button on:click={ p2pkh(derivationPath)} class="formElement" >Create Wallet</Button></Column>-->
-
-		<Column>&nbsp;&nbsp</Column>
 	</Row>
 	<Row>
 		<Column><h3>Address :</h3></Column>
