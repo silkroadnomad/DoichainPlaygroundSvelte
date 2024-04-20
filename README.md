@@ -4,10 +4,11 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 
 ## Todos:
 - [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX
-- [x] create mnemonic
-- [x] create HDKey from mnemonic (master seed, private key and public key )
-- [ ] create new address wallet from a derivation path (bip32)
+- [x] generate mnemonic
+- [x] create xpriv and xpub from mnemonic 
+- [x] create new p2pkh address from a derivation path (bip32)
 - [ ] create a segwit address wallet (bip49)
+- [ ] connect to electrumx (which connects to Doichaind)
 - [ ] display balance
 - [ ] create a simple coin (DOI) transaction 
 - [ ] create name_doi, name_first, name_update transaction and store
@@ -16,4 +17,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 - [ ] create a multisig address
 - [ ] spend from a multisig address
 - [ ] automate spending from a multisig address
+
+## Nice 2 have:
+- [ ] 
 

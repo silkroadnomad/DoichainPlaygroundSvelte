@@ -18,11 +18,30 @@
 	let derivationPath = 'm/0/0/0'
 	let address;
 
+	$:console.log("mnemonic",mnemonic)
+	/**
+	 * Pay-to-Public-Key-Hash (P2PKH)
+	 * @param _derivationPath
+	 * @return address
+	 */
 	const p2pkh = async (_derivationPath) => {
 		const child =  root.derivePath(_derivationPath);
 		address =  payments.p2pkh({ pubkey: child.publicKey, network }).address
 	}
 	$:p2pkh(derivationPath) //calculate address when derivation path changes
+
+	/**
+	 * Create PrivateKeys and PublicKeys
+	 * @param _mnemonic
+	 * @param _password
+	 */
+	const createKeys = async (_mnemonic,_password) => {
+		const seed = mnemonicToSeedSync(_mnemonic,_password);
+		root = bip32.fromSeed(seed,network);
+		xpriv = root.toBase58();
+		xpub = root.neutered().toBase58();
+	}
+	$:createKeys(mnemonic,password) //calculate keys when mnemonic or password changes
 
 </script>
 
@@ -31,21 +50,18 @@
 
 <Grid>
 	<Row>
-		<Column><h2>1. Create a new mnemonic for a new hd wallet </h2></Column>
-		<Column><Button on:click={async () => {mnemonic = generateMnemonic()}} class="formElement" >Create Mnemonic</Button></Column>
-		<Column><TextArea labelText="Mnemonic" rows={2} value={mnemonic} class="formElement" /></Column>
+		<Column>&nbsp;</Column>
+		<Column>&nbsp;</Column>
 		<Column>&nbsp;</Column>
 	</Row>
 	<Row>
+		<Column><h2>1. Create a new mnemonic for a new hd wallet </h2></Column>
+		<Column><TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} class="formElement" /></Column>
+		<Column><Button on:click={async () => {mnemonic = generateMnemonic()}} class="formElement" >Generate Mnemonic</Button></Column>
+	</Row>
+	<Row>
 		<Column><h2>2. Create a new HDKey from mnemonic</h2></Column>
-		<Column><TextInput labelText="Password" value={password} class="formElement" /></Column>
-		<Column><Button on:click={ async () => {
-			const seed = mnemonicToSeedSync(mnemonic);
-			root = bip32.fromSeed(seed,network);
-			xpriv = root.toBase58();
-			xpub = root.neutered().toBase58();
-			}} class="formElement" >Create HDKey from Mnemonic</Button></Column>
-
+		<Column><TextInput labelText="Password" bind:value={password} class="formElement" /></Column>
 		<Column>&nbsp;</Column>
 	</Row>
 	<Row>
@@ -59,7 +75,7 @@
 	<Row>
 		<Column><h2>3. Create wallet from derivation path</h2></Column>
 		<Column><TextInput labelText="Derivation Path" bind:value={derivationPath}  class="formElement" /></Column>
-		<Column><Button on:click={ p2pkh(derivationPath)} class="formElement" >Create Wallet</Button></Column>
+<!--		<Column><Button on:click={ p2pkh(derivationPath)} class="formElement" >Create Wallet</Button></Column>-->
 
 		<Column>&nbsp;&nbsp</Column>
 	</Row>
@@ -71,11 +87,6 @@
 
 <style>
     h1,h2,h3,h4 {
-        margin-left: 20px;
-        margin-top: 20px;
-    }
-
-		:global(.formElement) {
         margin-left: 20px;
         margin-top: 20px;
     }
