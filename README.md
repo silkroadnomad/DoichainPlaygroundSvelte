@@ -19,5 +19,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 - [ ] automate spending from a multisig address
 
 ## Nice 2 have:
-- [ ] 
+- [ ] use a better random generator
+- [ ] add network dropdown Mainnet, Testnet, RegTest
+
 
