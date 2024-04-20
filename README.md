@@ -5,8 +5,9 @@ This should be a reference and example on how to develop Doihchain web apps with
 ## Todos:
 - [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX
 - [x] create mnemonic
-- [x] create HDKey from mnemonic (masterseed, private key and public key )
-- [ ] create new wallet from a derivation path 
+- [x] create HDKey from mnemonic (master seed, private key and public key )
+- [ ] create new wallet from a derivation path (bip32)
+- [ ] create a segwit wallet
 - [ ] display balance
 - [ ] create a simple coin (DOI) transaction 
 - [ ] create name_doi, name_first, name_update transaction and store
