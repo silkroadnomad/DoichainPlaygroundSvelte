@@ -18,6 +18,12 @@
 	let derivationPath = 'm/0/0/0'
 	let address;
 
+	const p2pkh = async (_derivationPath) => {
+		const child =  root.derivePath(_derivationPath);
+		address =  payments.p2pkh({ pubkey: child.publicKey, network }).address
+	}
+	$:p2pkh(derivationPath) //calculate address when derivation path changes
+
 </script>
 
 <Theme bind:theme persist persistKey="__carbon-theme" />
@@ -34,10 +40,6 @@
 		<Column><h2>2. Create a new HDKey from mnemonic</h2></Column>
 		<Column><TextInput labelText="Password" value={password} class="formElement" /></Column>
 		<Column><Button on:click={ async () => {
-			// masterSeed = mnemonicToSeedSync(mnemonic, password ? password : "mnemonic")
-    	// root = bip32.fromSeed(masterSeed)
-    	//  const mnemonic =
-      // 'praise you muffin lion enable neck grocery crumble super myself license ghost';
 			const seed = mnemonicToSeedSync(mnemonic);
 			root = bip32.fromSeed(seed,network);
 			xpriv = root.toBase58();
@@ -56,11 +58,8 @@
 	</Row>
 	<Row>
 		<Column><h2>3. Create wallet from derivation path</h2></Column>
-		<Column><TextInput labelText="Derivation Path" value={derivationPath}  class="formElement" /></Column>
-		<Column><Button on:click={ async () => {
-						const child =  root.derivePath(derivationPath);
-						address =  payments.p2pkh({ pubkey: child.publicKey, network }).address
-		}} class="formElement" >Create Wallet</Button></Column>
+		<Column><TextInput labelText="Derivation Path" bind:value={derivationPath}  class="formElement" /></Column>
+		<Column><Button on:click={ p2pkh(derivationPath)} class="formElement" >Create Wallet</Button></Column>
 
 		<Column>&nbsp;&nbsp</Column>
 	</Row>
