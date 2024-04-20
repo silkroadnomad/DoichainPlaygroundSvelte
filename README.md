@@ -7,7 +7,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 - [x] create mnemonic
 - [x] create HDKey from mnemonic (master seed, private key and public key )
 - [ ] create new address wallet from a derivation path (bip32)
-- [ ] create a segwit address wallet (bip32)
+- [ ] create a segwit address wallet (bip49)
 - [ ] display balance
 - [ ] create a simple coin (DOI) transaction 
 - [ ] create name_doi, name_first, name_update transaction and store
