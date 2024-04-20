@@ -1,6 +1,6 @@
 # Doichain Playground Svelte
 
-This should be a reference and example on how to develop Doihchain web apps without the need of a server or dApp with Svelte.
+This is a reference and example on how to develop Doichain web apps with Svelte without the need of a server or dApp.
 
 ## Todos:
 - [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX
