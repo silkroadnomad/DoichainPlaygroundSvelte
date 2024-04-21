@@ -57,12 +57,12 @@
 		<Column>&nbsp;</Column>
 	</Row>
 	<Row>
-		<Column><h2>1. Create a new mnemonic for a new Doichain wallet </h2></Column>
+		<Column><h2>1. Generate mnemonic for a new wallet </h2></Column>
 		<Column><TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} class="formElement" /></Column>
 		<Column><Button on:click={async () => {mnemonic = generateMnemonic()}} class="formElement" >Generate Mnemonic</Button></Column>
 	</Row>
 	<Row>
-		<Column><h2>2. Create a new HDKey from mnemonic</h2></Column>
+		<Column><h2>2. Get XPriv and XPub from mnemonic</h2></Column>
 		<Column><TextInput labelText="Password" bind:value={password} class="formElement" /></Column>
 		<Column>&nbsp;</Column>
 	</Row>
@@ -75,7 +75,7 @@
 		<Column><h4>{xpub || ''}</h4></Column>
 	</Row>
 	<Row>
-		<Column><h2>3. Create wallet from derivation path</h2></Column>
+		<Column><h2>3. Deviate address from derivation path</h2></Column>
 		<Column><TextInput labelText="Derivation Path" bind:value={derivationPath}  class="formElement" /></Column>
 	</Row>
 	<Row>
