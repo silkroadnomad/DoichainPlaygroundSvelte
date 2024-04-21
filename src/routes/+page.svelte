@@ -67,7 +67,7 @@
 		<Column>&nbsp;</Column>
 	</Row>
 	<Row>
-		<Column><h3>xpriv</h3></Column>
+		<Column><h3>xpriv (HD node root key) (base58)</h3></Column>
 		<Column><h4>{xpriv || ''}</h4></Column>
 	</Row>
 	<Row>
