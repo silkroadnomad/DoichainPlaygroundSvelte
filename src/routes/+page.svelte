@@ -16,21 +16,37 @@
 	let xpriv
 	let xpub
 	let derivationPath = 'm/0/0/0'
-	let address;
+
+	let addressP2pkh;
+	let addressP2wpkh;
+	let addressP2wpkhP2Sh;
 
 	/**
 	 * Pay-to-Public-Key-Hash (P2PKH)
 	 * @param _derivationPath
-	 * @return address
+	 * @return addressP2pkh
 	 */
-	const p2pkh = async (_derivationPath) => {
-		const child =  root.derivePath(_derivationPath);
-		address =  payments.p2pkh({ pubkey: child.publicKey, network }).address
-	}
-	$:p2pkh(derivationPath) //calculate address when derivation path changes
+	const p2pkh = (_derivationPath) =>
+		addressP2pkh =  payments.p2pkh({ pubkey: root.derivePath(_derivationPath).publicKey, network }).address
 
 	/**
-	 * Create PrivateKeys and PublicKeys
+	 * Segwit (p2sh)
+	 * @param _derivationPath
+	 * @return addressP2wpkhP2Sh
+	 */
+	const p2sh = (_derivationPath) =>
+		addressP2wpkhP2Sh = payments.p2sh({ redeem: payments.p2wpkh({ pubkey: root.derivePath(_derivationPath).publicKey, network })}).address;
+
+	/**
+	 * Segwit (p2wpkh)
+	 * @param _derivationPath
+	 * @return addressP2wpkhP2Sh
+	 */
+	const p2wpkh = (_derivationPath) =>
+		addressP2wpkh = payments.p2wpkh({ pubkey: root.derivePath(_derivationPath).publicKey, network }).address;
+
+	/**
+	 * Generate master seed root, xpriv and xpub
 	 * @param _mnemonic
 	 * @param _password
 	 */
@@ -41,8 +57,14 @@
 		xpub = root.neutered().toBase58();
 
 		p2pkh(derivationPath)
+		p2wpkh(derivationPath)
+		p2sh(derivationPath)
 	}
+
 	$:createKeys(mnemonic,password) //calculate keys when mnemonic or password changes
+	$:p2pkh(derivationPath) //calculate adresses when derivation path changes
+	$:p2wpkh(derivationPath)
+	$:p2sh(derivationPath)
 
 </script>
 
@@ -73,12 +95,20 @@
 		<Column><h4>{xpub || ''}</h4></Column>
 	</Row>
 	<Row>
-		<Column><h2>3. Deviate address from derivation path</h2></Column>
+		<Column><h2>3. Deviate addressP2pkh from derivation path (bip32)</h2></Column>
 		<Column><TextInput labelText="Derivation Path" bind:value={derivationPath}  class="formElement" /></Column>
 	</Row>
 	<Row>
-		<Column><h3>Address :</h3></Column>
-		<Column><h4>{address || ''}</h4></Column>
+		<Column><h3>Address (Legacy):</h3></Column>
+		<Column><h4>{addressP2pkh || ''}</h4></Column>
+	</Row>
+	<Row>
+		<Column><h3>Address (Segwit) :</h3></Column>
+		<Column><h4>{addressP2wpkh || ''}</h4></Column>
+	</Row>
+	<Row>
+		<Column><h3>Address (Segwit via P2SH) :</h3></Column>
+		<Column><h4>{addressP2wpkhP2Sh || ''}</h4></Column>
 	</Row>
 </Grid>
 
