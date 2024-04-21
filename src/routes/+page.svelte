@@ -61,10 +61,14 @@
 		p2sh(derivationPath)
 	}
 
-	$:createKeys(mnemonic,password) //calculate keys when mnemonic or password changes
-	$:p2pkh(derivationPath) //calculate adresses when derivation path changes
-	$:p2wpkh(derivationPath)
-	$:p2sh(derivationPath)
+	$:{
+		try {
+				createKeys(mnemonic,password)
+				p2pkh(derivationPath)
+				p2wpkh(derivationPath)
+				p2sh(derivationPath)
+		} catch (error) { }
+	};
 
 </script>
 
