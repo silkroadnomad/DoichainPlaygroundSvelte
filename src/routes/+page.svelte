@@ -2,7 +2,7 @@
 	import "carbon-components-svelte/css/all.css";
 	import { Theme, Button, TextArea, Grid, Row, Column, TextInput } from 'carbon-components-svelte';
 	import { generateMnemonic, mnemonicToSeedSync } from 'bip39'
-	import {payments} from 'bitcoinjs-lib';
+	import { payments } from 'bitcoinjs-lib';
 	import * as ecc from 'tiny-secp256k1';
 	import BIP32Factory from 'bip32';
 	const bip32 = BIP32Factory(ecc);
@@ -18,7 +18,6 @@
 	let derivationPath = 'm/0/0/0'
 	let address;
 
-	$:console.log("mnemonic",mnemonic)
 	/**
 	 * Pay-to-Public-Key-Hash (P2PKH)
 	 * @param _derivationPath
@@ -64,7 +63,6 @@
 	<Row>
 		<Column><h2>2. Get XPriv and XPub from mnemonic</h2></Column>
 		<Column><TextInput labelText="Password" bind:value={password} class="formElement" /></Column>
-		<Column>&nbsp;</Column>
 	</Row>
 	<Row>
 		<Column><h3>xpriv (HD node root key) (base58)</h3></Column>
