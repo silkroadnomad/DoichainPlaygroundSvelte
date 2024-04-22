@@ -6,6 +6,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 - Cryptography-Toolkit https://guggero.github.io/cryptography-toolkit/#!/
   - Hierarchical Deterministic Wallet (BIP32/38/39/44/49/84) https://guggero.github.io/cryptography-toolkit/#!/hd-wallet
 - BitcoinJS-Lib https://github.com/bitcoinjs/bitcoinjs-lib
+- Electrum-client-js https://www.npmjs.com/package/@codewarriorr/electrum-client-js
 
 ## Todos:
 - [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX
@@ -19,8 +20,10 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 - [ ] generate a P2WSH (SegWit), pay-to-multisig (3-of-4) addressP2pkh 
   - https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/addresses.spec.ts#L77
 - [ ] connect to Electrumx (which connects to Doichaind) via local Docker or remote url
-- [ ] list transactions
-- [ ] display balance 
+  - [x] electrumx (DOI) support secure websockets
+  - [x] connection via wss
+- [ ] list transactions of a wallet in a datatable component
+- [ ] display wallet balance 
 - [ ] create a simple coin (DOI) transaction 
 - [ ] create name_doi, name_first, name_update transaction and store
   - a proof-of-existence
