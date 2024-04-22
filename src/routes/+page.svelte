@@ -1,14 +1,13 @@
 <script>
 	import "carbon-components-svelte/css/all.css";
-	import { Button, TextArea, Grid, Row, Column, TextInput, OverflowMenu, OverflowMenuItem  } from 'carbon-components-svelte';
+	import { Button, TextArea, Grid, Row, Column, TextInput } from 'carbon-components-svelte';
 	import { generateMnemonic, mnemonicToSeedSync } from 'bip39'
 	import { payments } from 'bitcoinjs-lib';
 	import * as ecc from 'tiny-secp256k1';
+	import { network } from './store.js';
 	import BIP32Factory from 'bip32';
 	const bip32 = BIP32Factory(ecc);
-	import { DOICHAIN } from '../lib/doichain.js'
 
-	let network = DOICHAIN
 	let mnemonic = ''
 	let password = 'mnemonic'
 	let root = ''
@@ -25,47 +24,49 @@
 	 * @param _derivationPath
 	 * @return addressP2pkh
 	 */
-	const p2pkh = (_derivationPath) =>
-		addressP2pkh =  payments.p2pkh({ pubkey: root.derivePath(_derivationPath).publicKey, network }).address
+	const p2pkh = (_derivationPath, _network) =>
+		addressP2pkh =  payments.p2pkh({ pubkey: root.derivePath(_derivationPath).publicKey, _network }).address
 
 	/**
 	 * Segwit (p2sh)
 	 * @param _derivationPath
 	 * @return addressP2wpkhP2Sh
 	 */
-	const p2sh = (_derivationPath) =>
-		addressP2wpkhP2Sh = payments.p2sh({ redeem: payments.p2wpkh({ pubkey: root.derivePath(_derivationPath).publicKey, network })}).address;
+	const p2sh = (_derivationPath, _network) =>
+		addressP2wpkhP2Sh = payments.p2sh({ redeem: payments.p2wpkh({ pubkey: root.derivePath(_derivationPath).publicKey, _network })}).address;
 
 	/**
 	 * Segwit (p2wpkh)
 	 * @param _derivationPath
 	 * @return addressP2wpkhP2Sh
 	 */
-	const p2wpkh = (_derivationPath) =>
-		addressP2wpkh = payments.p2wpkh({ pubkey: root.derivePath(_derivationPath).publicKey, network }).address;
+	const p2wpkh = (_derivationPath,_network) =>{
+		addressP2wpkh = payments.p2wpkh({ pubkey: root.derivePath(_derivationPath).publicKey, _network }).address;
+	}
+
 
 	/**
 	 * Generate master seed root, xpriv and xpub
 	 * @param _mnemonic
 	 * @param _password
 	 */
-	const createKeys = async (_mnemonic,_password) => {
-		const seed = mnemonicToSeedSync(_mnemonic,_password);
-		root = bip32.fromSeed(seed,network);
+	const createKeys = async (_mnemonic, _password) => {
+		const seed = mnemonicToSeedSync(_mnemonic, _password);
+		root = bip32.fromSeed(seed, $network);
 		xpriv = root.toBase58();
 		xpub = root.neutered().toBase58();
 
-		p2pkh(derivationPath)
-		p2wpkh(derivationPath)
-		p2sh(derivationPath)
+		p2pkh(derivationPath,$network)
+		p2wpkh(derivationPath,$network)
+		p2sh(derivationPath,$network)
 	}
 
 	$:{
 		try {
 				createKeys(mnemonic,password)
-				p2pkh(derivationPath)
-				p2wpkh(derivationPath)
-				p2sh(derivationPath)
+				p2pkh(derivationPath,$network)
+				p2wpkh(derivationPath,$network)
+				p2sh(derivationPath,$network)
 		} catch (error) { }
 	}
 </script>

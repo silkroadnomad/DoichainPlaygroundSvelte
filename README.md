@@ -6,6 +6,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 - Cryptography-Toolkit https://guggero.github.io/cryptography-toolkit/#!/
   - Hierarchical Deterministic Wallet (BIP32/38/39/44/49/84) https://guggero.github.io/cryptography-toolkit/#!/hd-wallet
 - BitcoinJS-Lib https://github.com/bitcoinjs/bitcoinjs-lib
+- Electrum Protocol https://electrumx.readthedocs.io/en/latest/protocol.html
 - Electrum-client-js https://www.npmjs.com/package/@codewarriorr/electrum-client-js
 
 ## Todos:
@@ -33,6 +34,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 - [ ] research and test DoiWallet and ElectrumDoi seed phrases and keys
 
 ## Nice 2 have:
+- [ ] choose current ElectrumX from random list
 - [ ] deploy to IPFS
 - [ ] choose from different derivation path standards (bip32, bip33, bip49, ...)
 - [ ] test DoiWallet and ElectrumDoi seed phrases and keys
