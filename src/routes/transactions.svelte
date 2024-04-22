@@ -33,6 +33,7 @@
 	onMount(() => {
 
 		const connectElectrum = async () => {
+
 			$electrumClient = new ElectrumxClient('big-parrot-60.doi.works',50004,'wss')
 			await $electrumClient.connect("electrum-client-js", "1.4.2")
 			$electrumServerVersion = await $electrumClient.request('server.version')

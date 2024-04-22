@@ -11,6 +11,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 
 ## Todos:
 - [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX
+  - [ ] add nginx, letsencrypt and enable wss for electrumx
 - [x] generate mnemonic
 - [x] create xpriv and xpub from mnemonic 
 - [x] generate new (legacy) p2pkh addressP2pkh from a derivation path 
@@ -23,6 +24,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 - [x] connect to Electrumx (which connects to Doichaind) via local Docker or remote url
   - [x] electrumx (DOI) support secure websockets
   - [x] connection via wss
+  - [ ] connect to local Electrumx inside docker for developer 
 - [ ] list transactions of a wallet in a datatable component
 - [ ] display wallet balance 
 - [ ] create a simple coin (DOI) transaction 
