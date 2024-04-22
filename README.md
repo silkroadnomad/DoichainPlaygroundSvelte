@@ -7,7 +7,6 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
   - Hierarchical Deterministic Wallet (BIP32/38/39/44/49/84) https://guggero.github.io/cryptography-toolkit/#!/hd-wallet
 - BitcoinJS-Lib https://github.com/bitcoinjs/bitcoinjs-lib
 - Electrum Protocol https://electrumx.readthedocs.io/en/latest/protocol.html
-- Electrum-client-js https://www.npmjs.com/package/@codewarriorr/electrum-client-js
 
 ## Todos:
 - [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX
