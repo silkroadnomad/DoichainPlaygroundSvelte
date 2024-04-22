@@ -1,6 +1,6 @@
 <script>
 	import "carbon-components-svelte/css/all.css";
-	import { Theme, Button, TextArea, Grid, Row, Column, TextInput } from 'carbon-components-svelte';
+	import { Button, TextArea, Grid, Row, Column, TextInput, OverflowMenu, OverflowMenuItem  } from 'carbon-components-svelte';
 	import { generateMnemonic, mnemonicToSeedSync } from 'bip39'
 	import { payments } from 'bitcoinjs-lib';
 	import * as ecc from 'tiny-secp256k1';
@@ -9,7 +9,6 @@
 	import { DOICHAIN } from '../lib/doichain.js'
 
 	let network = DOICHAIN
-	let theme = "g90";// "white" | "g10" | "g80" | "g90" | "g100"
 	let mnemonic = ''
 	let password = 'mnemonic'
 	let root = ''
@@ -68,12 +67,12 @@
 				p2wpkh(derivationPath)
 				p2sh(derivationPath)
 		} catch (error) { }
-	};
-
+	}
 </script>
 
-<Theme bind:theme persist persistKey="__carbon-theme" />
-<h1>Welcome to Doichain Playground</h1>
+
+<h1>Welcome to the Doichain Playground</h1>
+<h2>Key and Address Generation</h2>
 
 <Grid>
 	<Row>

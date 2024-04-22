@@ -29,9 +29,10 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 - [ ] automate spending from a multisig addressP2pkh
 
 ## Nice 2 have:
-- [ ] use different derivation path standards (bip32, bip33, bip49, ...)
+- [ ] deploy to IPFS
+- [ ] choose from different derivation path standards (bip32, bip33, bip49, ...)
 - [ ] test DoiWallet and ElectrumDoi seed phrases and keys
-- [ ] use 24-words
+- [ ] use alternatively 24-words for seed phrases
 - [ ] add a network dropdown (e.g. Bitcoin-Mainnet, Bitcoin-Testnet, Bitcoin-RegTest, Doichain,...)
 - [ ] use a better entropy / random generator
 
