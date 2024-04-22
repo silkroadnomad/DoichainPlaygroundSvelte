@@ -19,7 +19,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
   - https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/addresses.spec.ts#L66
 - [ ] generate a P2WSH (SegWit), pay-to-multisig (3-of-4) addressP2pkh 
   - https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/addresses.spec.ts#L77
-- [ ] connect to Electrumx (which connects to Doichaind) via local Docker or remote url
+- [x] connect to Electrumx (which connects to Doichaind) via local Docker or remote url
   - [x] electrumx (DOI) support secure websockets
   - [x] connection via wss
 - [ ] list transactions of a wallet in a datatable component
