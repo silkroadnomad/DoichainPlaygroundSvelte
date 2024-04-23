@@ -25,7 +25,8 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
   - [x] connection via wss
   - [ ] connect to local Electrumx (Docker compose) for developers
 - [?] list transactions of a wallet in a datatable component
-  - [ ] cache transactions in local storage or similar (e.g. immortal-db) 
+  - [x] cache transactions in IndexedDB 
+  - [x] default sort transactions by blocktime descending
   - [ ] display amount received (+) and sent (-)
   - [ ] display nameId, nameValue, address
 - [ ] display wallet balance 

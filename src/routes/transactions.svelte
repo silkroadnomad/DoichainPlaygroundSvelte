@@ -15,8 +15,8 @@
 	} from './store.js';
 	import { onDestroy, onMount } from 'svelte';
 	import { ElectrumxClient } from '$lib/electrumx-client.js';
-	import { ImmortalDB } from 'immortal-db';
-	// localStorage.clear()
+	import { readData, writeData } from '$lib/indexedDBUtil.js'; // Adjust the path as necessary
+
 	let txs = []
 
 	let doiAddress = "6TceYUFydmv9onXozrvttFjWD1QVULgp6y"
@@ -26,33 +26,30 @@
 		let hash = crypto.sha256(script)
 		let reversedHash = Buffer.from(hash.reverse()).toString("hex");
 
-		// Attempt to fetch history from ImmortalDB cache
-		let _history = await ImmortalDB.get(reversedHash + "_history");
+		// Attempt to fetch history from IndexedDB cache
+		let _history = await readData(reversedHash + "_history");
 		if (_history) {
-			// Parse the cached JSON string back into an array
-			$history = JSON.parse(_history);
+			$history = _history.data;
 		} else {
-			// Fetch from the blockchain if not in cache
 			$history = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
-			// Cache the fetched history
-			await ImmortalDB.set(reversedHash + "_history", JSON.stringify($history));
+			await writeData({ id: reversedHash + "_history", data: $history });
 		}
 
-		// Similar logic for utxos and transactions
 		for (const tx of $history) {
-			let cachedTx = await ImmortalDB.get(tx.tx_hash);
+			let cachedTx = await readData(tx.tx_hash);
 			let decryptedTx;
 			if (cachedTx) {
-				decryptedTx = JSON.parse(cachedTx);
+				decryptedTx = cachedTx.data;
 			} else {
 				decryptedTx = await $electrumClient.request('blockchain.transaction.get', [tx.tx_hash, 1]);
-				await ImmortalDB.set(tx.tx_hash, JSON.stringify(decryptedTx));
+				await writeData({ id: tx.tx_hash, data: decryptedTx });
 			}
 			console.log("Decrypted tx:", decryptedTx);
 			decryptedTx.id = decryptedTx.txid;
 			decryptedTx.value = 0; // Update this as per your logic
 			txs = [...txs, decryptedTx];
 		}
+		txs.sort((a, b) => b.blocktime - a.blocktime);
 	}
 
 	onMount(() => {
@@ -69,7 +66,7 @@
 
 			await getAddressTxs()
 		}
-		// connectElectrum()
+		connectElectrum()
 	})
 
 	onDestroy(()=>{
