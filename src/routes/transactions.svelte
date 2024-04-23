@@ -1,5 +1,5 @@
 <script>
-	import { DataTable, TextInput } from 'carbon-components-svelte';
+	import { DataTable, Pagination, TextInput, Toolbar, ToolbarContent, ToolbarSearch } from 'carbon-components-svelte';
 	import moment from 'moment';
 	import { address, crypto } from 'bitcoinjs-lib';
 	import {
@@ -73,7 +73,11 @@
 		$electrumClient?$electrumClient.close():null
 	})
 
-	$:console.log("txs",txs)
+	let pageSize = 10;
+	let page = 1;
+	let filteredRowIds = [];
+
+	$: console.log("filteredRowIds", filteredRowIds);
 </script>
 
 <h2>Transactions</h2>
@@ -85,19 +89,24 @@
 	<div class="margin">
 		Tip: {$electrumBlockchainBlockHeadersSubscribe?.height}
 	</div>
-
-	<TextInput
-		class="margin"
-		labelText="Enter Doichain address and hit enter"
-		bind:value={doiAddress}
-		on:keydown={(event) => {
-					if (event.key === 'Enter') {
-							getAddressTxs();
-					}
-			}}
-	/>
+	<div class="margin">
+		<TextInput
+			class="margin"
+			labelText="Enter Doichain address and hit enter"
+			bind:value={doiAddress}
+			on:keydown={(event) => {
+						if (event.key === 'Enter') {
+								getAddressTxs();
+						}
+				}}
+		/>
+	</div>
 <DataTable
 	class="margin"
+	shouldFilterRows
+	{pageSize}
+	{page}
+	bind:filteredRowIds
 	headers={[
 		{ key: "blocktime", value: "Time"},
 		{ key: "txid", value: "TxId" },
@@ -112,10 +121,24 @@
 		  {cell.value}
 		{/if}
 	  </svelte:fragment>
+	<Toolbar>
+		<ToolbarContent>
+			<ToolbarSearch
+				persistent
+				shouldFilterRows
+				bind:filteredRowIds
+			/>
+		</ToolbarContent>
+	</Toolbar>
 </DataTable>
+<Pagination
+	bind:pageSize
+	bind:page
+	totalItems={filteredRowIds.length}
+	pageSizeInputDisabled
+/>
 <style>
    :global(.margin, h1, h2, h3, h4) {
-			 margin-top: 20px;
-			 margin-left: 20px;
+			 margin: 20px;
     }
 </style>

@@ -27,6 +27,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 - [?] list transactions of a wallet in a datatable component
   - [x] cache transactions in IndexedDB 
   - [x] default sort transactions by blocktime descending
+  - [x] filter & paginator 
   - [ ] display amount received (+) and sent (-)
   - [ ] display nameId, nameValue, address
 - [ ] display wallet balance 
