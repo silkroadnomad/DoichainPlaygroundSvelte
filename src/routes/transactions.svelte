@@ -10,18 +10,19 @@
         electrumBlockchainBlockHeadersSubscribe,
         electrumBlockchainRelayfee,
         network,
-        history,
-        utxos
+        history
     } from './store.js';
     import { onDestroy, onMount } from 'svelte';
     import { ElectrumxClient } from '$lib/electrumx-client.js';
     import { ImmortalDB } from 'immortal-db';
-
+    import {conv} from 'binstring'
     let txs = [];
     let doiAddress = "dc1qkwvewddc6wqar3g4h3fpurm8el9g4rg6fnfcnr";
     let pageSize = 10;
     let page = 1;
     let filteredRowIds = [];
+
+    $:console.log("txs",txs)
 
     const connectElectrum = async () => {
         $electrumClient = new ElectrumxClient('big-parrot-60.doi.works', 50004, 'wss');
@@ -35,43 +36,81 @@
     };
 
     const getAddressTxs = async () => {
-		txs = [];
-		
+
         let script = address.toOutputScript(doiAddress, $network);
         let hash = crypto.sha256(script);
         let reversedHash = Buffer.from(hash.reverse()).toString("hex");
 
         // Attempt to fetch history from ImmortalDB cache
         let _history = await ImmortalDB.get(reversedHash + "_history");
-        if (_history) {
+        if (false) { //TODO enable with _history
             // Parse the cached JSON string back into an array
             $history = JSON.parse(_history);
         } else {
-            // Fetch from the blockchain if not in cache
             $history = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
-            // Cache the fetched history
             await ImmortalDB.set(reversedHash + "_history", JSON.stringify($history));
         }
 
+        txs = [];
         for (const tx of $history) {
             let cachedTx = await ImmortalDB.get(tx.tx_hash);
             let decryptedTx;
-            if (cachedTx) {
+            if (false) { //TODO enable with cachedTx
                 decryptedTx = JSON.parse(cachedTx);
             } else {
                 decryptedTx = await $electrumClient.request('blockchain.transaction.get', [tx.tx_hash, 1]);
                 await ImmortalDB.set(tx.tx_hash, JSON.stringify(decryptedTx));
             }
             console.log("Decrypted tx:", decryptedTx);
-            decryptedTx.id = decryptedTx.txid;
+
             decryptedTx.formattedBlocktime = moment.unix(decryptedTx.blocktime).format('YYYY-MM-DD HH:mm:ss');
             decryptedTx.value = 0; // Update this as per your logic
-            txs = [...txs, decryptedTx];
+            for (const vin of decryptedTx.vin) {
+                const _tx = decryptedTx
+                _tx.id = decryptedTx.txid+'_in_'+vin.n;
+            }
+
+            for (const [index, vout] of decryptedTx.vout.entries()) {
+                const _tx = JSON.parse(JSON.stringify(decryptedTx));
+
+                _tx.id = decryptedTx.txid+'_out_'+index;
+                let address, nameId, nameValue
+
+                const asm = vout.scriptPubKey.asm
+                const asmParts = asm.split(" ")
+
+                if (asmParts[0] !== 'OP_10' && asmParts[0] !== 'OP_NAME_DOI') {
+                    _tx.address = vout.scriptPubKey.addresses[0]
+                    console.log('address', _tx.address)
+                    // for (let i = 0; i < addressList.length; i++) { //TODO what is this?
+                    //     if (address == addressList[i]) {
+                    //         utxo = true
+                    //         break
+                    //     }
+                    // }
+                } else {
+                    const chunks = vout.scriptPubKey.asm.split(" ")
+                    nameId = vout.scriptPubKey.nameOp.name
+                    nameValue = vout.scriptPubKey.nameOp.value
+                    address = conv(chunks[7], { in: 'hex', out: 'binary' })
+
+                    console.log('name_op nameId', nameId)
+                    console.log('name_op nameValue', nameValue)
+                    console.log('name_op address', address)
+                }
+
+                _tx.value=(vout.value*-1)
+                _tx.n=vout.n
+                if(!txs.includes(_tx)) txs = [...txs, _tx];
+            }
         }
         txs.sort((a, b) => b.blocktime - a.blocktime);
     };
 
-    onMount(connectElectrum);
+    onMount(()=>{
+        connectElectrum()
+        getAddressTxs();
+    });
     onDestroy(() => $electrumClient ? $electrumClient.close() : null);
 </script>
 
@@ -100,6 +139,7 @@
     headers={[
         { key: "formattedBlocktime", value: "Time"},
         { key: "txid", value: "TxId" },
+        { key: "address", value: "Address" },
         { key: "value", value: "Amount" },
         { key: "confirmations", value: "Confirmations" },
     ]}

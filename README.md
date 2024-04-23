@@ -29,6 +29,8 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
   - [x] default sort transactions by blocktime descending
   - [x] filter & paginator 
   - [ ] display amount received (+) and sent (-)
+    - [x] displaying all outputs as negativ values
+    - [ ] displaying all inputs as positiv values
   - [ ] display nameId, nameValue, address
 - [ ] display wallet balance 
   - of a single address
