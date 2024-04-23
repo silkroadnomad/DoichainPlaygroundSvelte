@@ -1,4 +1,4 @@
-![Vercel](https://vercelbadge.vercel.app/api/le-space/doichain-playground-svelte)
+![Vercel](https://vercelbadge.vercel.app/api/silkroadnomad/DoichainPlaygroundSvelte)
 
 # Doichain Playground Svelte
 
