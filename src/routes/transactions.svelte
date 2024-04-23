@@ -204,12 +204,14 @@
     ]}
     rows={txs}>
     <svelte:fragment slot="cell" let:row let:cell>
-        <!--{#if cell.key === "blocktime"}-->
-        <!--{ moment.unix(cell.value).format('YYYY-MM-DD HH:mm:ss') }-->
-        <!--{:else}-->
-          {cell.value}
-        <!--{/if}-->
-      </svelte:fragment>
+        {#if cell.key === "value"}
+            <div style="text-align: right;">{cell.value.toFixed(8)}</div>
+        {:else if cell.key === "confirmations"}
+            <div style="text-align: right;">{cell.value}</div>
+        {:else}
+            {cell.value}
+        {/if}
+    </svelte:fragment>
     <Toolbar>
         <ToolbarContent>
             <ToolbarSearch
