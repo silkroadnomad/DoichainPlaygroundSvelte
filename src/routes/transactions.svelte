@@ -14,10 +14,13 @@
     } from './store.js';
     import { onDestroy, onMount } from 'svelte';
     import { ElectrumxClient } from '$lib/electrumx-client.js';
-    import { ImmortalDB } from 'immortal-db';
-    import {conv} from 'binstring'
+    import { readData,writeData } from '$lib/indexedDBUtil.js';
+    import { conv } from 'binstring'
+    import Buffer from 'vite-plugin-node-polyfills/shims/buffer/index.js';
+
     let txs = [];
-    let doiAddress = "dc1qkwvewddc6wqar3g4h3fpurm8el9g4rg6fnfcnr";
+    let doiAddress = "dc1qg3ra4h6xdp870u5xu7neq3htzgyd7qx0plt8dj";
+    let balance = { confirmed:0 ,unconfirmed:0 }
     let pageSize = 10;
     let page = 1;
     let filteredRowIds = [];
@@ -41,37 +44,51 @@
         let hash = crypto.sha256(script);
         let reversedHash = Buffer.from(hash.reverse()).toString("hex");
 
-        // Attempt to fetch history from ImmortalDB cache
-        let _history = await ImmortalDB.get(reversedHash + "_history");
-        if (false) { //TODO enable with _history
-            // Parse the cached JSON string back into an array
-            $history = JSON.parse(_history);
+        balance = await $electrumClient.request('blockchain.scripthash.get_balance', [reversedHash.toString("hex")]);
+
+        let _history = await readData(reversedHash + "_history");
+        if (_history) {
+          $history = _history.data;
         } else {
-            $history = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
-            await ImmortalDB.set(reversedHash + "_history", JSON.stringify($history));
+          $history = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
+          await writeData({ id: reversedHash + "_history", data: $history });
         }
 
         txs = [];
         for (const tx of $history) {
-            let cachedTx = await ImmortalDB.get(tx.tx_hash);
+
+            let cachedTx = await readData(tx.tx_hash);
             let decryptedTx;
             if (false) { //TODO enable with cachedTx
                 decryptedTx = JSON.parse(cachedTx);
             } else {
                 decryptedTx = await $electrumClient.request('blockchain.transaction.get', [tx.tx_hash, 1]);
-                await ImmortalDB.set(tx.tx_hash, JSON.stringify(decryptedTx));
+                await writeData({id: tx.tx_hash,  data: JSON.stringify(decryptedTx)});
             }
-            console.log("Decrypted tx:", decryptedTx);
+            //console.log("Decrypted tx:", decryptedTx);
 
             decryptedTx.formattedBlocktime = moment.unix(decryptedTx.blocktime).format('YYYY-MM-DD HH:mm:ss');
             decryptedTx.value = 0; // Update this as per your logic
-            for (const vin of decryptedTx.vin) {
-                const _tx = decryptedTx
-                _tx.id = decryptedTx.txid+'_in_'+vin.n;
+
+            for (const [index, vin] of decryptedTx.vin.entries()) {
+                const prevTx = await $electrumClient.request('blockchain.transaction.get', [vin.txid, 1], true); // true for verbose to get detailed transaction
+                const spentOutput = prevTx.vout[vin.vout]; // vin.vout is the index of the output in prevTx that vin is spending
+                if (spentOutput.scriptPubKey.addresses.includes(doiAddress)) {
+                    // This input spends from doiAddress
+                    // console.log("---->")
+                    const _tx = JSON.parse(JSON.stringify(decryptedTx));
+                    _tx.id = decryptedTx.txid+'_in_'+index
+                    _tx.value = -spentOutput.value; // Negative because it's spent
+                    _tx.address = spentOutput.scriptPubKey.addresses[0]
+
+                    txs = [...txs, _tx];
+                    //break; // Assuming you only care about the first occurrence
+                }
             }
 
             for (const [index, vout] of decryptedTx.vout.entries()) {
                 const _tx = JSON.parse(JSON.stringify(decryptedTx));
+                //const prevTx = await $electrumClient.request('blockchain.transaction.get', [vout.txid, 1], true); // true for verbose to get detailed transaction
 
                 _tx.id = decryptedTx.txid+'_out_'+index;
                 let address, nameId, nameValue
@@ -99,9 +116,22 @@
                     console.log('name_op address', address)
                 }
 
-                _tx.value=(vout.value*-1)
+                _tx.value=vout.value
                 _tx.n=vout.n
-                if(!txs.includes(_tx)) txs = [...txs, _tx];
+
+                let existingTxIndex = txs.findIndex(tx => tx.txid === _tx.txid && tx.address === _tx.address);
+                console.log("existingTxIndex",existingTxIndex)
+                if (existingTxIndex !== -1) {
+                    console.log("aaaa")
+                    // txs = txs.splice(existingTxIndex,1)
+                //     // If found, update the existing transaction's value by subtracting the current value from it
+                  //  txs[existingTxIndex].value -= _tx.value;
+                 } //else {
+                //     // If not found, add the new transaction to the txs array
+                //     txs = [...txs, _tx];
+                // }
+                if(_tx.address===doiAddress)
+                    txs = [...txs, _tx];
             }
         }
         txs.sort((a, b) => b.blocktime - a.blocktime);
@@ -120,7 +150,20 @@
     Electrum Server Banner {$electrumServerBanner || 'not connected'}
 </div>
 <div class="margin">
-    Tip: {$electrumBlockchainBlockHeadersSubscribe?.height}
+    <table>
+        <tr>
+            <td>Tip:</td>
+            <td>{$electrumBlockchainBlockHeadersSubscribe?.height}</td>
+        </tr>
+        <tr>
+            <td>Balance (confirmed): </td>
+            <td>{balance?.confirmed/100000000} DOI </td>
+        </tr>
+        <tr>
+            <td>Balance (unconfirmed): </td>
+            <td>{balance?.unconfirmed/100000000} DOI </td>
+        </tr>
+    </table>
 </div>
 <div class="margin">
     <TextInput
@@ -140,8 +183,8 @@
         { key: "formattedBlocktime", value: "Time"},
         { key: "txid", value: "TxId" },
         { key: "address", value: "Address" },
-        { key: "value", value: "Amount" },
         { key: "confirmations", value: "Confirmations" },
+        { key: "value", value: "Amount" }
     ]}
     rows={txs}>
     <svelte:fragment slot="cell" let:row let:cell>
