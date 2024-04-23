@@ -1,3 +1,5 @@
+![Vercel](https://vercelbadge.vercel.app/api/le-space/doichain-playground-svelte)
+
 # Doichain Playground Svelte
 
 This is a reference and example on how to develop Doichain web apps with Svelte without the need of a server or dApp.
