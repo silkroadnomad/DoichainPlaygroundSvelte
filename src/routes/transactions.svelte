@@ -134,6 +134,22 @@
                     txs = [...txs, _tx];
             }
         }
+        // Group transactions by txid and accumulate values for transactions with the same txid
+        const groupedTxs = txs.reduce((acc, tx) => {
+            // Use txid as the key for grouping
+            const key = tx.txid;
+            if (!acc[key]) {
+                // If this txid hasn't been seen before, add it directly
+                acc[key] = { ...tx };
+            } else {
+                // If this txid has been seen, accumulate the value
+                acc[key].value += tx.value;
+            }
+            return acc;
+        }, {});
+
+        // Convert the grouped transactions back into an array
+        txs = Object.values(groupedTxs);
         txs.sort((a, b) => b.blocktime - a.blocktime);
     };
 

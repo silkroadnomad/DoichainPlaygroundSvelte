@@ -28,10 +28,12 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
   - [x] cache transactions in IndexedDB 
   - [x] default sort transactions by blocktime descending
   - [x] filter & paginator 
-  - [ ] display amount received (+) and sent (-)
-    - [x] displaying all outputs as negative values
-    - [ ] displaying all inputs as positive values
-      - [ ] find address in previous tx
+  - [x] display amount received (+) and sent (-)
+    - [x] display outputs (utxos) as received
+    - [x] display inputs as sent 
+      - [x] find address in previous tx
+    - [ ] double check addresses (received & sent)
+    - [ ] two txids appear twice (change transactions) in txs, keep only one but accumulate values
   - [ ] display nameId, nameValue, address
 - [ ] display wallet balance 
   - of a single address
