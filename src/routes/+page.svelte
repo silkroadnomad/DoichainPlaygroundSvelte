@@ -93,11 +93,11 @@
 	</Row>
 	<Row>
 		<Column><h2>xpriv (HD node root key) (base58)</h2></Column>
-		<Column><TextInput labelText="xpriv" bind:value={xpriv} class="formElement" /></Column>
+		<Column><TextInput labelText="xpriv" bind:value={xpriv} class="formElement" readonly/></Column>
 	</Row>
 	<Row>
 		<Column><h2>xpub</h2></Column>
-		<Column><TextInput labelText="xpub" bind:value={xpub} class="formElement" /></Column>
+		<Column><TextInput labelText="xpub" bind:value={xpub} class="formElement" readonly /></Column>
 	</Row>
 	<Row>
 		<Column><h2>3. Deviate addressP2pkh from derivation path (bip32)</h2></Column>

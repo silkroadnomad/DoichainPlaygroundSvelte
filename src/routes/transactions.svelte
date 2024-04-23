@@ -1,5 +1,6 @@
 <script>
 	import { DataTable } from "carbon-components-svelte";
+	import moment from 'moment';
 	import { address, crypto } from 'bitcoinjs-lib';
 	import {
 		electrumServerVersion,
@@ -14,8 +15,11 @@
 	} from './store.js';
 	import { onDestroy, onMount } from 'svelte';
 	import { ElectrumxClient } from '$lib/electrumx-client.js';
+	
+	let txs = []
 
 	const getAddressTxs = async () => {
+
 		const doi_address = "6TceYUFydmv9onXozrvttFjWD1QVULgp6y"
 		const myAddresses = [doi_address]; // Add your addresses here
 		let script = address.toOutputScript(doi_address, $network)
@@ -24,25 +28,28 @@
 
 		$history = await $electrumClient.request('blockchain.scripthash.get_history',[ reversedHash.toString("hex") ])
 		$utxos = await $electrumClient.request('blockchain.scripthash.listunspent',[ reversedHash.toString("hex") ])
-		for (const tx of $utxos) {
+
+		for (const tx of $history) {
 			const decryptedTx = await $electrumClient.request('blockchain.transaction.get',[tx.tx_hash,1])
 			console.log("decrypted tx", decryptedTx)
+			decryptedTx.id = decryptedTx.txid
+			decryptedTx.value = 0
+			txs = [...txs, decryptedTx];
+			// let inputsBelongToMe = decryptedTx.vin.some(input => {
+			// 	// if(!input.scriptSig)return false
+			// 	let inputScript = address.fromOutputScript(input.script, $network);
+			// 	return myAddresses.includes(inputScript);
+			// });
+			//
+			// let outputsBelongToMe = decryptedTx.vout.some(output => {
+			// 	console.log("output.script",output.script)
+			// 	if(!output.script)return false
+			// 	let outputScript = address.fromOutputScript(output.script, $network);
+			// 	return myAddresses.includes(outputScript);
+			// });
 
-			let inputsBelongToMe = decryptedTx.vin.some(input => {
-				// if(!input.scriptSig)return false
-				let inputScript = address.fromOutputScript(input.script, $network);
-				return myAddresses.includes(inputScript);
-			});
-
-			let outputsBelongToMe = decryptedTx.vout.some(output => {
-				console.log("output.script",output.script)
-				if(!output.script)return false
-				let outputScript = address.fromOutputScript(output.script, $network);
-				return myAddresses.includes(outputScript);
-			});
-
-			console.log("Sent Transaction:", inputsBelongToMe);
-			console.log("Received Transaction:", outputsBelongToMe);
+			// console.log("Sent Transaction:", inputsBelongToMe);
+			// console.log("Received Transaction:", outputsBelongToMe);
 			break;
 		}
 
@@ -68,65 +75,39 @@
 	onDestroy(()=>{
 		$electrumClient?$electrumClient.close():null
 	})
+
+	$:console.log("txs",txs)
 </script>
 
 <h2>Transactions</h2>
-<h3>Electrum Server Version {$electrumServerVersion || 'not connected'}</h3>
-<h3>Electrum Server Banner  {$electrumServerBanner  || 'not connected'}</h3>
-<!--{$electrumBlockchainBlockHeaders.hex}-->
+<div class="margin">Electrum Server Version {$electrumServerVersion || 'not connected'}
+	<br/>
+ Electrum Server Banner  {$electrumServerBanner  || 'not connected'}</div>
 
-Tip: {$electrumBlockchainBlockHeadersSubscribe?.height}
-<!--{$electrumBlockchainBlockHeadersSubscribe?.hex}-->
-RelayFee: {$electrumBlockchainRelayfee}
+<div class="margin">
+	Tip: {$electrumBlockchainBlockHeadersSubscribe?.height}
+</div>
+
 <DataTable
+	class="margin"
 	headers={[
-    { key: "name", value: "Name" },
-    { key: "protocol", value: "Protocol" },
-    { key: "port", value: "Port" },
-    { key: "rule", value: "Rule" },
-  ]}
-	rows={[
-    {
-      id: "a",
-      name: "Load Balancer 3",
-      protocol: "HTTP",
-      port: 3000,
-      rule: "Round robin",
-    },
-    {
-      id: "b",
-      name: "Load Balancer 1",
-      protocol: "HTTP",
-      port: 443,
-      rule: "Round robin",
-    },
-    {
-      id: "c",
-      name: "Load Balancer 2",
-      protocol: "HTTP",
-      port: 80,
-      rule: "DNS delegation",
-    },
-    {
-      id: "d",
-      name: "Load Balancer 6",
-      protocol: "HTTP",
-      port: 3000,
-      rule: "Round robin",
-    },
-    {
-      id: "e",
-      name: "Load Balancer 4",
-      protocol: "HTTP",
-      port: 443,
-      rule: "Round robin",
-    },
-    {
-      id: "f",
-      name: "Load Balancer 5",
-      protocol: "HTTP",
-      port: 80,
-      rule: "DNS delegation",
-    },
-  ]}
-/>
+		{ key: "blocktime", value: "Time"},
+		{ key: "txid", value: "TxId" },
+		{ key: "value", value: "Amount" },
+		{ key: "confirmations", value: "Confirmations" },
+	]}
+	rows={txs}>
+	<svelte:fragment slot="cell" let:row let:cell>
+		{#if cell.key === "blocktime"}
+		{ moment.unix(cell.value).format('YYYY-MM-DD HH:mm:ss') }
+		{:else}
+		  {cell.value}
+		{/if}
+	  </svelte:fragment>
+</DataTable>
+<style>
+   :global(.margin, h1, h2, h3, h4) {
+			 margin-top: 20px;
+			 margin-left: 20px;
+    }
+</style>
