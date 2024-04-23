@@ -2,7 +2,7 @@
 
 # Doichain Playground Svelte
 
-This is a reference and example on how to develop Doichain web apps with Svelte without the need of a server or dApp.
+This is a reference and example on how to develop Doichain web apps with Svelte. 
 
 ## References:
 - Cryptography-Toolkit https://guggero.github.io/cryptography-toolkit/#!/
