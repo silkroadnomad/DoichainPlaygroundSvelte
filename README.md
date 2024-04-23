@@ -23,9 +23,13 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 - [x] connect to Electrumx (which connects to Doichaind) via local Docker or remote url
   - [x] electrumx (DOI) support secure websockets
   - [x] connection via wss
-  - [ ] connect to local Electrumx inside docker for developer 
+  - [ ] connect to local Electrumx (Docker compose) for developers
 - [ ] list transactions of a wallet in a datatable component
+  - [ ] display received (+) and sent (-)
+  - [ ] display nameId, nameValue, address
 - [ ] display wallet balance 
+  - of a single address
+  - of a xpub and it's derivations bip32, bip44, bip49,.. 
 - [ ] create a simple coin (DOI) transaction 
 - [ ] create name_doi, name_first, name_update transaction and store
   - a proof-of-existence
@@ -37,7 +41,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte 
 ## Nice 2 have:
 - [ ] choose current ElectrumX from random list
 - [ ] deploy to IPFS
-- [ ] choose from different derivation path standards (bip32, bip33, bip49, ...)
+- [ ] choose from different derivation path standards (bip32, bip44, bip49, ...)
 - [ ] test DoiWallet and ElectrumDoi seed phrases and keys
 - [ ] use alternatively 24-words for seed phrases
 - [ ] add a network dropdown (e.g. Bitcoin-Mainnet, Bitcoin-Testnet, Bitcoin-RegTest, Doichain,...)

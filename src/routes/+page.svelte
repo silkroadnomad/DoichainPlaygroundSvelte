@@ -83,20 +83,21 @@
 	</Row>
 	<Row>
 		<Column><h2>1. Generate mnemonic for a new wallet </h2></Column>
-		<Column><TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} class="formElement" /></Column>
-		<Column><Button on:click={async () => {mnemonic = generateMnemonic()}} class="formElement" >Generate Mnemonic</Button></Column>
+		<Column><TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} class="formElement" />
+		<Button on:click={async () => {mnemonic = generateMnemonic()}} class="formElement" >Generate Mnemonic</Button></Column>
+<!--		<Column></Column>-->
 	</Row>
 	<Row>
 		<Column><h2>2. Get XPriv and XPub from mnemonic</h2></Column>
 		<Column><TextInput labelText="Password" bind:value={password} class="formElement" /></Column>
 	</Row>
 	<Row>
-		<Column><h3>xpriv (HD node root key) (base58)</h3></Column>
-		<Column><h4>{xpriv || ''}</h4></Column>
+		<Column><h2>xpriv (HD node root key) (base58)</h2></Column>
+		<Column><TextInput labelText="xpriv" bind:value={xpriv} class="formElement" /></Column>
 	</Row>
 	<Row>
-		<Column><h3>xpub</h3></Column>
-		<Column><h4>{xpub || ''}</h4></Column>
+		<Column><h2>xpub</h2></Column>
+		<Column><TextInput labelText="xpub" bind:value={xpub} class="formElement" /></Column>
 	</Row>
 	<Row>
 		<Column><h2>3. Deviate addressP2pkh from derivation path (bip32)</h2></Column>

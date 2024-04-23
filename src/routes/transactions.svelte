@@ -1,4 +1,5 @@
 <script>
+	import { DataTable } from "carbon-components-svelte";
 	import { address, crypto } from 'bitcoinjs-lib';
 	import {
 		electrumServerVersion,
@@ -16,8 +17,8 @@
 
 	const getAddressTxs = async () => {
 		const doi_address = "6TceYUFydmv9onXozrvttFjWD1QVULgp6y"
+		const myAddresses = [doi_address]; // Add your addresses here
 		let script = address.toOutputScript(doi_address, $network)
-
 		let hash = crypto.sha256(script)
 		let reversedHash = Buffer.from(hash.reverse())
 
@@ -26,8 +27,25 @@
 		for (const tx of $utxos) {
 			const decryptedTx = await $electrumClient.request('blockchain.transaction.get',[tx.tx_hash,1])
 			console.log("decrypted tx", decryptedTx)
+
+			let inputsBelongToMe = decryptedTx.vin.some(input => {
+				// if(!input.scriptSig)return false
+				let inputScript = address.fromOutputScript(input.script, $network);
+				return myAddresses.includes(inputScript);
+			});
+
+			let outputsBelongToMe = decryptedTx.vout.some(output => {
+				console.log("output.script",output.script)
+				if(!output.script)return false
+				let outputScript = address.fromOutputScript(output.script, $network);
+				return myAddresses.includes(outputScript);
+			});
+
+			console.log("Sent Transaction:", inputsBelongToMe);
+			console.log("Received Transaction:", outputsBelongToMe);
 			break;
 		}
+
 	}
 
 	onMount(() => {
@@ -57,5 +75,58 @@
 <h3>Electrum Server Banner  {$electrumServerBanner  || 'not connected'}</h3>
 <!--{$electrumBlockchainBlockHeaders.hex}-->
 
-Tip: {$electrumBlockchainBlockHeadersSubscribe?.height} {$electrumBlockchainBlockHeadersSubscribe?.hex}
+Tip: {$electrumBlockchainBlockHeadersSubscribe?.height}
+<!--{$electrumBlockchainBlockHeadersSubscribe?.hex}-->
 RelayFee: {$electrumBlockchainRelayfee}
+<DataTable
+	headers={[
+    { key: "name", value: "Name" },
+    { key: "protocol", value: "Protocol" },
+    { key: "port", value: "Port" },
+    { key: "rule", value: "Rule" },
+  ]}
+	rows={[
+    {
+      id: "a",
+      name: "Load Balancer 3",
+      protocol: "HTTP",
+      port: 3000,
+      rule: "Round robin",
+    },
+    {
+      id: "b",
+      name: "Load Balancer 1",
+      protocol: "HTTP",
+      port: 443,
+      rule: "Round robin",
+    },
+    {
+      id: "c",
+      name: "Load Balancer 2",
+      protocol: "HTTP",
+      port: 80,
+      rule: "DNS delegation",
+    },
+    {
+      id: "d",
+      name: "Load Balancer 6",
+      protocol: "HTTP",
+      port: 3000,
+      rule: "Round robin",
+    },
+    {
+      id: "e",
+      name: "Load Balancer 4",
+      protocol: "HTTP",
+      port: 443,
+      rule: "Round robin",
+    },
+    {
+      id: "f",
+      name: "Load Balancer 5",
+      protocol: "HTTP",
+      port: 80,
+      rule: "DNS delegation",
+    },
+  ]}
+/>
