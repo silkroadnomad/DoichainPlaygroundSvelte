@@ -1,5 +1,5 @@
 <script>
-	import { DataTable } from "carbon-components-svelte";
+	import { DataTable, TextInput } from 'carbon-components-svelte';
 	import moment from 'moment';
 	import { address, crypto } from 'bitcoinjs-lib';
 	import {
@@ -15,44 +15,44 @@
 	} from './store.js';
 	import { onDestroy, onMount } from 'svelte';
 	import { ElectrumxClient } from '$lib/electrumx-client.js';
-	
+	import { ImmortalDB } from 'immortal-db';
+	// localStorage.clear()
 	let txs = []
 
+	let doiAddress = "6TceYUFydmv9onXozrvttFjWD1QVULgp6y"
 	const getAddressTxs = async () => {
 
-		const doi_address = "6TceYUFydmv9onXozrvttFjWD1QVULgp6y"
-		const myAddresses = [doi_address]; // Add your addresses here
-		let script = address.toOutputScript(doi_address, $network)
+		let script = address.toOutputScript(doiAddress, $network)
 		let hash = crypto.sha256(script)
-		let reversedHash = Buffer.from(hash.reverse())
+		let reversedHash = Buffer.from(hash.reverse()).toString("hex");
 
-		$history = await $electrumClient.request('blockchain.scripthash.get_history',[ reversedHash.toString("hex") ])
-		$utxos = await $electrumClient.request('blockchain.scripthash.listunspent',[ reversedHash.toString("hex") ])
-
-		for (const tx of $history) {
-			const decryptedTx = await $electrumClient.request('blockchain.transaction.get',[tx.tx_hash,1])
-			console.log("decrypted tx", decryptedTx)
-			decryptedTx.id = decryptedTx.txid
-			decryptedTx.value = 0
-			txs = [...txs, decryptedTx];
-			// let inputsBelongToMe = decryptedTx.vin.some(input => {
-			// 	// if(!input.scriptSig)return false
-			// 	let inputScript = address.fromOutputScript(input.script, $network);
-			// 	return myAddresses.includes(inputScript);
-			// });
-			//
-			// let outputsBelongToMe = decryptedTx.vout.some(output => {
-			// 	console.log("output.script",output.script)
-			// 	if(!output.script)return false
-			// 	let outputScript = address.fromOutputScript(output.script, $network);
-			// 	return myAddresses.includes(outputScript);
-			// });
-
-			// console.log("Sent Transaction:", inputsBelongToMe);
-			// console.log("Received Transaction:", outputsBelongToMe);
-			break;
+		// Attempt to fetch history from ImmortalDB cache
+		let _history = await ImmortalDB.get(reversedHash + "_history");
+		if (_history) {
+			// Parse the cached JSON string back into an array
+			$history = JSON.parse(_history);
+		} else {
+			// Fetch from the blockchain if not in cache
+			$history = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
+			// Cache the fetched history
+			await ImmortalDB.set(reversedHash + "_history", JSON.stringify($history));
 		}
 
+		// Similar logic for utxos and transactions
+		for (const tx of $history) {
+			let cachedTx = await ImmortalDB.get(tx.tx_hash);
+			let decryptedTx;
+			if (cachedTx) {
+				decryptedTx = JSON.parse(cachedTx);
+			} else {
+				decryptedTx = await $electrumClient.request('blockchain.transaction.get', [tx.tx_hash, 1]);
+				await ImmortalDB.set(tx.tx_hash, JSON.stringify(decryptedTx));
+			}
+			console.log("Decrypted tx:", decryptedTx);
+			decryptedTx.id = decryptedTx.txid;
+			decryptedTx.value = 0; // Update this as per your logic
+			txs = [...txs, decryptedTx];
+		}
 	}
 
 	onMount(() => {
@@ -69,7 +69,7 @@
 
 			await getAddressTxs()
 		}
-		connectElectrum()
+		// connectElectrum()
 	})
 
 	onDestroy(()=>{
@@ -81,13 +81,24 @@
 
 <h2>Transactions</h2>
 <div class="margin">Electrum Server Version {$electrumServerVersion || 'not connected'}
+
 	<br/>
- Electrum Server Banner  {$electrumServerBanner  || 'not connected'}</div>
+	Electrum Server Banner  {$electrumServerBanner  || 'not connected'}</div>
 
-<div class="margin">
-	Tip: {$electrumBlockchainBlockHeadersSubscribe?.height}
-</div>
+	<div class="margin">
+		Tip: {$electrumBlockchainBlockHeadersSubscribe?.height}
+	</div>
 
+	<TextInput
+		class="margin"
+		labelText="Enter Doichain address and hit enter"
+		bind:value={doiAddress}
+		on:keydown={(event) => {
+					if (event.key === 'Enter') {
+							getAddressTxs();
+					}
+			}}
+	/>
 <DataTable
 	class="margin"
 	headers={[

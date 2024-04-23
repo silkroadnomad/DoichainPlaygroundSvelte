@@ -19,7 +19,7 @@
     let addressP2wpkh = '';
     let addressP2wpkhP2Sh = '';
 
-    // Consolidated address generation function
+    // address generation function
     function generateAddresses() {
         addressP2pkh = payments.p2pkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
         addressP2wpkh = payments.p2wpkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
