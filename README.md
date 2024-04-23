@@ -7,6 +7,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
 ## References:
 - Cryptography-Toolkit https://guggero.github.io/cryptography-toolkit/#!/
   - Hierarchical Deterministic Wallet (BIP32/38/39/44/49/84) https://guggero.github.io/cryptography-toolkit/#!/hd-wallet
+- Bitcoin-Improvement Proposals (bips) https://github.com/bitcoin/bips
 - BitcoinJS-Lib https://github.com/bitcoinjs/bitcoinjs-lib
 - Electrum Protocol https://electrumx.readthedocs.io/en/latest/protocol.html
 
