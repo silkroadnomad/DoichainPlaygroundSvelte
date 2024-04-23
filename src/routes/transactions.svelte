@@ -99,7 +99,7 @@
                 if (asmParts[0] !== 'OP_10' && asmParts[0] !== 'OP_NAME_DOI') {
                     _tx.address = vout.scriptPubKey.addresses[0]
                     console.log('address', _tx.address)
-                    // for (let i = 0; i < addressList.length; i++) { //TODO what is this?
+                    // for (let i = 0; i < addressList.length; i++) { //TODO when displaying a complete xpub with all addresses this becomes interesting
                     //     if (address == addressList[i]) {
                     //         utxo = true
                     //         break
@@ -119,18 +119,7 @@
                 _tx.value=vout.value
                 _tx.n=vout.n
 
-                let existingTxIndex = txs.findIndex(tx => tx.txid === _tx.txid && tx.address === _tx.address);
-                console.log("existingTxIndex",existingTxIndex)
-                if (existingTxIndex !== -1) {
-                    console.log("aaaa")
-                    // txs = txs.splice(existingTxIndex,1)
-                //     // If found, update the existing transaction's value by subtracting the current value from it
-                  //  txs[existingTxIndex].value -= _tx.value;
-                 } //else {
-                //     // If not found, add the new transaction to the txs array
-                //     txs = [...txs, _tx];
-                // }
-                if(_tx.address===doiAddress)
+                if(_tx.address===doiAddress) //add tx if its an utxo of our address
                     txs = [...txs, _tx];
             }
         }
