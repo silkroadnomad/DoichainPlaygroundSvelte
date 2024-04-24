@@ -24,6 +24,7 @@
 
     let wallets = [];
     let mnemonic = '';
+    let selectedMnemonic;
     let password = 'mnemonic';
     let root = '';
     let xpriv = '';
@@ -54,7 +55,10 @@
 
     $: {
         if (mnemonic && password) {
-            try { createKeys() } catch(e){ console.error(e) }
+            try { createKeys()
+               // mnemonic = decryptMnemonic(mnemonic)
+            } catch(e){ console.error(e) }
+
         }
     }
 
@@ -73,7 +77,9 @@
             const db = await openDB(DB_NAME, "wallets")
             wallets = await readData(db) || []
             const encryptedMnemonic = AES.encrypt(mnemonic, password).toString();
-            await addData(db, { id: (wallets.length+1), mnemonic:encryptedMnemonic, date: new Date()});
+            const data = { id: (wallets.length+1), mnemonic:encryptedMnemonic, date: new Date()}
+            wallets.push(data)
+            await addData(db, data);
             toastNotification = "Mnemonic has been successfully stored."
             timeout = 3000;
         } catch (error) {
@@ -96,9 +102,9 @@
 
     async function deleteMnemonic() {
         const db = await openDB(DB_NAME, "wallets");
-        const selectedWallet = wallets.find(w => w.mnemonic === mnemonic);
+        const selectedWallet = wallets.find(w => w.id === selectedMnemonic);
         if (selectedWallet) {
-            await deleteData(db, selectedWallet.id); // Assuming deleteData is a function you need to implement
+            await deleteData(db, selectedWallet.id);
             wallets = wallets.filter(w => w.id !== selectedWallet.id);
             mnemonic = ''; // Clear the current mnemonic
             toastNotification = "Mnemonic has been successfully deleted.";
@@ -127,7 +133,7 @@
     <Row>
         <Column><h2>1. Generate mnemonic for a new wallet</h2></Column>
         <Column>
-            <Select labelText="Select Wallet" on:change={(e) => mnemonic = decryptMnemonic(wallets.find(w => w.id.toString() === e.target.value).mnemonic)}>
+            <Select labelText="Select Wallet" bind:selected={selectedMnemonic} on:change={(e) => mnemonic = decryptMnemonic(wallets.find(w => w.id.toString() === e.target.value).mnemonic)}>
                 <SelectItem disabled selected value="" text="Choose a wallet" />
                 {#each wallets as wallet}
                     <SelectItem value={wallet.id} text={`${decryptMnemonic(wallet.mnemonic).substring(0,20)}  ${wallet.date.toLocaleString()}`} />-->
