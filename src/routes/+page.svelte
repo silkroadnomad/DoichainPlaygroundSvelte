@@ -16,7 +16,8 @@
     import * as ecc from 'tiny-secp256k1';
     import { network } from './store.js';
     import { DB_NAME, openDB, readData, addData, deleteData } from '$lib/indexedDBUtil.js';
-
+    import AES from 'crypto-js/aes';
+    import Utf8 from 'crypto-js/enc-utf8';
     import BIP32Factory from 'bip32';
     import { onMount } from 'svelte';
     const bip32 = BIP32Factory(ecc);
@@ -71,7 +72,8 @@
         try {
             const db = await openDB(DB_NAME, "wallets")
             wallets = await readData(db) || []
-            await addData(db, { id: (wallets.length+1), mnemonic, date: new Date()});
+            const encryptedMnemonic = AES.encrypt(mnemonic, password).toString();
+            await addData(db, { id: (wallets.length+1), mnemonic:encryptedMnemonic, date: new Date()});
             toastNotification = "Mnemonic has been successfully stored."
             timeout = 3000;
         } catch (error) {
@@ -106,6 +108,14 @@
             timeout = 3000;
         }
     }
+
+    function decryptMnemonic(encryptedMnemonic) {
+        console.log("encryptedMnemonic",encryptedMnemonic)
+        const bytes = AES.decrypt(encryptedMnemonic || '', password);
+        const originalText = bytes.toString(Utf8);
+        console.log("originalText",originalText)
+        return originalText;
+    }
     
     onMount(loadMnemonic)
 </script>
@@ -117,10 +127,10 @@
     <Row>
         <Column><h2>1. Generate mnemonic for a new wallet</h2></Column>
         <Column>
-            <Select labelText="Select Wallet" on:change={(e) => mnemonic = wallets.find(w => w.id.toString() === e.target.value).mnemonic}>
+            <Select labelText="Select Wallet" on:change={(e) => mnemonic = decryptMnemonic(wallets.find(w => w.id.toString() === e.target.value).mnemonic)}>
                 <SelectItem disabled selected value="" text="Choose a wallet" />
                 {#each wallets as wallet}
-                    <SelectItem value={wallet.id} text={`${wallet.mnemonic.substring(0,20)}  ${wallet.date.toLocaleString()}`} />-->
+                    <SelectItem value={wallet.id} text={`${decryptMnemonic(wallet.mnemonic).substring(0,20)}  ${wallet.date.toLocaleString()}`} />-->
                 {/each}
             </Select>
             <TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} />
