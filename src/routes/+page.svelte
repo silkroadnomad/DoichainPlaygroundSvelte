@@ -15,7 +15,7 @@
     import { payments } from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
     import { network } from './store.js';
-    import { DB_NAME, openDB, readData, addData } from '$lib/indexedDBUtil.js';
+    import { DB_NAME, openDB, readData, addData, deleteData } from '$lib/indexedDBUtil.js';
 
     import BIP32Factory from 'bip32';
     import { onMount } from 'svelte';
@@ -92,6 +92,21 @@
         }
     }
 
+    async function deleteMnemonic() {
+        const db = await openDB(DB_NAME, "wallets");
+        const selectedWallet = wallets.find(w => w.mnemonic === mnemonic);
+        if (selectedWallet) {
+            await deleteData(db, selectedWallet.id); // Assuming deleteData is a function you need to implement
+            wallets = wallets.filter(w => w.id !== selectedWallet.id);
+            mnemonic = ''; // Clear the current mnemonic
+            toastNotification = "Mnemonic has been successfully deleted.";
+            timeout = 3000;
+        } else {
+            toastNotification = "Mnemonic not found.";
+            timeout = 3000;
+        }
+    }
+    
     onMount(loadMnemonic)
 </script>
 
@@ -102,17 +117,18 @@
     <Row>
         <Column><h2>1. Generate mnemonic for a new wallet</h2></Column>
         <Column>
-            <TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} />
-            <Button on:click={async () => {
-                mnemonic = generateMnemonic()
-            }}>Generate Mnemonic</Button>
-            <Button on:click={storeMnemonic}>Store Mnemonic</Button>
             <Select labelText="Select Wallet" on:change={(e) => mnemonic = wallets.find(w => w.id.toString() === e.target.value).mnemonic}>
                 <SelectItem disabled selected value="" text="Choose a wallet" />
                 {#each wallets as wallet}
                     <SelectItem value={wallet.id} text={`${wallet.mnemonic.substring(0,20)}  ${wallet.date.toLocaleString()}`} />-->
                 {/each}
             </Select>
+            <TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} />
+            <Button on:click={async () => {
+                mnemonic = generateMnemonic()
+            }}>Generate Mnemonic</Button>
+            <Button on:click={storeMnemonic}>Store Mnemonic</Button>
+            <Button on:click={deleteMnemonic} class="delete-button">Delete Mnemonic</Button>
         </Column>
     </Row>
     <Row>

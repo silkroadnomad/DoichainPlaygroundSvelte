@@ -37,6 +37,13 @@ export async function readData(db,key) {
 	});
 }
 
+export async function deleteData(db, id) {
+	const tx = db.transaction('wallets', 'readwrite');
+	const store = tx.objectStore('wallets');
+	await store.delete(id);
+	await tx.complete;
+}
+
 // Write data to the store
 export async function addData(db, data) {
 	return new Promise((resolve, reject) => {
