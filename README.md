@@ -44,7 +44,9 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
 - [ ] create a simple coin (DOI) transaction 
   - [x] choose utxos from datatable (wtf!)
   - [x] add an amount, address texfield
-  - [ ] sign transaction by entering optional private key
+  - [x] storing, deleting mnemonics into IndexDB - display in dropdown
+  - [x] encryption and decryption of mnemonic via password 
+  - [?] sign transaction by entering optional private key
   - [ ] sign in Electrum (psbt)
   - [ ] sign by hardware wallet
 - [ ] create name_doi, name_first, name_update transaction and store
