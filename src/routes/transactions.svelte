@@ -10,9 +10,19 @@
         ToolbarContent,
         ToolbarSearch
     } from 'carbon-components-svelte';
-    import { electrumServerVersion, electrumServerBanner, electrumBlockchainBlockHeaders, electrumClient, electrumBlockchainBlockHeadersSubscribe,
-        electrumBlockchainRelayfee, network, history } from './store.js';
+
+    import {
+        electrumServerVersion,
+        electrumServerBanner,
+        electrumBlockchainBlockHeaders,
+        electrumClient,
+        electrumBlockchainBlockHeadersSubscribe,
+        electrumBlockchainRelayfee,
+        network,
+        history } from './store.js';
+
     import { afterUpdate, onDestroy, onMount } from 'svelte';
+    import { sign} from '$lib/signTransactionModal.js'
     import { ElectrumxClient } from '$lib/electrumx-client.js';
     import { getAddressTxs } from '$lib/getAddressTxs.js';
     import { getBalance } from '$lib/getBalance.js';
@@ -60,6 +70,7 @@
         getBalance(doiAddress,$electrumClient,$network).then( _b => balance = _b)
         getAddressTxs(doiAddress, $history, $electrumClient, $network).then(_t => txs = _t)
     }));
+
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
 
 </script>
@@ -154,11 +165,11 @@
           bind:value={doiAmount}
         />
 
-        <Button
-          disabled={selectedRowIds.length === 0}
-          on:click={() => {
-              selectedRowIds = [];
-          }}>Sign</Button>
+        <Button disabled={selectedRowIds.length === 0} on:click={() => {
+            // selectedRowIds = [];
+             sign({recipientAddress,doiAmount})
+
+        }}>Sign</Button>
         </ToolbarBatchActions>
         <ToolbarContent>
             <ToolbarSearch
