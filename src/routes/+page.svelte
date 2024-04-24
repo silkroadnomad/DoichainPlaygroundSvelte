@@ -52,11 +52,14 @@
         xpub = root.neutered().toBase58();
         generateAddresses();
     }
-
+    $: if (password) {
+        console.log("rerender dropdown?")
+     wallets = wallets
+    }
     $: {
         if (mnemonic && password) {
             try { createKeys()
-               // mnemonic = decryptMnemonic(mnemonic)
+              //re-render wallets dropdown to decrypt with new password
             } catch(e){ console.error(e) }
 
         }
@@ -116,10 +119,9 @@
     }
 
     function decryptMnemonic(encryptedMnemonic) {
-        console.log("encryptedMnemonic",encryptedMnemonic)
         const bytes = AES.decrypt(encryptedMnemonic || '', password);
-        const originalText = bytes.toString(Utf8);
-        console.log("originalText",originalText)
+        let originalText
+          try { originalText = bytes.toString(Utf8)}catch(ex){}
         return originalText;
     }
     
@@ -136,7 +138,7 @@
             <Select labelText="Select Wallet" bind:selected={selectedMnemonic} on:change={(e) => mnemonic = decryptMnemonic(wallets.find(w => w.id.toString() === e.target.value).mnemonic)}>
                 <SelectItem disabled selected value="" text="Choose a wallet" />
                 {#each wallets as wallet}
-                    <SelectItem value={wallet.id} text={`${decryptMnemonic(wallet.mnemonic).substring(0,20)}  ${wallet.date.toLocaleString()}`} />-->
+                    <SelectItem value={wallet.id} text={`${decryptMnemonic(wallet.mnemonic)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />-->
                 {/each}
             </Select>
             <TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} />
