@@ -158,7 +158,7 @@
           disabled={selectedRowIds.length === 0}
           on:click={() => {
               selectedRowIds = [];
-          }}>Send</Button>
+          }}>Sign</Button>
         </ToolbarBatchActions>
         <ToolbarContent>
             <ToolbarSearch
