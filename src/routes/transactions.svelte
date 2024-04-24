@@ -1,23 +1,12 @@
 <script>
     import { DataTable, Pagination, TextInput, Toolbar, ToolbarContent, ToolbarSearch } from 'carbon-components-svelte';
-    import moment from 'moment';
-    import { address, crypto } from 'bitcoinjs-lib';
-    import {
-        electrumServerVersion,
-        electrumServerBanner,
-        electrumBlockchainBlockHeaders,
-        electrumClient,
-        electrumBlockchainBlockHeadersSubscribe,
-        electrumBlockchainRelayfee,
-        network,
-        history
-    } from './store.js';
+    import { electrumServerVersion, electrumServerBanner, electrumBlockchainBlockHeaders, electrumClient, electrumBlockchainBlockHeadersSubscribe,
+        electrumBlockchainRelayfee, network, history } from './store.js';
     import { onDestroy, onMount } from 'svelte';
     import { ElectrumxClient } from '$lib/electrumx-client.js';
-    import { readData,writeData } from '$lib/indexedDBUtil.js';
-    import { conv } from 'binstring'
-    import Buffer from 'vite-plugin-node-polyfills/shims/buffer/index.js';
-
+    import { getAddressTxs } from '$lib/getAddressTxs.js';
+    import { getBalance } from '$lib/getBalance.js';
+    
     let txs = [];
     let doiAddress = "dc1qg3ra4h6xdp870u5xu7neq3htzgyd7qx0plt8dj";
     let balance = { confirmed:0 ,unconfirmed:0 }
@@ -33,118 +22,17 @@
         $electrumBlockchainBlockHeaders = await $electrumClient.request('blockchain.block.headers', [10000, 10]);
         $electrumBlockchainBlockHeadersSubscribe = await $electrumClient.request('blockchain.headers.subscribe');
         $electrumBlockchainRelayfee = await $electrumClient.request('blockchain.relayfee');
-        await getAddressTxs(doiAddress,$history,$electrumClient,$network);
     };
 
-    const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient, _network) => {
-
-        let script = address.toOutputScript(_doiAddress, _network);
-        let hash = crypto.sha256(script);
-        let reversedHash = Buffer.from(hash.reverse()).toString("hex");
-
-        balance = await _electrumClient.request('blockchain.scripthash.get_balance', [reversedHash.toString("hex")]);
-
-        let _history = await readData(reversedHash + "_history");
-        if (_history) {
-            _historyStore = _history.data;
-        } else {
-            _historyStore = await _electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
-          await writeData({ id: reversedHash + "_history", data: _historyStore });
-        }
-
-        txs = [];
-        for (const tx of _historyStore) {
-            let cachedTx = await readData(tx.tx_hash);
-            let decryptedTx;
-            if (false) { //TODO enable with cachedTx
-                decryptedTx = JSON.parse(cachedTx);
-            } else {
-                decryptedTx = await _electrumClient.request('blockchain.transaction.get', [tx.tx_hash, 1]);
-                await writeData({id: tx.tx_hash,  data: JSON.stringify(decryptedTx)});
-            }
-
-            decryptedTx.formattedBlocktime = moment.unix(decryptedTx.blocktime).format('YYYY-MM-DD HH:mm:ss');
-            decryptedTx.value = 0; // Update this as per your logic
-
-            for (const [index, vin] of decryptedTx.vin.entries()) {
-                const prevTx = await _electrumClient.request('blockchain.transaction.get', [vin.txid, 1], true); // true for verbose to get detailed transaction
-                const spentOutput = prevTx.vout[vin.vout]; // vin.vout is the index of the output in prevTx that vin is spending
-                if (spentOutput.scriptPubKey.addresses.includes(doiAddress)) {
-                    const _tx = JSON.parse(JSON.stringify(decryptedTx));
-                    _tx.id = decryptedTx.txid+'_in_'+index
-                    _tx.value = -spentOutput.value; // Negative because it's spent
-                    _tx.address = spentOutput.scriptPubKey.addresses[0]
-                    txs = [...txs, _tx];
-                }
-            }
-
-            for (const [index, vout] of decryptedTx.vout.entries()) {
-                const _tx = JSON.parse(JSON.stringify(decryptedTx));
-                _tx.id = decryptedTx.txid+'_out_'+index;
-                let address, nameId, nameValue
-
-                const asm = vout.scriptPubKey.asm
-                const asmParts = asm.split(" ")
-
-                if (asmParts[0] !== 'OP_10' && asmParts[0] !== 'OP_NAME_DOI') {
-                    _tx.address = vout.scriptPubKey.addresses[0]
-                    console.log('address', _tx.address)
-                    // for (let i = 0; i < addressList.length; i++) { //TODO when displaying a complete xpub with all addresses this becomes interesting
-                    //     if (address == addressList[i]) {
-                    //         utxo = true
-                    //         break
-                    //     }
-                    // }
-                } else {
-                    const chunks = vout.scriptPubKey.asm.split(" ")
-                    nameId = vout.scriptPubKey.nameOp.name
-                    nameValue = vout.scriptPubKey.nameOp.value
-                    address = conv(chunks[7], { in: 'hex', out: 'binary' })
-
-                    console.log('name_op nameId', nameId)
-                    console.log('name_op nameValue', nameValue)
-                    console.log('name_op address', address)
-                }
-
-                _tx.value=vout.value
-                _tx.n=vout.n
-
-                if(_tx.address===doiAddress) //add tx if its an utxo of our address
-                    txs = [...txs, _tx];
-            }
-        }
-
-        // Group transactions by txid and accumulate values for transactions with the same txid
-        const groupedTxs = txs.reduce((acc, tx) => {
-            // Use txid as the key for grouping
-            const key = tx.txid;
-            if (!acc[key]) {
-                // If this txid hasn't been seen before, add it directly
-                acc[key] = { ...tx };
-            } else {
-                // If this txid has been seen, accumulate the value
-                acc[key].value += tx.value;
-            }
-            return acc;
-        }, {});
-
-        txs = Object.values(groupedTxs);
-        txs.sort((a, b) => b.blocktime - a.blocktime);
-    };
-
-    onMount(()=>{
-        connectElectrum()
-        getAddressTxs(doiAddress, $history, $electrumClient, $network);
-    });
-    onDestroy(() => $electrumClient ? $electrumClient.close() : null);
+    onMount( () => connectElectrum().then(() => {
+        getBalance(doiAddress,$electrumClient,$network).then( _b => balance = _b)
+        getAddressTxs(doiAddress, $history, $electrumClient, $network).then(_t => txs = _t)
+    }));
+    onDestroy( () => $electrumClient ? $electrumClient.close() : null);
 </script>
 
 <h2>Transactions</h2>
-<div class="margin">
-<!--    Electrum Server Version {$electrumServerVersion || 'not connected'}-->
-<!--    <br/>-->
-    {$electrumServerBanner || 'not connected'}
-</div>
+<div class="margin">{$electrumServerBanner || 'not connected'}</div>
 <div class="margin">
     <table>
         <tr>
