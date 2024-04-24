@@ -87,8 +87,11 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
             _tx.value=vout.value
             _tx.n=vout.n
 
-            if(_tx.address===_doiAddress) //add tx if its an utxo of our address
+            if(_tx.address===_doiAddress){
+                _tx.utxo=true
                 txs.push(_tx);
+            }
+
         }
     }
 

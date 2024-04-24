@@ -40,8 +40,13 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
   - [ ] display nameId, nameValue, address
 - [x] display wallet balance 
   - [x] of a single address
-  - of a xpub and it's derivations bip32, bip44, bip49,.. 
+  - [ ] of a xpub and it's derivations bip32, bip44, bip49,.. 
 - [ ] create a simple coin (DOI) transaction 
+  - [x] choose utxos from datatable (wtf!)
+  - [x] add an amount, address texfield
+  - [ ] sign transaction by entering optional private key
+  - [ ] sign in electrum (pbst)
+  - [ ] sign by hardware wallet
 - [ ] create name_doi, name_first, name_update transaction and store
   - a proof-of-existence
   - a Doichain-NFT

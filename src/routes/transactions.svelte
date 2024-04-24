@@ -1,18 +1,34 @@
 <script>
-    import { DataTable, Pagination, TextInput, Toolbar, ToolbarContent, ToolbarSearch } from 'carbon-components-svelte';
+    import {
+        Button,
+        Column,
+        DataTable, Grid,
+        Pagination,
+        Row,
+        TextInput,
+        Toolbar, ToolbarBatchActions,
+        ToolbarContent,
+        ToolbarSearch
+    } from 'carbon-components-svelte';
     import { electrumServerVersion, electrumServerBanner, electrumBlockchainBlockHeaders, electrumClient, electrumBlockchainBlockHeadersSubscribe,
         electrumBlockchainRelayfee, network, history } from './store.js';
-    import { onDestroy, onMount } from 'svelte';
+    import { afterUpdate, onDestroy, onMount } from 'svelte';
     import { ElectrumxClient } from '$lib/electrumx-client.js';
     import { getAddressTxs } from '$lib/getAddressTxs.js';
     import { getBalance } from '$lib/getBalance.js';
     
     let txs = [];
     let doiAddress = "dc1qg3ra4h6xdp870u5xu7neq3htzgyd7qx0plt8dj";
+    let recipientAddress = ''
+    let doiAmount = '0,00000000'
     let balance = { confirmed:0 ,unconfirmed:0 }
     let pageSize = 10;
-    let page = 1;
+    let page = 1
+
     let filteredRowIds = [];
+    let selectedRowIds = [];
+    let batchSelection = true
+    let active = true
 
     const connectElectrum = async () => {
         $electrumClient = new ElectrumxClient('big-parrot-60.doi.works', 50004, 'wss');
@@ -24,41 +40,75 @@
         $electrumBlockchainRelayfee = await $electrumClient.request('blockchain.relayfee');
     };
 
+    afterUpdate(() => {
+        txs.forEach(tx => {
+            if (!tx.utxo) {
+
+                const trElement = document.querySelector(`tr[data-row="${tx.id}"] > td:first-child > div`); //{> td:first-child
+                if(trElement){
+                    console.log("now disabling checkbox")
+                    trElement.style.display = "none"
+                }
+            } else {
+                const trElement = document.querySelector(`tr[data-row="${tx.id}"] > td:first-child > div`); //{> td:first-child
+                if(trElement)trElement.style.display = "contents"
+            }
+        });
+    });
+
     onMount( () => connectElectrum().then(() => {
         getBalance(doiAddress,$electrumClient,$network).then( _b => balance = _b)
         getAddressTxs(doiAddress, $history, $electrumClient, $network).then(_t => txs = _t)
     }));
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
+
 </script>
 
 <h2>Transactions</h2>
-<div class="margin">{$electrumServerBanner || 'not connected'}</div>
-<div class="margin">
-    <table>
-        <tr>
-            <td>Tip:</td>
-            <td>{$electrumBlockchainBlockHeadersSubscribe?.height}</td>
-        </tr>
-        <tr>
-            <td>Balance (confirmed): </td>
-            <td>{balance?.confirmed/100000000} DOI </td>
-        </tr>
-        <tr>
-            <td>Balance (unconfirmed): </td>
-            <td>{balance?.unconfirmed/100000000} DOI </td>
-        </tr>
-    </table>
-</div>
-<div class="margin">
-    <TextInput
-        class="margin"
-        labelText="Enter Doichain address and hit enter"
-        bind:value={doiAddress}
-        on:keydown={(event) => { if (event.key === 'Enter') getAddressTxs(); }}
-    />
-</div>
+<Grid>
+    <Row>
+        <Column>{$electrumServerBanner || 'not connected'}</Column>
+    </Row>
+    <Row>
+        <Column>Tip:</Column>
+        <Column>{$electrumBlockchainBlockHeadersSubscribe?.height}</Column>
+        <Column></Column>
+        <Column></Column>
+    </Row>
+    <Row>
+        <Column>Balance (confirmed):</Column>
+        <Column>{$electrumServerBanner || 'not connected'}</Column>
+        <Column></Column>
+        <Column></Column>
+    </Row>
+    <Row>
+        <Column>Balance (unconfirmed):</Column>
+        <Column>{balance?.confirmed/100000000} DOI </Column>
+        <Column></Column>
+        <Column></Column>
+    </Row>
+    <Row>
+        <Column></Column>
+        <Column>{balance?.unconfirmed/100000000} DOI </Column>
+        <Column></Column>
+        <Column></Column>
+    </Row>
+</Grid>
+<Grid>
+    <Row>
+        <Column>
+            <TextInput
+              class="margin"
+              labelText="Enter Doichain address and hit enter to display transactions"
+              bind:value={doiAddress}
+              on:keydown={(event) => { if (event.key === 'Enter') getAddressTxs(); }}
+        /></Column>
+    </Row>
+</Grid>
 <DataTable
-    class="margin"
+    class="datatable"
+    bind:batchSelection
+    bind:selectedRowIds
     shouldFilterRows
     {pageSize}
     {page}
@@ -70,7 +120,9 @@
         { key: "confirmations", value: "Confirmations" },
         { key: "value", value: "Amount" }
     ]}
-    rows={txs}>
+    rows={txs}
+    rowClassName={({row}) => row.utxo?'utxo':''}
+    >
     <svelte:fragment slot="cell" let:row let:cell>
         {#if cell.key === "value"}
             <div style="text-align: right;">{cell.value.toFixed(8)}</div>
@@ -81,6 +133,33 @@
         {/if}
     </svelte:fragment>
     <Toolbar>
+        <ToolbarBatchActions
+          active={selectedRowIds.length>0}
+          on:cancel={(e) => {
+            e.preventDefault();
+            selectedRowIds=[]
+            active = false;
+        }}
+        >
+
+        <TextInput
+          class="margin"
+          labelText="Enter recipients Doichain address "
+          bind:value={recipientAddress}
+        />
+
+        <TextInput
+          class="margin"
+          labelText="Enter amount in DOI to send "
+          bind:value={doiAmount}
+        />
+
+        <Button
+          disabled={selectedRowIds.length === 0}
+          on:click={() => {
+              selectedRowIds = [];
+          }}>Send</Button>
+        </ToolbarBatchActions>
         <ToolbarContent>
             <ToolbarSearch
                 persistent
@@ -97,7 +176,10 @@
     pageSizeInputDisabled
 />
 <style>
+    :global(.datatable) {
+        margin-top: 3rem;
+    }
    :global(.margin, h1, h2, h3, h4) {
-             margin: 20px;
+        margin: 20px;
     }
 </style>
