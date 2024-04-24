@@ -1,5 +1,5 @@
 import { address, crypto } from 'bitcoinjs-lib';
-import { readData, writeData } from '$lib/indexedDBUtil.js';
+import { DB_NAME, openDB, readData, addData } from '$lib/indexedDBUtil.js';
 import moment from 'moment';
 import Buffer from 'vite-plugin-node-polyfills/shims/buffer/index.js';
 
@@ -12,33 +12,31 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
     let _history;
 
     if (navigator.onLine) {
+       // const db = await openDB(DB_NAME,"history")
         try {
             _historyStore = await _electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
-            await writeData({ id: reversedHash + "_history", data: _historyStore });
+           // await addData(db,{ id: reversedHash + "_history", data: _historyStore });
         } catch (error) {
             console.error("Error fetching online, trying cache...", error);
-            _history = await readData(reversedHash + "_history");
+           // _history = await readData(db,reversedHash + "_history");
             _historyStore = _history ? _history.data : null;
         }
     } else {
-        _history = await readData(reversedHash + "_history");
+        //_history = await readData(db,reversedHash + "_history");
         _historyStore = _history ? _history.data : null;
-    }
-
-    if (!_historyStore) {
-        console.error("No history available offline.");
-        return []; // Handle case where no data is available
     }
 
     let txs = [];
     for (const tx of _historyStore) {
-        let cachedTx = await readData(tx.tx_hash);
+
+        // const db = await openDB(DB_NAME,"transactions")
+        // let cachedTx = await readData(db,tx.tx_hash);
         let decryptedTx;
-        if (cachedTx) {
+        if (false) { //TODO cachedTx
             decryptedTx = JSON.parse(cachedTx.data);
         } else {
             decryptedTx = await _electrumClient.request('blockchain.transaction.get', [tx.tx_hash, 1]);
-            await writeData({id: tx.tx_hash,  data: JSON.stringify(decryptedTx)});
+           // await addData(db,{id: tx.tx_hash,  data: JSON.stringify(decryptedTx)});
         }
 
         decryptedTx.formattedBlocktime = moment.unix(decryptedTx.blocktime).format('YYYY-MM-DD HH:mm:ss');
@@ -91,7 +89,6 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
                 _tx.utxo=true
                 txs.push(_tx);
             }
-
         }
     }
 

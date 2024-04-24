@@ -1,17 +1,21 @@
-const dbName = "BlockchainDB";
-const storeName = "transactions";
+export const DB_NAME = "Doichain";
+let storeName = "transactions";
 
-// Open (or create) the database
-function openDB() {
+export function openDB(_dbName,_storeName) {
+	if(!_dbName) _dbName = DB_NAME
+	if(!_storeName) _storeName = storeName
+	storeName = _storeName
+
 	return new Promise((resolve, reject) => {
-		const request = indexedDB.open(dbName, 1);
+
+		const request = indexedDB.open(_dbName, 3);
 
 		request.onupgradeneeded = (event) => {
 			const db = event.target.result;
-			if (!db.objectStoreNames.contains(storeName)) {
-				db.createObjectStore(storeName, { keyPath: "id" });
+			if (!db.objectStoreNames.contains(_storeName)) {
+				db.createObjectStore(_storeName, {keyPath: "id"});
 			}
-		};
+		}
 
 		request.onerror = (event) => reject(event.target.error);
 		request.onsuccess = (event) => resolve(event.target.result);
@@ -19,12 +23,14 @@ function openDB() {
 }
 
 // Read data from the store
-export async function readData(key) {
-	const db = await openDB();
+export async function readData(db,key) {
+	console.log("storeName",storeName)
 	return new Promise((resolve, reject) => {
-		const transaction = db.transaction([storeName], "readonly");
+		const transaction = db.transaction(storeName, "readwrite");
 		const objectStore = transaction.objectStore(storeName);
-		const request = objectStore.get(key);
+		let request
+		if(key)	 request = objectStore.get(key)
+		else request = objectStore.getAll()
 
 		request.onerror = (event) => reject(event.target.error);
 		request.onsuccess = (event) => resolve(event.target.result);
@@ -32,12 +38,12 @@ export async function readData(key) {
 }
 
 // Write data to the store
-export async function writeData(data) {
-	const db = await openDB();
+export async function addData(db, data) {
 	return new Promise((resolve, reject) => {
-		const transaction = db.transaction([storeName], "readwrite");
+		console.log("storeName",storeName)
+		const transaction = db.transaction(storeName, "readwrite");
 		const objectStore = transaction.objectStore(storeName);
-		const request = objectStore.put(data);
+		const request = objectStore.add(data);
 
 		request.onerror = (event) => reject(event.target.error);
 		request.onsuccess = () => resolve();

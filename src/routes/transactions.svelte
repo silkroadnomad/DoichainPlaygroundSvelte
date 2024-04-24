@@ -28,7 +28,7 @@
     import { getBalance } from '$lib/getBalance.js';
     
     let txs = [];
-    let doiAddress = "dc1qg3ra4h6xdp870u5xu7neq3htzgyd7qx0plt8dj";
+    let doiAddress = "dc1qtu6ltqv53ldhhzyee3gnhdkq0erwtkyanygs5u";
     let recipientAddress = ''
     let doiAmount = '0,00000000'
     let balance = { confirmed:0 ,unconfirmed:0 }
@@ -53,7 +53,6 @@
     afterUpdate(() => {
         txs.forEach(tx => {
             if (!tx.utxo) {
-
                 const trElement = document.querySelector(`tr[data-row="${tx.id}"] > td:first-child > div`); //{> td:first-child
                 if(trElement){
                     console.log("now disabling checkbox")
@@ -112,7 +111,9 @@
               class="margin"
               labelText="Enter Doichain address and hit enter to display transactions"
               bind:value={doiAddress}
-              on:keydown={(event) => { if (event.key === 'Enter') getAddressTxs(); }}
+              on:keydown={(event) => {
+                  if (event.key === 'Enter')
+                  getAddressTxs(doiAddress,$history,$electrumClient,$network); }}
         /></Column>
     </Row>
 </Grid>
@@ -129,7 +130,7 @@
         { key: "txid", value: "TxId" },
         { key: "address", value: "Address" },
         { key: "confirmations", value: "Confirmations" },
-        { key: "value", value: "Amount" }
+        { key: "value", value: "Amount (DOI)" }
     ]}
     rows={txs}
     rowClassName={({row}) => row.utxo?'utxo':''}
@@ -138,9 +139,9 @@
         {#if cell.key === "value"}
             <div style="text-align: right;">{cell.value.toFixed(8)}</div>
         {:else if cell.key === "confirmations"}
-            <div style="text-align: right;">{cell.value}</div>
+            <div style="text-align: right;">{cell.value || '0'}</div>
         {:else}
-            {cell.value}
+            {cell.value || ''}
         {/if}
     </svelte:fragment>
     <Toolbar>

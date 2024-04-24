@@ -1,13 +1,27 @@
 <script>
     import "carbon-components-svelte/css/all.css";
-    import { Button, TextArea, Grid, Row, Column, TextInput } from 'carbon-components-svelte';
+    import { fade } from "svelte/transition";
+    import {
+        Button,
+        TextArea,
+        Grid,
+        Row,
+        Column,
+        TextInput,
+        ToastNotification,
+        SelectItem, Select
+    } from 'carbon-components-svelte';
     import { generateMnemonic, mnemonicToSeedSync } from 'bip39';
     import { payments } from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
     import { network } from './store.js';
+    import { DB_NAME, openDB, readData, addData } from '$lib/indexedDBUtil.js';
+
     import BIP32Factory from 'bip32';
+    import { onMount } from 'svelte';
     const bip32 = BIP32Factory(ecc);
 
+    let wallets = [];
     let mnemonic = '';
     let password = 'mnemonic';
     let root = '';
@@ -37,7 +51,6 @@
         generateAddresses();
     }
 
-    // Reactively watch for changes
     $: {
         if (mnemonic && password) {
             try { createKeys() } catch(e){ console.error(e) }
@@ -49,6 +62,37 @@
             try { generateAddresses() } catch(e){ console.error(e) }
         }
     }
+
+    let timeout
+    let toastNotification
+    $: showNotification = timeout !== undefined;
+
+    async function storeMnemonic() {
+        try {
+            const db = await openDB(DB_NAME, "wallets")
+            wallets = await readData(db) || []
+            await addData(db, { id: (wallets.length+1), mnemonic, date: new Date()});
+            toastNotification = "Mnemonic has been successfully stored."
+            timeout = 3000;
+        } catch (error) {
+            toastNotification = "Failed to add mnemonic to db"
+            timeout = 3000;
+        }
+    }
+
+    async function loadMnemonic() {
+        try {
+            const db = await openDB(DB_NAME, "wallets")
+            wallets = await readData(db) || []
+            toastNotification = "Mnemonics have been successfully loaded."
+            timeout = 3000;
+        } catch (error) {
+            toastNotification = "Failed to load mnemonics from db"
+            timeout = 3000;
+        }
+    }
+
+    onMount(loadMnemonic)
 </script>
 
 <h1>Welcome to the Doichain Playground</h1>
@@ -59,7 +103,16 @@
         <Column><h2>1. Generate mnemonic for a new wallet</h2></Column>
         <Column>
             <TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} />
-            <Button on:click={() => mnemonic = generateMnemonic()}>Generate Mnemonic</Button>
+            <Button on:click={async () => {
+                mnemonic = generateMnemonic()
+            }}>Generate Mnemonic</Button>
+            <Button on:click={storeMnemonic}>Store Mnemonic</Button>
+            <Select labelText="Select Wallet" on:change={(e) => mnemonic = wallets.find(w => w.id.toString() === e.target.value).mnemonic}>
+                <SelectItem disabled selected value="" text="Choose a wallet" />
+                {#each wallets as wallet}
+                    <SelectItem value={wallet.id} text={`${wallet.mnemonic.substring(0,20)}  ${wallet.date.toLocaleString()}`} />-->
+                {/each}
+            </Select>
         </Column>
     </Row>
     <Row>
@@ -91,6 +144,21 @@
         <Column><h4>{addressP2wpkhP2Sh || ''}</h4></Column>
     </Row>
 </Grid>
+
+{#if showNotification}
+    <div transition:fade>
+        <ToastNotification
+            {timeout}
+            kind="success"
+            title="Success"
+            subtitle={toastNotification}
+            caption={new Date().toLocaleString()}
+            on:close={() => {
+                timeout = undefined;
+            }}
+        />
+    </div>
+{/if}
 
 <style>
     h1, h2, h3, h4 {
