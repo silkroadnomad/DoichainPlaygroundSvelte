@@ -1,11 +1,20 @@
 import { EventEmitter } from 'events';
 
+/**
+ * Create a request string
+ * See {@link https://electrumx.readthedocs.io/en/latest/protocol.html}
+ *
+ * @param {string} method The API method to be called
+ * @param {string[]} params The params of the method as an array
+ * @param {number} id The id of the request, every should have its own id
+ * @returns {string} The request string to be send to Electrum node
+ */
 export const makeRequest = (method, params, id) => {
 	return JSON.stringify({
 		jsonrpc: '2.0',
 		method: method,
 		params: params,
-		id: id,
+		id: id
 	});
 };
 
@@ -29,7 +38,6 @@ export const createPromiseResultBatch = (resolve, reject, argz) => {
 	};
 };
 export class ElectrumxClient {
-
 	constructor(host, port, protocol, options) {
 		this.id = 0;
 		this.port = port;
@@ -54,27 +62,23 @@ export class ElectrumxClient {
 			this.ws = ws;
 
 			ws.onopen = () => {
-				console.log("connected websocket main component");
+				console.log('connected websocket main component');
 				resolve();
 			};
 
 			ws.onmessage = (messageEvent) => {
 				this.onMessage(messageEvent.data);
-			}
+			};
 
-			ws.onclose = e => {
+			ws.onclose = (e) => {
 				console.log('Socket is closed: ' + JSON.stringify(e));
 				this.status = 0;
 				this.onClose();
 			};
 
-			const errorHandler = e => reject(e);
-			ws.onerror = err => {
-				console.error(
-					"Socket encountered error: ",
-					err.message,
-					"Closing socket"
-				);
+			const errorHandler = (e) => reject(e);
+			ws.onerror = (err) => {
+				console.error('Socket encountered error: ', err.message, 'Closing socket');
 				this.status = 0;
 				ws.close();
 				errorHandler();
@@ -93,6 +97,14 @@ export class ElectrumxClient {
 		this.status = 0;
 	}
 
+	/**
+	 * Make a request to Electrumx API
+	 * See {@link https://electrumx.readthedocs.io/en/latest/protocol.html}
+	 *
+	 * @param {string} method The API method to be called
+	 * @param {string[]} params The params of the method as an array
+	 * @returns {Promise<string>} The promise resolve a string
+	 */
 	request(method, params) {
 		if (this.status === 0) {
 			return Promise.reject(new Error('ESOCKET'));
@@ -122,7 +134,11 @@ export class ElectrumxClient {
 				arguments_far_calls[id] = param;
 			}
 			const content = '[' + contents.join(',') + ']';
-			this.callback_message_queue[this.id] = createPromiseResultBatch(resolve, reject, arguments_far_calls);
+			this.callback_message_queue[this.id] = createPromiseResultBatch(
+				resolve,
+				reject,
+				arguments_far_calls
+			);
 			// callback will exist only for max id
 			this.ws.send(content + '\n', 'utf8');
 		});
@@ -169,10 +185,9 @@ export class ElectrumxClient {
 
 	onClose(e) {
 		this.status = 0;
-		Object.keys(this.callback_message_queue).forEach(key => {
+		Object.keys(this.callback_message_queue).forEach((key) => {
 			this.callback_message_queue[key](new Error('close connect'));
 			delete this.callback_message_queue[key];
 		});
 	}
-
 }
