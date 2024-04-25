@@ -52,24 +52,10 @@
         xpub = root.neutered().toBase58();
         generateAddresses();
     }
-    $: if (password) {
-        console.log("rerender dropdown?")
-     wallets = wallets
-    }
-    $: {
-        if (mnemonic && password) {
-            try { createKeys()
-              //re-render wallets dropdown to decrypt with new password
-            } catch(e){ console.error(e) }
 
-        }
-    }
-
-    $: {
-        if (derivationPath && root) {
-            try { generateAddresses() } catch(e){ console.error(e) }
-        }
-    }
+    $: if (password) wallets = wallets
+    $: if (mnemonic && password) { try { createKeys() } catch(e){ console.error(e) }}
+    $: if (derivationPath && root) {try { generateAddresses() } catch(e){ console.error(e) }}
 
     let timeout
     let toastNotification
