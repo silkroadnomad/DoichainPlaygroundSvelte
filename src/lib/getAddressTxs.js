@@ -12,14 +12,15 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
     let _history;
 
     if (navigator.onLine) {
-       // const db = await openDB(DB_NAME,"history")
+        console.log("opening db",DB_NAME)
+        const db = await openDB(DB_NAME,"history")
         try {
             _historyStore = await _electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
-           // await addData(db,{ id: reversedHash + "_history", data: _historyStore });
+             await addData(db,{ id: reversedHash + "_history", data: _historyStore });
         } catch (error) {
             console.error("Error fetching online, trying cache...", error);
            // _history = await readData(db,reversedHash + "_history");
-            _historyStore = _history ? _history.data : null;
+           // _historyStore = _history ? _history.data : null;
         }
     } else {
         //_history = await readData(db,reversedHash + "_history");

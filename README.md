@@ -42,9 +42,9 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
   - [x] of a single address
   - [ ] of a xpub and it's derivations bip32, bip44, bip49,.. 
 - [ ] create a simple coin (DOI) transaction 
-  - [x] choose utxos from datatable (wtf!)
+  - [x] choose utxos from datatable 
   - [x] add an amount, address texfield
-  - [x] storing, deleting mnemonics into IndexDB - display in dropdown
+  - [x] storing, deleting, displaying mnemonics via IndexDB
   - [x] encryption and decryption of mnemonic via password 
   - [?] sign transaction by entering optional private key
   - [ ] sign in Electrum (psbt)
@@ -58,7 +58,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
 
 ## Nice 2 have:
 - [ ] add xpub support for transaction list (full wallet balance and transactions) 
-- [ ] choose current ElectrumX from random list
+- [x] choose current ElectrumX from random list
 - [ ] deploy to IPFS
 - [ ] choose from different derivation path standards (bip32, bip44, bip49, ...)
 - [ ] test DoiWallet and ElectrumDoi seed phrases and keys

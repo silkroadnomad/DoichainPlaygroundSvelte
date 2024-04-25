@@ -40,8 +40,17 @@
     let batchSelection = true
     let active = true
 
+    const electrumServers = [
+        { host: 'big-parrot-60.doi.works', port: 50004, protocol: 'wss' },
+        { host: 'pink-deer-69.doi.works', port: 50004, protocol: 'wss' },
+        // { host: 'fast-rabbit-22.doi.works', port: 50004, protocol: 'wss' }
+    ];
     const connectElectrum = async () => {
-        $electrumClient = new ElectrumxClient('big-parrot-60.doi.works', 50004, 'wss');
+
+
+        const randomServer = electrumServers[Math.floor(Math.random() * electrumServers.length)];
+        $electrumClient = new ElectrumxClient(randomServer.host, randomServer.port, randomServer.protocol);
+
         await $electrumClient.connect("electrum-client-js", "1.4.2");
         $electrumServerVersion = await $electrumClient.request('server.version');
         $electrumServerBanner = await $electrumClient.request('server.banner');

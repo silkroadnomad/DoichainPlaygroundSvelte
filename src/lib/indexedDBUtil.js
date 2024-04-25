@@ -11,7 +11,8 @@ export function openDB(_dbName,_storeName) {
 		const request = indexedDB.open(_dbName, 3);
 
 		request.onupgradeneeded = (event) => {
-			const db = event.target.result;
+			// const db = event.target.result;
+			const db = request.result
 			if (!db.objectStoreNames.contains(_storeName)) {
 				db.createObjectStore(_storeName, {keyPath: "id"});
 			}
@@ -38,8 +39,8 @@ export async function readData(db,key) {
 }
 
 export async function deleteData(db, id) {
-	const tx = db.transaction('wallets', 'readwrite');
-	const store = tx.objectStore('wallets');
+	const tx = db.transaction(storeName, 'readwrite');
+	const store = tx.objectStore(storeName);
 	await store.delete(id);
 	await tx.complete;
 }
