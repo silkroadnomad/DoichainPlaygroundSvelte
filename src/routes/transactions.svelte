@@ -43,11 +43,12 @@
     const electrumServers = [
         { host: 'big-parrot-60.doi.works', port: 50004, protocol: 'wss' },
         { host: 'pink-deer-69.doi.works', port: 50004, protocol: 'wss' },
-        // { host: 'fast-rabbit-22.doi.works', port: 50004, protocol: 'wss' }
+        { host: 'itchy-jellyfish-89.doi.works', port: 50004, protocol: 'wss' }
     ];
+
     const connectElectrum = async () => {
 
-
+        console.log("connecting to electrum")
         const randomServer = electrumServers[Math.floor(Math.random() * electrumServers.length)];
         $electrumClient = new ElectrumxClient(randomServer.host, randomServer.port, randomServer.protocol);
 
@@ -57,7 +58,8 @@
         $electrumBlockchainBlockHeaders = await $electrumClient.request('blockchain.block.headers', [10000, 10]);
         $electrumBlockchainBlockHeadersSubscribe = await $electrumClient.request('blockchain.headers.subscribe');
         $electrumBlockchainRelayfee = await $electrumClient.request('blockchain.relayfee');
-    };
+
+    }
 
     afterUpdate(() => {
         txs.forEach(tx => {
@@ -74,10 +76,30 @@
         });
     });
 
-    onMount( () => connectElectrum().then(() => {
-        getBalance(doiAddress,$electrumClient,$network).then( _b => balance = _b)
-        getAddressTxs(doiAddress, $history, $electrumClient, $network).then(_t => txs = _t)
-    }));
+    // onMount( () => connectElectrum().then(() => {
+    //     getBalance(doiAddress,$electrumClient,$network).then( _b => balance = _b)
+    //     getAddressTxs(doiAddress, $history, $electrumClient, $network).then(_t => txs = _t)
+    // }));
+    onMount(() => {
+        connectElectrum()
+          .then(() => {
+              console.log("Connected to Electrum server successfully.");
+              return getBalance(doiAddress, $electrumClient, $network);
+          })
+          .then(_b => {
+              balance = _b;
+              console.log("Balance fetched successfully.");
+              return getAddressTxs(doiAddress, $history, $electrumClient, $network);
+          })
+          .then(_t => {
+              txs = _t;
+              console.log("Transactions fetched successfully.");
+          })
+          .catch(error => {
+              console.error("Error during Electrum operations:", error);
+              // Handle errors appropriately, possibly setting an error state or notifying the user
+          });
+    });
 
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
 
@@ -120,9 +142,9 @@
               class="margin"
               labelText="Enter Doichain address and hit enter to display transactions"
               bind:value={doiAddress}
-              on:keydown={(event) => {
+              on:keydown={async (event) => {
                   if (event.key === 'Enter')
-                  getAddressTxs(doiAddress,$history,$electrumClient,$network); }}
+                    txs = await getAddressTxs(doiAddress,$history,$electrumClient,$network); }}
         /></Column>
     </Row>
 </Grid>

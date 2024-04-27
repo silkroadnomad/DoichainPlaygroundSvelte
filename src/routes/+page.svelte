@@ -35,7 +35,7 @@
     let addressP2wpkh = '';
     let addressP2wpkhP2Sh = '';
 
-    // address generation function
+    //address generation function
     function generateAddresses() {
         addressP2pkh = payments.p2pkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
         addressP2wpkh = payments.p2wpkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
@@ -53,7 +53,7 @@
         generateAddresses();
     }
 
-    $: if (password) wallets = wallets
+    $: if (password) wallets = wallets //as password changes we need to rerender the wallets in order to decrypyt the contents
     $: if (mnemonic && password) { try { createKeys() } catch(e){ console.error(e) }}
     $: if (derivationPath && root) {try { generateAddresses() } catch(e){ console.error(e) }}
 

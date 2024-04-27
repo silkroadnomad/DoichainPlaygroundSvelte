@@ -57,6 +57,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
 - [ ] research and test DoiWallet and ElectrumDoi seed phrases and keys
 
 ## Nice 2 have:
+- [ ] indexDB cache for transaction history and its transactions 
 - [ ] add xpub support for transaction list (full wallet balance and transactions) 
 - [x] choose current ElectrumX from random list
 - [ ] deploy to IPFS
