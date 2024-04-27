@@ -31,7 +31,7 @@
 
     let doiAddress = "";
     let recipientAddress = ''
-    let doiAmount = '0,00000000'
+    let doiAmount = 0
     let balance = { confirmed:0 ,unconfirmed:0 }
     let pageSize = 10;
     let page = 1
@@ -135,7 +135,7 @@
               on:keydown={ async (event) => {
                   if (event.key === 'Enter') {
                     $txs=[]
-                    balance =await getBalance(doiAddress, $electrumClient, $network);
+                    balance = await getBalance(doiAddress, $electrumClient, $network);
                     await getAddressTxs(doiAddress,$history,$electrumClient,$network);
                   }
                 }
@@ -171,6 +171,7 @@
         {/if}
     </svelte:fragment>
     <Toolbar>
+
         <ToolbarBatchActions
           active={selectedRowIds.length>0}
           on:cancel={(e) => {
@@ -193,9 +194,7 @@
         />
 
         <Button disabled={selectedRowIds.length === 0} on:click={() => {
-            // selectedRowIds = [];
-             sign({recipientAddress,doiAmount})
-
+             sign({utxos: $txs.filter(tx => selectedRowIds.includes(tx.id)),recipientAddress,doiAmount})
         }}>Sign</Button>
         </ToolbarBatchActions>
         <ToolbarContent>

@@ -68,7 +68,13 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
   - [x] add an amount, address texfield
   - [x] storing, deleting, displaying mnemonics via IndexDB
   - [x] encryption and decryption of mnemonic via password 
-  - [?] sign transaction by entering optional private key
+  - [x] sign transaction by entering optional private key (wif)
+  - [x] sign non-witness transactions (legacy)
+  - [ ] sign witness transactions (segwit)
+  - [ ] change address
+    - [ ] send change back to same address
+    - [ ] generate change address from derivation path 
+  - [ ] calculate fee (and substract from utxos amount to be sent)
   - [ ] sign in Electrum (psbt)
   - [ ] sign by hardware wallet
 - [ ] create name_doi, name_first, name_update transaction and store

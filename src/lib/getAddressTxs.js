@@ -4,6 +4,7 @@ import moment from 'moment';
 import Buffer from 'vite-plugin-node-polyfills/shims/buffer/index.js';
 import { txs  } from '../routes/store.js';
 
+
 export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient, _network) => {
     console.log("now getting transactions of ",_doiAddress)
     let script = address.toOutputScript(_doiAddress, _network);

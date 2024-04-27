@@ -1,5 +1,5 @@
 import { address, crypto } from 'bitcoinjs-lib';
-import Buffer from 'vite-plugin-node-polyfills/shims/buffer/index.js';
+
 
 export const getBalance = async (_doiAddress, _electrumClient, _network) => {
     console.log("getting balance of",_doiAddress)
