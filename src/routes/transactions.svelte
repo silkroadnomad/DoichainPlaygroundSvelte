@@ -28,7 +28,7 @@
     import { getBalance } from '$lib/getBalance.js';
     
     let txs = [];
-    let doiAddress = "dc1qtu6ltqv53ldhhzyee3gnhdkq0erwtkyanygs5u";
+    let doiAddress = "";
     let recipientAddress = ''
     let doiAmount = '0,00000000'
     let balance = { confirmed:0 ,unconfirmed:0 }
@@ -40,22 +40,28 @@
     let batchSelection = true
     let active = true
 
+    let randomServer //TODO can we improve that?
+
     const electrumServers = [
         { network:'doichain-mainnet', host: 'big-parrot-60.doi.works', port: 50004, protocol: 'wss' },
         { network:'doichain-mainnet', host: 'pink-deer-69.doi.works', port: 50004, protocol: 'wss' },
         { network:'doichain-mainnet', host: 'itchy-jellyfish-89.doi.works', port: 50004, protocol: 'wss' },
-        { network:'doichain-regtest', host: 'localhost', port: 50004, protocol: 'wss' },
+        // { network:'doichain-regtest', host: 'localhost', port: 8000, protocol: 'ws' },
+        { network:'doichain-regtest', host: 'localhost', port: 8443, protocol: 'wss' },
     ];
 
     $: $network?connectElectrum($network):null
 
     const connectElectrum = async (_network) => {
         if(!_network) return
-        const randomServer = electrumServers.filter(n=>n.network===_network.name)[Math.floor(Math.random() * electrumServers.length)];
+        const networkNodes = electrumServers.filter(n=>n.network===_network.name)
+        randomServer = networkNodes[Math.floor(Math.random() * networkNodes.length)];
         $electrumClient = new ElectrumxClient(randomServer.host, randomServer.port, randomServer.protocol);
 
         await $electrumClient.connect("electrum-client-js", "1.4.2");
         $electrumServerVersion = await $electrumClient.request('server.version');
+        console.log("electrumServerVersion",$electrumServerVersion)
+        console.log("network",randomServer.protocol+"://"+randomServer.host+":"+randomServer.port)
         $electrumServerBanner = await $electrumClient.request('server.banner');
         $electrumBlockchainBlockHeaders = await $electrumClient.request('blockchain.block.headers', [10000, 10]);
         $electrumBlockchainBlockHeadersSubscribe = await $electrumClient.request('blockchain.headers.subscribe');
@@ -77,23 +83,6 @@
 
     onMount(() => {
         connectElectrum($network)
-          .then(() => {
-              console.log("Connected to Electrum server successfully.");
-              return getBalance(doiAddress, $electrumClient, $network);
-          })
-          .then(_b => {
-              balance = _b;
-              console.log("Balance fetched successfully.");
-              return getAddressTxs(doiAddress, $history, $electrumClient, $network);
-          })
-          .then(_t => {
-              txs = _t;
-              console.log("Transactions fetched successfully.");
-          })
-          .catch(error => {
-              console.error("Error during Electrum operations:", error);
-              // Handle errors appropriately, possibly setting an error state or notifying the user
-          });
     });
 
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
@@ -106,6 +95,12 @@
         <Column>{$electrumServerBanner || 'not connected'}</Column>
     </Row>
     <Row>
+        <Column>Connection URL:</Column>
+        <Column>{randomServer.protocol}://{randomServer.host}:{randomServer.port} </Column>
+        <Column></Column>
+        <Column></Column>
+    </Row>
+    <Row>
         <Column>Tip:</Column>
         <Column>{$electrumBlockchainBlockHeadersSubscribe?.height}</Column>
         <Column></Column>
@@ -113,19 +108,19 @@
     </Row>
     <Row>
         <Column>Balance (confirmed):</Column>
-        <Column>{$electrumServerBanner || 'not connected'}</Column>
-        <Column></Column>
-        <Column></Column>
-    </Row>
-    <Row>
-        <Column>Balance (unconfirmed):</Column>
         <Column>{balance?.confirmed/100000000} DOI </Column>
         <Column></Column>
         <Column></Column>
     </Row>
     <Row>
-        <Column></Column>
+        <Column>Balance (unconfirmed):</Column>
         <Column>{balance?.unconfirmed/100000000} DOI </Column>
+        <Column></Column>
+        <Column></Column>
+    </Row>
+    <Row>
+        <Column></Column>
+        <Column></Column>
         <Column></Column>
         <Column></Column>
     </Row>
@@ -136,10 +131,16 @@
             <TextInput
               class="margin"
               labelText="Enter Doichain address and hit enter to display transactions"
-              bind:value={doiAddress}
-              on:keydown={async (event) => {
-                  if (event.key === 'Enter')
-                    txs = await getAddressTxs(doiAddress,$history,$electrumClient,$network); }}
+              bind:value={ doiAddress }
+              on:keydown={ async (event) => {
+                  if (event.key === 'Enter') {
+                    txs=[]
+                    await getBalance(doiAddress, $electrumClient, $network);
+                    txs = await getAddressTxs(doiAddress,$history,$electrumClient,$network);
+                    console.log("txs",txs)
+                  }
+                }
+              }
         /></Column>
     </Row>
 </Grid>

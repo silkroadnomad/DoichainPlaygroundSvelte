@@ -46,11 +46,12 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
         for (const [index, vin] of decryptedTx.vin.entries()) {
             const prevTx = await _electrumClient.request('blockchain.transaction.get', [vin.txid, 1], true); // true for verbose to get detailed transaction
             const spentOutput = prevTx.vout[vin.vout]; // vin.vout is the index of the output in prevTx that vin is spending
-            if (spentOutput.scriptPubKey.addresses.includes(_doiAddress)) {
+            if (spentOutput.scriptPubKey.addresses===undefined //could be undefined for some reason? coinbase?
+              || spentOutput.scriptPubKey.addresses.includes(_doiAddress)) {
                 const _tx = JSON.parse(JSON.stringify(decryptedTx));
                 _tx.id = decryptedTx.txid+'_in_'+index
                 _tx.value = -spentOutput.value; // Negative because it's spent
-                _tx.address = spentOutput.scriptPubKey.addresses[0]
+                _tx.address = spentOutput.scriptPubKey?.addresses?spentOutput.scriptPubKey?.addresses[0]:_doiAddress //if coinbase tx no addresses in scriptpbukey
                 txs.push(_tx);
             }
         }
@@ -92,7 +93,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
             }
         }
     }
-
+    // console.log("_tx",txs)
     // Group transactions by txid and accumulate values for transactions with the same txid
     const groupedTxs = txs.reduce((acc, tx) => {
         // Use txid as the key for grouping
@@ -106,9 +107,8 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
         }
         return acc;
     }, {});
-
     txs = Object.values(groupedTxs);
     txs = txs.sort((a, b) => b.blocktime - a.blocktime);
-    console.log("txs",txs)
+    // console.log("txs",txs)
     return txs
 };

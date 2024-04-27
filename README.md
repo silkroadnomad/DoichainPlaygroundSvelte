@@ -34,7 +34,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
 - [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX
     - [x] generating Electrumx self signed server certificates on startup (for secure websocket in local development)
     - [x] adding a network dropdown (Doichain Mainnet / Doichain RegTest) to +layout.svelte
-    - [ ] connecting to RegTest Electrumx
+    - [x] connecting to RegTest Electrumx (Remark: doesn't work with Chrome - using self signed certificate! Use Firefox or add exception)
     - [ ] add nginx, letsencrypt and enable wss for Electrumx for production use
 - [x] generate mnemonic
 - [x] create xpriv and xpub from mnemonic 
@@ -48,7 +48,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
 - [x] connect to Electrumx (which connects to Doichaind) via local Docker or remote url
   - [x] electrumx (DOI) support secure websockets
   - [x] connection via wss
-  - [ ] connect to local Electrumx (Docker compose) for developers
+  - [x] connect to local Electrumx (Docker compose) for developers
 - [x] list transactions of a wallet in a datatable component
   - [x] cache transactions in IndexedDB 
   - [x] default sort transactions by blocktime descending
@@ -79,6 +79,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
 - [ ] research and test DoiWallet and ElectrumDoi seed phrases and keys
 
 ## Nice 2 have:
+- [ ] progress bar or similar when loading many transactions
 - [ ] indexDB cache for transaction history and its transactions 
 - [ ] add xpub support for transaction list (full wallet balance and transactions) 
 - [x] choose current ElectrumX from random list

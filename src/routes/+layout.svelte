@@ -14,7 +14,6 @@
 	import { hash } from './router.js'
 	import Home from './+page.svelte'
 	import Transactions from './transactions.svelte'
-	import { goto } from '$app/navigation';
 	import { expoIn } from 'svelte/easing';
 	import { DOICHAIN, DOICHAIN_TESTNET, DOICHAIN_REGTEST } from '$lib/doichain.js';
 
@@ -48,7 +47,7 @@
 				size="sm"
 				label="Select Network"	
 				items={networks}
-				selectedId={networks.find(n=>n.value=$network).id }
+				selectedId={networks.find(n => n.value===$network).id }
 				itemToString={(item) => item.text}
 				on:select={e=>$network = networks.find(n=>n.id===e.detail.selectedId).value}
 			/>
