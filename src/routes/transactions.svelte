@@ -90,7 +90,7 @@
 </script>
 
 <h2>Transactions</h2>
-<Grid>
+<Grid class="grid-spacing">
     <Row>
         <Column>{$electrumServerBanner || 'not connected'}</Column>
     </Row>
@@ -125,7 +125,7 @@
         <Column></Column>
     </Row>
 </Grid>
-<Grid>
+<Grid class="grid-spacing">
     <Row>
         <Column>
             <TextInput
@@ -219,5 +219,8 @@
     }
    :global(.margin, h1, h2, h3, h4) {
         margin: 20px;
+    }
+    :global(.grid-spacing) {
+        margin-bottom: 20px; /* Adjust the space as needed */
     }
 </style>
