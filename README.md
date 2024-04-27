@@ -4,6 +4,22 @@
 
 This is a reference and example on how to develop Doichain web apps with Svelte. 
 
+# Usage:
+1. Clone this repo
+2. (optional for local development) Start local Doichaind & Electrumx  ```docker-compose up -d```
+   - Connect to regtest container and 
+   - a) run ```doichain-cli help``` (see command help)
+   - b) run ```doichain-cli getblockchaininfo``` --> blocks 0
+   - c) run ```doichain-cli getnewaddress``` --> our new address
+   - d) run ```doichain-cli getbalance``` --> 0.00000000
+   - e) run ```doichain-cli generatetoaddress 1 mp57b8GoPaLyJ6SXTj7zo9u44mTim1Y4Pe``` --> new block hash !
+   - f) run ```doichain-cli getblock <block hash from last step>``` --> use tx (hash from output)
+   - h) run ```doichain-cli gettransaction <tx has from last step>``` and see 50 DOI (immature needs another 100 blocks to become mature)
+   - e) run ```doichain-cli generatetoaddress 100 mp57b8GoPaLyJ6SXTj7zo9u44mTim1Y4Pe``` --> make first block mature and get 50 DOI!
+   - i) run ```doichain-cli getbalance``` --> 50.00000000
+3. Run ```npm i```
+4. 
+
 ## References:
 - Cryptography-Toolkit https://guggero.github.io/cryptography-toolkit/#!/
   - Hierarchical Deterministic Wallet (BIP32/38/39/44/49/84) https://guggero.github.io/cryptography-toolkit/#!/hd-wallet
