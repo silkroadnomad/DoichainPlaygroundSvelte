@@ -19,15 +19,16 @@
         electrumBlockchainBlockHeadersSubscribe,
         electrumBlockchainRelayfee,
         network,
-        history } from './store.js';
+        history,
+        txs
+    } from './store.js';
 
     import { afterUpdate, onDestroy, onMount } from 'svelte';
     import { sign} from '$lib/signTransactionModal.js'
     import { ElectrumxClient } from '$lib/electrumx-client.js';
     import { getAddressTxs } from '$lib/getAddressTxs.js';
     import { getBalance } from '$lib/getBalance.js';
-    
-    let txs = [];
+
     let doiAddress = "";
     let recipientAddress = ''
     let doiAmount = '0,00000000'
@@ -63,14 +64,13 @@
         console.log("electrumServerVersion",$electrumServerVersion)
         console.log("network",randomServer.protocol+"://"+randomServer.host+":"+randomServer.port)
         $electrumServerBanner = await $electrumClient.request('server.banner');
-        $electrumBlockchainBlockHeaders = await $electrumClient.request('blockchain.block.headers', [10000, 10]);
+        // $electrumBlockchainBlockHeaders = await $electrumClient.request('blockchain.block.headers', [10000, 10]);
         $electrumBlockchainBlockHeadersSubscribe = await $electrumClient.request('blockchain.headers.subscribe');
         $electrumBlockchainRelayfee = await $electrumClient.request('blockchain.relayfee');
-
     }
 
     afterUpdate(() => {
-        txs.forEach(tx => {
+        $txs.forEach(tx => {
             if (!tx.utxo) {
                 const trElement = document.querySelector(`tr[data-row="${tx.id}"] > td:first-child > div`); //{> td:first-child
                 if(trElement) trElement.style.display = "none"
@@ -119,7 +119,7 @@
         <Column></Column>
     </Row>
     <Row>
-        <Column></Column>
+        <Column>Transactions count: {$txs.length}</Column>
         <Column></Column>
         <Column></Column>
         <Column></Column>
@@ -130,14 +130,13 @@
         <Column>
             <TextInput
               class="margin"
-              labelText="Enter Doichain address and hit enter to display transactions"
+              labelText="Enter Doichain address and hit enter to display txs"
               bind:value={ doiAddress }
               on:keydown={ async (event) => {
                   if (event.key === 'Enter') {
-                    txs=[]
-                    await getBalance(doiAddress, $electrumClient, $network);
-                    txs = await getAddressTxs(doiAddress,$history,$electrumClient,$network);
-                    console.log("txs",txs)
+                    $txs=[]
+                    balance =await getBalance(doiAddress, $electrumClient, $network);
+                    await getAddressTxs(doiAddress,$history,$electrumClient,$network);
                   }
                 }
               }
@@ -159,7 +158,7 @@
         { key: "confirmations", value: "Confirmations" },
         { key: "value", value: "Amount (DOI)" }
     ]}
-    rows={txs}
+    rows={$txs}
     rowClassName={({row}) => row.utxo?'utxo':''}
     >
     <svelte:fragment slot="cell" let:row let:cell>

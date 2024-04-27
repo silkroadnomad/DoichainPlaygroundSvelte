@@ -9,6 +9,6 @@ export const electrumBlockchainBlockHeadersSubscribe = writable()
 export const electrumBlockchainRelayfee = writable();
 export const electrumBlockchainBlockHeaders = writable();
 export const history = writable();
-export const utxos = writable();
+export const txs = writable([]);
 
 
