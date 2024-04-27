@@ -18,7 +18,10 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
    - e) run ```doichain-cli generatetoaddress 100 mp57b8GoPaLyJ6SXTj7zo9u44mTim1Y4Pe``` --> make first block mature and get 50 DOI!
    - i) run ```doichain-cli getbalance``` --> 50.00000000
 3. Run ```npm i```
-4. 
+4. Run ```npm run dev ``` to start Doichain Developer Playground
+5. Go to "Transactions" Menu --> query your Doichain address from step 2.c 
+6. Mark an unspent output (utxo) and send it to your own (or another) address
+7. Create a new block and see transaction
 
 ## References:
 - Cryptography-Toolkit https://guggero.github.io/cryptography-toolkit/#!/
@@ -29,7 +32,10 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
 
 ## Todos:
 - [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX
-  - [ ] add nginx, letsencrypt and enable wss for electrumx
+    - [x] generating Electrumx self signed server certificates on startup (secure websocket) for local development
+    - [ ] adding a network dropdown (Doichain Mainnet / Doichain RegTest) to +layout.svelte
+    - [ ] connecting to RegTest electrumx
+    - [ ] add nginx, letsencrypt and enable wss for Electrumx for production use
 - [x] generate mnemonic
 - [x] create xpriv and xpub from mnemonic 
 - [x] generate new (legacy) p2pkh addressP2pkh from a derivation path 
