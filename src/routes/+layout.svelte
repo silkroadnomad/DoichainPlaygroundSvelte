@@ -41,7 +41,7 @@
 <Theme bind:theme persist persistKey="__carbon-theme" />
 <Header company="Doichain" platformName="Developer Playground " bind:sideNavOpen href={ `#/` }>
 	<div class="right-aligned">
-		<div on:click={()=>goto('https://github.com/silkroadnomad/DoichainPlaygroundSvelte')}>
+		<div on:click={()=>document.location.href='https://github.com/silkroadnomad/DoichainPlaygroundSvelte'}>
 			<LogoGithub  /></div>
 		<div>
 			<Dropdown
