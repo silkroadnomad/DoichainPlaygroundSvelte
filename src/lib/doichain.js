@@ -1,5 +1,5 @@
 export const DOICHAIN = {
-    name: 'mainnet',
+    name: 'doichain-mainnet',
     messagePrefix: '\x19Doichain Signed Message:\n',
     bech32: 'dc',
     bip32: {
@@ -12,7 +12,7 @@ export const DOICHAIN = {
 };
 
 export const DOICHAIN_TESTNET = {
-    name: 'testnet',
+    name: 'doichain-testnet',
     messagePrefix: '\x19Doichain-Testnet Signed Message:\n',
     bech32: 'td',
     bip32: {
@@ -25,7 +25,7 @@ export const DOICHAIN_TESTNET = {
 };
 
 export const DOICHAIN_REGTEST = {
-    name: "regtest",
+    name: "doichain-regtest",
     messagePrefix: "\x19Doichain-Regtest Signed Message:\n",
     bech32: "ncrt",
     bip32: {

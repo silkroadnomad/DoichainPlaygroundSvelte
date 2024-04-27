@@ -32,9 +32,9 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
 
 ## Todos:
 - [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX
-    - [x] generating Electrumx self signed server certificates on startup (secure websocket) for local development
-    - [ ] adding a network dropdown (Doichain Mainnet / Doichain RegTest) to +layout.svelte
-    - [ ] connecting to RegTest electrumx
+    - [x] generating Electrumx self signed server certificates on startup (for secure websocket in local development)
+    - [x] adding a network dropdown (Doichain Mainnet / Doichain RegTest) to +layout.svelte
+    - [ ] connecting to RegTest Electrumx
     - [ ] add nginx, letsencrypt and enable wss for Electrumx for production use
 - [x] generate mnemonic
 - [x] create xpriv and xpub from mnemonic 

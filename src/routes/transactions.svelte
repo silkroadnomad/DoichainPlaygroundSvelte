@@ -41,15 +41,17 @@
     let active = true
 
     const electrumServers = [
-        { host: 'big-parrot-60.doi.works', port: 50004, protocol: 'wss' },
-        { host: 'pink-deer-69.doi.works', port: 50004, protocol: 'wss' },
-        { host: 'itchy-jellyfish-89.doi.works', port: 50004, protocol: 'wss' }
+        { network:'doichain-mainnet', host: 'big-parrot-60.doi.works', port: 50004, protocol: 'wss' },
+        { network:'doichain-mainnet', host: 'pink-deer-69.doi.works', port: 50004, protocol: 'wss' },
+        { network:'doichain-mainnet', host: 'itchy-jellyfish-89.doi.works', port: 50004, protocol: 'wss' },
+        { network:'doichain-regtest', host: 'localhost', port: 50004, protocol: 'wss' },
     ];
 
-    const connectElectrum = async () => {
+    $: $network?connectElectrum($network):null
 
-        console.log("connecting to electrum")
-        const randomServer = electrumServers[Math.floor(Math.random() * electrumServers.length)];
+    const connectElectrum = async (_network) => {
+        if(!_network) return
+        const randomServer = electrumServers.filter(n=>n.network===_network.name)[Math.floor(Math.random() * electrumServers.length)];
         $electrumClient = new ElectrumxClient(randomServer.host, randomServer.port, randomServer.protocol);
 
         await $electrumClient.connect("electrum-client-js", "1.4.2");
@@ -65,10 +67,7 @@
         txs.forEach(tx => {
             if (!tx.utxo) {
                 const trElement = document.querySelector(`tr[data-row="${tx.id}"] > td:first-child > div`); //{> td:first-child
-                if(trElement){
-                    console.log("now disabling checkbox")
-                    trElement.style.display = "none"
-                }
+                if(trElement) trElement.style.display = "none"
             } else {
                 const trElement = document.querySelector(`tr[data-row="${tx.id}"] > td:first-child > div`); //{> td:first-child
                 if(trElement)trElement.style.display = "contents"
@@ -76,12 +75,8 @@
         });
     });
 
-    // onMount( () => connectElectrum().then(() => {
-    //     getBalance(doiAddress,$electrumClient,$network).then( _b => balance = _b)
-    //     getAddressTxs(doiAddress, $history, $electrumClient, $network).then(_t => txs = _t)
-    // }));
     onMount(() => {
-        connectElectrum()
+        connectElectrum($network)
           .then(() => {
               console.log("Connected to Electrum server successfully.");
               return getBalance(doiAddress, $electrumClient, $network);

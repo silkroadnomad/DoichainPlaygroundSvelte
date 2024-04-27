@@ -32,10 +32,12 @@ services:
     hostname: electrumx-doi
     volumes:
       - ./docker/startServer.sh:/home/electrumx/startServer.sh
-    command: bash #bash -c " ./startServer.sh"
+    command: bash -c " ./startServer.sh"
     container_name: electrumx-doi
     ports:
-      - "8334:8334"
+      - "50001:50001"
+      - "50002:50002"
+      - "50004:50004"
     stdin_open: true
     tty: true
     privileged: true
