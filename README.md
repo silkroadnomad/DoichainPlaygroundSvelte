@@ -70,7 +70,7 @@ This is a reference and example on how to develop Doichain web apps with Svelte.
   - [x] encryption and decryption of mnemonic via password 
   - [x] sign transaction by entering optional private key (wif)
   - [x] sign non-witness transactions (legacy)
-  - [ ] sign witness transactions (segwit)
+  - [x] sign witness transactions (segwit)
   - [ ] change address
     - [ ] send change back to same address
     - [ ] generate change address from derivation path 

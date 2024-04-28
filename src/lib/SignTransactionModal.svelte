@@ -6,14 +6,13 @@
     } from 'carbon-components-svelte';
 
     import { createEventDispatcher } from "svelte";
-    import { network } from '../routes/store.js';
+    import { electrumBlockchainBlockHeadersSubscribe, electrumClient, network } from '../routes/store.js';
     import * as bitcoin from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
     import ECPairFactory from 'ecpair';
     const ECPair = ECPairFactory(ecc);
     /** dispatches the events when a button was clicked*/
     const dispatch = createEventDispatcher();
-
 
     /** the header of the modal @type {string} [heading='deContact Protocol Action'] */
     export let heading = 'Simple Coin Transaction ';
@@ -27,64 +26,39 @@
     const signMethods = ["Seed in browser wallet", "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
     let selectedSigningMethod = signMethods[1];
 
-    function signTransaction() {
+    async function signTransaction() {
 
         let keyPair
         if(wifPrivKey)
             keyPair = ECPair.fromWIF(wifPrivKey,$network);
 
         const psbt = new bitcoin.Psbt({ network: $network });
-        psbt.setVersion(2); // These are defaults. This line is not needed.
-        psbt.setLocktime(0); // These are defaults. This line is not needed.
-        console.log("utxos",utxos)
         utxos.forEach(utxo => {
-            //txb.addInput(utxo.txid, utxo.n); // Add each UTXO as an input
-            psbt.addInput({
-                // if hash is string, txid, if hash is Buffer, is reversed compared to txid
-                hash: utxo.txid,
-                // hash: '0000000000000000000000000000000000000000000000000000000000000000',
-                index: utxo.n,
-                // index: 0xffffffff,
-                sequence: 0xffffffff, // These are defaults. This line is not needed.
-                // coinbase: Buffer.from('02ca000101', 'hex'),
+            const scriptPubKeyHex = utxo.scriptPubKey; // Assuming this is provided in hex format
+            const isSegWit = scriptPubKeyHex?.startsWith('0014') || scriptPubKeyHex?.startsWith('0020');
 
-                // non-segwit inputs now require passing the whole previous tx as Buffer
-                nonWitnessUtxo: Buffer.from(utxo.hex,'hex'
-                  // value in satoshis (Int64LE) = 0x015f90 = 90000
-                  // '0x12A607200' +
-                  // // scriptPubkey length in hex (50 characters = 25 bytes)
-                  // '19' +
-                  // // scriptPubkey
-                  // '76a914171ea14e42f1893cf4a3b7775798cd472881d52788ac' +
-                  // // locktime
-                  // '00000000',
-                  // 'hex',
-                ),
-
-                // // If this input was segwit, instead of nonWitnessUtxo, you would add
-                // // a witnessUtxo as follows. The scriptPubkey and the value only are needed.
-                // witnessUtxo: {
-                //   script: Buffer.from('0000000000000000000000000000000000000000000000000000000000000000','hex'),
-                //   value: 5000000000,
-                // },
-                // witnessUtxo: {
-                //     script: Buffer.from('76a914000000000000000000000000000000000000000088ac', 'hex'), // A dummy P2PKH script, replace with actual if known.
-                //     value: 5000000000, // The value in satoshis rewarded by the coinbase transaction, adjust as necessary.
-                // },
-
-  // The witness stack for the coinbase transaction, if required.
-  // witnessScript: Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
-
-
-                // Not featured here:
-                //   redeemScript. A Buffer of the redeemScript for P2SH
-                //   witnessScript. A Buffer of the witnessScript for P2WSH
-            })
+            if (isSegWit) {
+                // This is a SegWit UTXO
+                psbt.addInput({
+                    hash: utxo.txid,
+                    index: utxo.n,
+                    witnessUtxo: {
+                        script: Buffer.from(scriptPubKeyHex, 'hex'),
+                        value: utxo.value,
+                    }
+                });
+            } else {     // This is a non-SegWit UTXO
+                psbt.addInput({
+                    hash: utxo.txid,
+                    index: utxo.n,
+                    nonWitnessUtxo: Buffer.from(utxo.hex, 'hex')
+                });
+            }
         });
         console.log("recipientAddress",recipientAddress)
         psbt.addOutput({
             address: recipientAddress,
-            value: 4999991900,
+            value: 4999911900,
         });
 
         utxos.forEach((utxo, index) => {
@@ -95,19 +69,9 @@
         psbt.finalizeAllInputs();
 
         const txHex = psbt.extractTransaction().toHex()
-        // txb.setVersion(1);
-        // utxos.forEach(utxo => {
-        //     txb.addInput(utxo.txid, utxo.n); // Add each UTXO as an input
-        // });
-        // txb.addOutput(recipientAddress, doiAmount); // The recipient and amount to send
 
-        // utxos.forEach((utxo, index) => {
-        //     txb.sign(index, keyPair); // Sign each input
-        // });
-        // const transaction = txb.build();
-        // const txHex = transaction.toHex();
-        //
-        console.log("Signed Transaction: ", txHex);
+        const txhash = await $electrumClient.request('blockchain.transaction.broadcast',[txHex]);
+        console.log("transaction sent",txhash)
         dispatch('result', true); // Dispatch the result with the transaction hex
     }
 </script>
