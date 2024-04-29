@@ -4,11 +4,11 @@
 
 This repository serves as a reference and example for developing Doichain-connected web applications using Svelte. Doichain, a fork of Namecoin (which is itself a Bitcoin fork) created in 2018, supports merge mining with the Bitcoin blockchain.
 
-Originally, Doichain aimed to mitigate email spam by recording email permissions (double opt-ins)  without middle men via a 2nd-layer protocol. Despite the project's cessation due to funding issues, the blockchain remains active.
+Originally, Doichain aimed to mitigate email spam by recording email permissions (double opt-ins) without middle men via a 2nd-layer peer-to-peer protocol. Despite the project's cessation due to funding issues, the blockchain remains active.
 
 We believe that a merge-mined blockchain, which utilizes the computational excess from Bitcoin mining to produce blocks, holds big value for storing transactions in a cost-effective and straightforward manner.
 
-Doichain simplifies the process of saving, displaying, finding and transfering name-value pair transactions. Everytime it is doing so, it creates a non-fungible coin (NFC - just like NFTs) For example, the shell command:
+Doichain simplifies the process of storing, transferring, finding, displaying and name-value pair transactions. Everytime it is doing so, it creates a non-fungible coin (NFC - just like NFTs) For example, the shell command:
 ```
 doichain-cli name_doi ${name} ${value} [optional ${holder-address}]
 ```
@@ -20,7 +20,7 @@ This project aims to facilitate web application development for developers.
 
 With the Doichain Playground you can:
 - create seed phrases and Doichain wallets with javascript in browser (and NodeJS)
-- make coin transactions
+- make and send coin and name (Doichain-NFT & PoE) transactions via Electrumx
 - create multisig addresses and multisig transactions
 - store a non-fungible-coin (NFC) (Doichain-NFT)
 - store other PoE (Proof-Of-Existence)

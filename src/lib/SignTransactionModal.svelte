@@ -19,12 +19,15 @@
     export let PrimaryButtonText = 'Sign transaction'
     export let CancelOperationButtonText = 'Cancel'
     export let recipientAddress = "mhdCXgZDmpbZRrVyyHLPwYFg59HGLHRUMa"
+    export let transaactionFee = 88100
     export let doiAmount = 1
     export let utxos
     export let wifPrivKey = "cW345pfTEn4wTRqv8qyu5U5SoQ37dqth83Wg93qkPmWT61WqreGC"
-
     const signMethods = ["Seed in browser wallet", "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
     let selectedSigningMethod = signMethods[1];
+    
+    $: transaactionFee = Number(transaactionFee).toFixed(8);
+    $: outputValue = doiAmount - transaactionFee;
 
     async function signTransaction() {
 
@@ -60,7 +63,7 @@
         console.log("recipientAddress",recipientAddress)
         psbt.addOutput({
             address: recipientAddress,
-            value: 4999911900,
+            value: doiAmount - transaactionFee,
         });
 
         utxos.forEach((utxo, index) => {
@@ -96,7 +99,12 @@ Opens a confirmation modal that should sign a transaction and send it.
                 <Column><h5>{doiAmount}</h5></Column>
             </Row>
             <Row>
-
+                <Column><h5>Transaction Fee (satoshis)</h5></Column>
+                <Column>
+                    <TextInput type="number" bind:value={transaactionFee} min="0" />
+                </Column>
+            </Row>
+            <Row>
                 <RadioButtonGroup
                   legendText="Sign with"
                   name="signature"

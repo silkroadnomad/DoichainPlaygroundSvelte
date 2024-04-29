@@ -49,6 +49,8 @@
         { network:'doichain-regtest', host: 'localhost', port: 50004, protocol: 'wss' },
     ];
 
+    $: doiAmount = Number(doiAmount).toFixed(8);
+    
     $: $network?connectElectrum($network):null
 
     const connectElectrum = async (_network) => {
@@ -169,7 +171,6 @@
         {/if}
     </svelte:fragment>
     <Toolbar>
-
         <ToolbarBatchActions
           active={selectedRowIds.length>0}
           on:cancel={(e) => {
@@ -184,13 +185,12 @@
           labelText="Enter recipients Doichain address "
           bind:value={recipientAddress}
         />
-
         <TextInput
           class="margin"
           labelText="Enter amount in DOI to send "
+          type="number"
           bind:value={doiAmount}
         />
-
         <Button disabled={selectedRowIds.length === 0} on:click={() => {
              sign({utxos: $txs.filter(tx => selectedRowIds.includes(tx.id)),recipientAddress,doiAmount})
         }}>Sign</Button>
