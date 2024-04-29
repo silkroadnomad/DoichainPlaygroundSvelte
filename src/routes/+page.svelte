@@ -63,16 +63,25 @@
 
     async function storeMnemonic() {
         try {
-            const db = await openDB(DB_NAME, "wallets")
-            wallets = await readData(db) || []
+            const db = await openDB(DB_NAME, "wallets");
+            if (!db) {
+                toastNotification = "Mnemonic or password is empty";
+                throw new Error("Failed to open database");
+            }
+            wallets = await readData(db) || [];
+            if (!mnemonic || !password) {
+                toastNotification = "Mnemonic or password is empty.";
+                throw new Error("Mnemonic or password is empty");
+            }
             const encryptedMnemonic = AES.encrypt(mnemonic, password).toString();
-            const data = { id: (wallets.length+1), mnemonic:encryptedMnemonic, date: new Date()}
-            wallets.push(data)
+            const data = { id: (wallets.length + 1), mnemonic: encryptedMnemonic, date: new Date() };
+            wallets.push(data);
             await addData(db, data);
-            toastNotification = "Mnemonic has been successfully stored."
+            toastNotification = "Mnemonic has been successfully stored.";
             timeout = 3000;
         } catch (error) {
-            toastNotification = "Failed to add mnemonic to db"
+            console.error("Error storing mnemonic:", error);
+            toastNotification = "Failed to add mnemonic to db: " + error.message;
             timeout = 3000;
         }
     }

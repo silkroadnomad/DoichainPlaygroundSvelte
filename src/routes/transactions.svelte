@@ -14,7 +14,6 @@
     import {
         electrumServerVersion,
         electrumServerBanner,
-        electrumBlockchainBlockHeaders,
         electrumClient,
         electrumBlockchainBlockHeadersSubscribe,
         electrumBlockchainRelayfee,

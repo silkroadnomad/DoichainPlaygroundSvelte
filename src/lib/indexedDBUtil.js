@@ -9,14 +9,12 @@ export function openDB(_dbName,_storeName) {
 	return new Promise((resolve, reject) => {
 
 		const request = indexedDB.open(_dbName, 3);
-		const db = request.result
-
-		if (!db.objectStoreNames.contains(_storeName)) {
-			db.createObjectStore(_storeName, {keyPath: "id"});
-		}
-
 		request.onupgradeneeded = (event) => {
-			// const db = event.target.result;
+			// Handle database schema creation or updates
+			const db = event.target.result;
+			if (!db.objectStoreNames.contains(_storeName)) {
+				db.createObjectStore(_storeName, { keyPath: 'id' });
+			}
 		}
 
 		request.onerror = (event) => reject(event.target.error);
