@@ -37,7 +37,7 @@ services:
     ports:
       - "50001:50001"
       - "50002:50002"
-      - "50004:50004"
+      - "8443:8443"
     stdin_open: true
     tty: true
     privileged: true

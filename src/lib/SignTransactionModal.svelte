@@ -18,16 +18,30 @@
     export let heading = 'Simple Coin Transaction ';
     export let PrimaryButtonText = 'Sign transaction'
     export let CancelOperationButtonText = 'Cancel'
-    export let recipientAddress = "mhdCXgZDmpbZRrVyyHLPwYFg59HGLHRUMa"
-    export let transaactionFee = 88100
-    export let doiAmount = 1
+    export let recipientAddress
+    export let changeAddress
+    export let transactionFee = 88100
+    export let doiAmount = 100000000 //in schwartz
+    export let changeAmount = 0
     export let utxos
-    export let wifPrivKey = "cW345pfTEn4wTRqv8qyu5U5SoQ37dqth83Wg93qkPmWT61WqreGC"
-    const signMethods = ["Seed in browser wallet", "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
+    export let wifPrivKey = "cPhrk9nTMceUTh7gLFWNhwkKbDGk73uqq2htMHYvknvV2YKuTqz6"
+
+    // const signMethods = ["Seed in browser wallet", "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
+    const signMethods = ["Wif (PrivKey)"] //, "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
+
     let selectedSigningMethod = signMethods[1];
     
-    $: transaactionFee = Number(transaactionFee).toFixed(8);
-    $: outputValue = doiAmount - transaactionFee;
+    $: transactionFee = Number(transactionFee)
+    $: utxoSum = utxos.reduce((sum, utxo) => sum + (utxo.value*100000000), 0); //get sum of all utxo values
+    $: outputValue = (doiAmount) - transactionFee;
+    $: changeAmount = utxoSum - outputValue
+
+    $: changeAddress = utxos.length > 0 ? utxos[utxos.length - 1].address : '';
+
+    console.log("transactionFee",transactionFee)
+    console.log("outputValue",outputValue)
+    console.log("changeAmount",outputValue)
+    console.log("utxoSum",utxoSum)
 
     async function signTransaction() {
 
@@ -63,7 +77,11 @@
         console.log("recipientAddress",recipientAddress)
         psbt.addOutput({
             address: recipientAddress,
-            value: doiAmount - transaactionFee,
+            value: outputValue,
+        });
+        psbt.addOutput({
+            address: changeAddress,
+            value: changeAmount,
         });
 
         utxos.forEach((utxo, index) => {
@@ -95,14 +113,34 @@ Opens a confirmation modal that should sign a transaction and send it.
                 <Column><h5>{recipientAddress}</h5></Column>
             </Row>
             <Row>
-                <Column><h5>doiAmount</h5></Column>
+                <Column><h5>changeAddress</h5></Column>
+                <Column><h5>{changeAddress}</h5></Column>
+            </Row>
+            <Row>
+                <Column><h5>doiAmount:</h5></Column>
                 <Column><h5>{doiAmount}</h5></Column>
+            </Row>
+            <Row>
+                <Column><h5>utxoSum:</h5></Column>
+                <Column><h5>{utxoSum}</h5></Column>
             </Row>
             <Row>
                 <Column><h5>Transaction Fee (satoshis)</h5></Column>
                 <Column>
-                    <TextInput type="number" bind:value={transaactionFee} min="0" />
+                    <TextInput type="number" bind:value={transactionFee} on:change={ () =>{
+                            console.log("changeAmount",outputValue)
+                            console.log("utxoSum",utxoSum)
+                            console.log("doiAmount",doiAmount);
+                            console.log("transactionFee",transactionFee);
+                            outputValue = (doiAmount*(100000000)) - transactionFee;
+                             console.log("outputValue", outputValue);
+                    }
+                    } min="0" />
                 </Column>
+            </Row>
+            <Row>
+                <Column><h5>changeAmount:</h5></Column>
+                <Column><h5>{changeAmount}</h5></Column>
             </Row>
             <Row>
                 <RadioButtonGroup
@@ -131,8 +169,7 @@ Opens a confirmation modal that should sign a transaction and send it.
                         </Button>
                     {/each}
                 </div>
-
-                Selected plan:
+                Selected Signature Method:
                 <strong>{selectedSigningMethod}</strong>
             </Row>
         </Grid>

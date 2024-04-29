@@ -2,9 +2,10 @@ import { address, crypto } from 'bitcoinjs-lib';
 import { DB_NAME, openDB, readData, addData } from '$lib/indexedDBUtil.js';
 import moment from 'moment';
 import Buffer from 'vite-plugin-node-polyfills/shims/buffer/index.js';
-import { txs  } from '../routes/store.js';
-
-
+import { txs, inputCount,outputCount  } from '../routes/store.js';
+let _inputCount,_outputCount = 0;
+inputCount.subscribe((v) => _inputCount = v);
+outputCount.subscribe((v) => _outputCount = v);
 export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient, _network) => {
     console.log("now getting transactions of ",_doiAddress)
     let script = address.toOutputScript(_doiAddress, _network);
@@ -62,6 +63,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
                     });
                 }
             }
+            inputCount.set(_inputCount+=1)
         }
 
         for (const [index, vout] of decryptedTx.vout.entries()) {
@@ -102,6 +104,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
                     _txs.push(_tx);
                     return _txs;
                 });
+                outputCount.set(_outputCount+=1)
             }
         }
     }

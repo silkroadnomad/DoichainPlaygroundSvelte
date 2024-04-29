@@ -19,7 +19,9 @@
         electrumBlockchainRelayfee,
         network,
         history,
-        txs
+        txs,
+        inputCount,
+        outputCount
     } from './store.js';
 
     import { afterUpdate, onDestroy, onMount } from 'svelte';
@@ -44,13 +46,14 @@
 
     const electrumServers = [
         { network:'doichain-mainnet', host: 'big-parrot-60.doi.works', port: 50004, protocol: 'wss' },
-        { network:'doichain-mainnet', host: 'pink-deer-69.doi.works', port: 50004, protocol: 'wss' },
+        // { network:'doichain-mainnet', host: 'pink-deer-69.doi.works', port: 50004, protocol: 'wss' },
         { network:'doichain-mainnet', host: 'itchy-jellyfish-89.doi.works', port: 50004, protocol: 'wss' },
-        { network:'doichain-regtest', host: 'localhost', port: 50004, protocol: 'wss' },
+        { network:'doichain-regtest', host: 'localhost', port: 8443, protocol: 'wss' },
     ];
 
-    $: doiAmount = Number(doiAmount).toFixed(8);
-    
+    $: doiAmount = Number(doiAmount)
+    $: utxoSum = $txs.reduce((sum, utxo) => sum + (utxo.value*100000000), 0);
+    $: utxoSelected = $txs.filter(tx => selectedRowIds.includes(tx.id)).reduce((sum, utxo) => sum + (utxo.value*100000000), 0);
     $: $network?connectElectrum($network):null
 
     const connectElectrum = async (_network) => {
@@ -108,22 +111,20 @@
     </Row>
     <Row>
         <Column>Balance (confirmed):</Column>
-        <Column>{balance?.confirmed/100000000} DOI </Column>
+        <Column>{balance?.confirmed/100000000} schwartz </Column>
         <Column></Column>
         <Column></Column>
     </Row>
     <Row>
         <Column>Balance (unconfirmed):</Column>
-        <Column>{balance?.unconfirmed/100000000} DOI </Column>
-        <Column></Column>
-        <Column></Column>
+        <Column>{balance?.unconfirmed/100000000} schwartz </Column>
+        <Column></Column><Column></Column>
     </Row>
-    <Row>
-        <Column>Transactions count: {$txs.length}</Column>
-        <Column></Column>
-        <Column></Column>
-        <Column></Column>
-    </Row>
+    <Row><Column>Utxos found:</Column><Column>{utxoSum} schwartz</Column><Column></Column><Column></Column></Row>
+    <Row><Column>Utxos selected:</Column><Column>{utxoSelected} schwartz</Column><Column></Column><Column></Column></Row>
+    <Row><Column>Transactions count:</Column><Column>{$txs.length}</Column><Column></Column><Column></Column></Row>
+    <Row><Column>Inputs count:</Column><Column>{$inputCount}</Column><Column></Column><Column></Column></Row>
+    <Row><Column>Output count:</Column><Column>{$outputCount}</Column><Column></Column><Column></Column></Row>
 </Grid>
 <Grid class="grid-spacing">
     <Row>

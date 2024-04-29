@@ -14,7 +14,7 @@ doichain-cli name_doi ${name} ${value} [optional ${holder-address}]
 ```
 clearly demonstrates this capability.
 
-Consequently, Doichain makes it straightforward to store and transfer Doichain-NFTs (non-fungible-coins, somewhat similar to Bitcoin innscriptions) and various proofs of existence, positioning it as an ideal blockchain for emerging local-first, peer-to-peer applications that leverage technologies like libp2p, IPFS, and CRDTs such as OrbitDB.
+Consequently, Doichain makes it straightforward to store and transfer Doichain-NFTs (non-fungible-coins, somewhat similar to Bitcoin inscriptions) and various proofs of existence, positioning it as an ideal blockchain for emerging local-first, peer-to-peer applications that leverage technologies like libp2p, IPFS, and CRDTs such as OrbitDB.
 
 This project aims to facilitate web application development for Doichain blockchain developers.
 
@@ -122,5 +122,10 @@ With the Doichain Playground you can:
 - [ ] use alternatively 24-words for seed phrases
 - [ ] add a network dropdown (e.g. Bitcoin-Mainnet, Bitcoin-Testnet, Bitcoin-RegTest, Doichain,...)
 - [ ] use a better entropy / random generator
+
+## Bugs
+- [ ] connecting a failing electrumx node needs to try the next server and remove it from the current list
+- [ ] dc1qeefktgyshgm0hackjds55ry2l2936fw2uegw09 doesn't show any transactions or takes very long
+- [ ] changing network doesn't result in changing addresses in +page.svelte
 
 

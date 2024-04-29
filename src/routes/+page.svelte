@@ -53,9 +53,9 @@
         generateAddresses();
     }
 
-    $: if (password) wallets = wallets //as password changes we need to rerender the wallets in order to decrypyt the contents
+    $: if (password) wallets = wallets //as password changes we need to rerender the wallets in order to decrypt the contents
     $: if (mnemonic && password) { try { createKeys() } catch(e){ console.error(e) }}
-    $: if (derivationPath && root) {try { generateAddresses() } catch(e){ console.error(e) }}
+    $: if ($network &&derivationPath && root) {try { generateAddresses() } catch(e){ console.error(e) }}
 
     let timeout
     let toastNotification
