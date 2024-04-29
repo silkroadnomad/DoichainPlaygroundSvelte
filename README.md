@@ -18,7 +18,7 @@ Consequently, Doichain makes it straightforward to store and transfer Doichain-N
 
 This project aims to facilitate web application development for developers.
 
-With the Doichain Playground 
+With the Doichain Playground you can:
 - create seed phrases and Doichain wallets with javascript
 - make coin transactions
 - create multisig addresses and multisig transactions
@@ -99,10 +99,14 @@ With the Doichain Playground
     - [ ] generate change address from derivation path 
   - [ ] calculate fee (and substract from utxos amount to be sent)
   - [ ] sign in Electrum (psbt)
-  - [ ] sign by hardware wallet
+  - [ ] sign by hardware wallet 
+    - [ ] Ledger
+    - [ ] BitBox
+    - [ ] Trezor
 - [ ] create name_doi, name_first, name_update transaction and store
   - a proof-of-existence
-  - a Doichain-NFT
+  - a Doichain-NFT (NFC non-fungible-coin)
+- [ ] find and show NFCs via Electrumx
 - [ ] spend from a multisig address
 - [ ] automate spending from a multisig address
 - [ ] research and test DoiWallet and ElectrumDoi seed phrases and keys
