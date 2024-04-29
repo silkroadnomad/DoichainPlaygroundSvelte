@@ -19,7 +19,7 @@ Consequently, Doichain makes it straightforward to store and transfer Doichain-N
 This project aims to facilitate web application development for developers.
 
 With the Doichain Playground you can:
-- create seed phrases and Doichain wallets with javascript
+- create seed phrases and Doichain wallets with javascript in browser (and NodeJS)
 - make coin transactions
 - create multisig addresses and multisig transactions
 - store a non-fungible-coin (NFC) (Doichain-NFT)
