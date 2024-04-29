@@ -6,7 +6,7 @@ This repository serves as a reference and example for developing Doichain-connec
 
 Originally, Doichain aimed to mitigate email spam by recording email permissions (double opt-ins) via a secondary-layer protocol. Despite the project's cessation due to funding issues, the blockchain remains active.
 
-We believe that a merge-mined blockchain, which utilizes the computational excess from Bitcoin mining to produce blocks, holds value for storing transactions in a cost-effective and straightforward manner.
+We believe that a merge-mined blockchain, which utilizes the computational excess from Bitcoin mining to produce blocks, holds big value for storing transactions in a cost-effective and straightforward manner.
 
 Doichain simplifies the process of saving, displaying, and finding name-value pair data. For example, the shell command:
 ```
@@ -17,6 +17,11 @@ clearly demonstrates this capability.
 Consequently, Doichain makes it straightforward to store and transfer Doichain-NFTs and various proofs of existence, positioning it as an ideal platform for emerging local-first, peer-to-peer applications that leverage technologies like libp2p, IPFS, and CRDTs such as OrbitDB.
 
 This project aims to facilitate web application development for developers.
+
+In the example directory you can see how to 
+- make coin transactions
+- store an NFT
+- store other PoE (Proof-Of-Existence)
 
 # Usage:
 1. Clone this repo. 
