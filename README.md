@@ -18,9 +18,10 @@ Consequently, Doichain makes it straightforward to store and transfer Doichain-N
 
 This project aims to facilitate web application development for developers.
 
-In the example directory you can see how to 
+With the Doichain Playground 
+- create seed phrases and Doichain wallets with javascript
 - make coin transactions
-- store an NFT
+- store a non-fungible-coin (NFC) (Doichain-NFT)
 - store other PoE (Proof-Of-Existence)
 
 # Usage:
