@@ -21,8 +21,10 @@ This project aims to facilitate web application development for developers.
 With the Doichain Playground 
 - create seed phrases and Doichain wallets with javascript
 - make coin transactions
+- create multisig addresses and multisig transactions
 - store a non-fungible-coin (NFC) (Doichain-NFT)
 - store other PoE (Proof-Of-Existence)
+- query Doichain blockchain for balances and transactions (non-fungible-coins, Doichain-NFTs) and PoEs  
 
 # Usage:
 1. Clone this repo. 
