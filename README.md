@@ -8,7 +8,7 @@ Originally, Doichain aimed to mitigate email spam by recording email permissions
 
 We believe that a merge-mined blockchain, which utilizes the computational excess from Bitcoin mining to produce blocks, holds big value for storing transactions in a cost-effective and straightforward manner.
 
-Doichain simplifies the process of storing, transferring, finding, displaying and name-value pair transactions. Everytime it is doing so, it creates a non-fungible coin (NFC - just like NFTs) For example, the shell command:
+Doichain simplifies the process of storing, transferring, finding, displaying name-value pair transactions. Everytime it is doing so, it creates a non-fungible coin (NFC - just like NFTs) For example, the shell command:
 ```
 doichain-cli name_doi ${name} ${value} [optional ${holder-address}]
 ```
