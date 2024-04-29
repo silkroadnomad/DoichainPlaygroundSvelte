@@ -46,8 +46,7 @@
         { network:'doichain-mainnet', host: 'big-parrot-60.doi.works', port: 50004, protocol: 'wss' },
         { network:'doichain-mainnet', host: 'pink-deer-69.doi.works', port: 50004, protocol: 'wss' },
         { network:'doichain-mainnet', host: 'itchy-jellyfish-89.doi.works', port: 50004, protocol: 'wss' },
-        // { network:'doichain-regtest', host: 'localhost', port: 8000, protocol: 'ws' },
-        { network:'doichain-regtest', host: 'localhost', port: 8443, protocol: 'wss' },
+        { network:'doichain-regtest', host: 'localhost', port: 50004, protocol: 'wss' },
     ];
 
     $: $network?connectElectrum($network):null

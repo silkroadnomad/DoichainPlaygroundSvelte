@@ -8,7 +8,7 @@ cd ..
 export COIN=Doichain
 export DB_DIRECTORY=/var/lib/electrumx
 export DAEMON_URL=http://admin:adminpw@regtest:18332
-export SERVICES=tcp://:50001,SSL://:50002,ws://:8000,wss://:8443
+export SERVICES=tcp://:50001,SSL://:50002,wss://:50004
 export STRATUM_TCP_PORT=50001
 export STRATUM_TCP_SSL_PORT=50002
 export PEER_DISCOVERY=off

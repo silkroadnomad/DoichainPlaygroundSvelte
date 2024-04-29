@@ -14,7 +14,7 @@ doichain-cli name_doi ${name} ${value} [optional ${holder-address}]
 ```
 clearly demonstrates this capability.
 
-Consequently, Doichain makes it straightforward to store and transfer Doichain-NFTs (non-fungible-coins, similar Bitcoin-Ordinals) and various proofs of existence, positioning it as an ideal platform for emerging local-first, peer-to-peer applications that leverage technologies like libp2p, IPFS, and CRDTs such as OrbitDB.
+Consequently, Doichain makes it straightforward to store and transfer Doichain-NFTs (non-fungible-coins, similar Bitcoin-Ordinals) and various proofs of existence, positioning it as an ideal blockchain for emerging local-first, peer-to-peer applications that leverage technologies like libp2p, IPFS, and CRDTs such as OrbitDB.
 
 This project aims to facilitate web application development for developers.
 

@@ -35,8 +35,6 @@ services:
     command: bash -c " ./startServer.sh"
     container_name: electrumx-doi
     ports:
-      - "8000:8000"
-      - "8443:8443"
       - "50001:50001"
       - "50002:50002"
       - "50004:50004"
