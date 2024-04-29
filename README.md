@@ -2,28 +2,43 @@
 
 # Doichain Playground Svelte
 
-This is a reference and example on how to develop Doichain web apps with Svelte. 
+This repository serves as a reference and example for developing Doichain-connected web applications using Svelte. Doichain, a fork of Namecoin (which is itself a Bitcoin fork) created in 2018, supports merge mining with the Bitcoin blockchain.
+
+Originally, Doichain aimed to mitigate email spam by recording email permissions (double opt-ins) via a secondary-layer protocol. Despite the project's cessation due to funding issues, the blockchain remains active.
+
+We believe that a merge-mined blockchain, which utilizes the computational excess from Bitcoin mining to produce blocks, holds value for storing transactions in a cost-effective and straightforward manner.
+
+Doichain simplifies the process of saving, displaying, and finding name-value pair data. For example, the shell command:
+```
+doichain-cli name_doi ${name} ${value} [optinal ${holder-address}]
+```
+clearly demonstrates this capability.
+
+Consequently, Doichain makes it straightforward to store and transfer Doichain-NFTs and various proofs of existence, positioning it as an ideal platform for emerging local-first, peer-to-peer applications that leverage technologies like libp2p, IPFS, and CRDTs such as OrbitDB.
+
+This project aims to facilitate web application development for developers.
 
 # Usage:
-1. Clone this repo
-2. (optional for local development) Start local Doichaind & Electrumx  ```docker-compose up -d```
-   - Connect to regtest container and 
-   - a) run ```doichain-cli help``` (see command help)
-   - b) run ```doichain-cli getblockchaininfo``` --> blocks 0
-   - c) run ```doichain-cli getnewaddress``` --> our new address
-   - d) run ```doichain-cli getbalance``` --> 0.00000000
-   - e) run ```doichain-cli generatetoaddress 1 mp57b8GoPaLyJ6SXTj7zo9u44mTim1Y4Pe``` --> new block hash !
-   - f) run ```doichain-cli getblock <block hash from last step>``` --> use tx (hash from output)
-   - h) run ```doichain-cli gettransaction <tx has from last step>``` and see 50 DOI (immature needs another 100 blocks to become mature)
-   - e) run ```doichain-cli generatetoaddress 100 mp57b8GoPaLyJ6SXTj7zo9u44mTim1Y4Pe``` --> make first block mature and get 50 DOI!
-   - i) run ```doichain-cli getbalance``` --> 50.00000000
-3. Run ```npm i```
-4. Run ```npm run dev ``` to start Doichain Developer Playground
-5. Go to "Transactions" Menu --> query your Doichain address from step 2.c 
-6. Mark an unspent output (utxo) and send it to your own (or another) address
-7. Create a new block and see transaction
+1. Clone this repo. 
+2. Optionally for local development, start local Doichaind & Electrumx using ```docker-compose up -d.```
+3. Connect to the regtest container and:
+   - Run ```doichain-cli help``` to see command help.
+   - Run ```doichain-cli getblockchaininfo``` to view initial blocks.
+   - Run ```doichain-cli getnewaddress``` to generate a new address.
+   - Run ```doichain-cli getbalance``` to check balance.
+   - Run ```doichain-cli generatetoaddress 1 [address]``` to generate a new block.
+   - Run ```doichain-cli getblock <block hash>``` to see transactions.
+   - Run ```doichain-cli gettransaction <transaction hash>``` to view transaction details and note the DOI amount (immature, requiring another 100 blocks to mature).
+   - Run ```doichain-cli generatetoaddress 100 [address]``` to mature the first block and receive 50 DOI.
+   - Run ```doichain-cli getbalance``` to see updated balance. 
+4. Run ```npm install```
+5. Run npm run dev to start the Doichain Developer Playground. 
+6. Go to the "Transactions" menu to query your Doichain address
+7. Mark an unspent output (UTXO) and send it to another address  
+8. Create a new block to observe the transaction.
 
 ## References:
+- Learning Bitcooin https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/tree/master
 - Cryptography-Toolkit https://guggero.github.io/cryptography-toolkit/#!/
   - Hierarchical Deterministic Wallet (BIP32/38/39/44/49/84) https://guggero.github.io/cryptography-toolkit/#!/hd-wallet
 - Bitcoin-Improvement Proposals (bips) https://github.com/bitcoin/bips

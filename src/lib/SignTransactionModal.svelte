@@ -6,7 +6,7 @@
     } from 'carbon-components-svelte';
 
     import { createEventDispatcher } from "svelte";
-    import { electrumBlockchainBlockHeadersSubscribe, electrumClient, network } from '../routes/store.js';
+    import { electrumClient, network } from '../routes/store.js';
     import * as bitcoin from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
     import ECPairFactory from 'ecpair';
@@ -19,7 +19,7 @@
     export let PrimaryButtonText = 'Sign transaction'
     export let CancelOperationButtonText = 'Cancel'
     export let recipientAddress = "mhdCXgZDmpbZRrVyyHLPwYFg59HGLHRUMa"
-    export let doiAmount = "1"
+    export let doiAmount = 1
     export let utxos
     export let wifPrivKey = "cW345pfTEn4wTRqv8qyu5U5SoQ37dqth83Wg93qkPmWT61WqreGC"
 
@@ -34,6 +34,8 @@
 
         const psbt = new bitcoin.Psbt({ network: $network });
         utxos.forEach(utxo => {
+
+            //TODO https://bitcoin.stackexchange.com/questions/116128/how-do-i-determine-whether-an-input-or-output-is-segwit-revisited
             const scriptPubKeyHex = utxo.scriptPubKey; // Assuming this is provided in hex format
             const isSegWit = scriptPubKeyHex?.startsWith('0014') || scriptPubKeyHex?.startsWith('0020');
 
