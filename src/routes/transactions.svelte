@@ -111,13 +111,13 @@
     </Row>
     <Row>
         <Column>Balance (confirmed):</Column>
-        <Column>{balance?.confirmed/100000000} schwartz </Column>
+        <Column>{balance?.confirmed} schwartz </Column>
         <Column></Column>
         <Column></Column>
     </Row>
     <Row>
         <Column>Balance (unconfirmed):</Column>
-        <Column>{balance?.unconfirmed/100000000} schwartz </Column>
+        <Column>{balance?.unconfirmed} schwartz </Column>
         <Column></Column><Column></Column>
     </Row>
     <Row><Column>Utxos found:</Column><Column>{utxoSum} schwartz</Column><Column></Column><Column></Column></Row>

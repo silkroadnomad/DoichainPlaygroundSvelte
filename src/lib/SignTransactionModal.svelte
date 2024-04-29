@@ -10,6 +10,7 @@
     import * as bitcoin from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
     import ECPairFactory from 'ecpair';
+
     const ECPair = ECPairFactory(ecc);
     /** dispatches the events when a button was clicked*/
     const dispatch = createEventDispatcher();
@@ -33,14 +34,13 @@
     
     $: transactionFee = Number(transactionFee)
     $: utxoSum = utxos.reduce((sum, utxo) => sum + (utxo.value*100000000), 0); //get sum of all utxo values
-    $: outputValue = (doiAmount) - transactionFee;
-    $: changeAmount = utxoSum - outputValue
 
+    $: changeAmount = utxoSum - (doiAmount+transactionFee)
     $: changeAddress = utxos.length > 0 ? utxos[utxos.length - 1].address : '';
 
     console.log("transactionFee",transactionFee)
-    console.log("outputValue",outputValue)
-    console.log("changeAmount",outputValue)
+    console.log("doiAmount",doiAmount)
+    console.log("changeAmount",changeAmount)
     console.log("utxoSum",utxoSum)
 
     async function signTransaction() {
@@ -77,7 +77,7 @@
         console.log("recipientAddress",recipientAddress)
         psbt.addOutput({
             address: recipientAddress,
-            value: outputValue,
+            value: doiAmount,
         });
         psbt.addOutput({
             address: changeAddress,
@@ -127,15 +127,7 @@ Opens a confirmation modal that should sign a transaction and send it.
             <Row>
                 <Column><h5>Transaction Fee (satoshis)</h5></Column>
                 <Column>
-                    <TextInput type="number" bind:value={transactionFee} on:change={ () =>{
-                            console.log("changeAmount",outputValue)
-                            console.log("utxoSum",utxoSum)
-                            console.log("doiAmount",doiAmount);
-                            console.log("transactionFee",transactionFee);
-                            outputValue = (doiAmount*(100000000)) - transactionFee;
-                             console.log("outputValue", outputValue);
-                    }
-                    } min="0" />
+                    <TextInput type="number" bind:value={transactionFee}  min="0" />
                 </Column>
             </Row>
             <Row>

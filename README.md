@@ -124,6 +124,7 @@ With the Doichain Playground you can:
 - [ ] use a better entropy / random generator
 
 ## Bugs
+- [ ] sending doiAmount to an address sents the fee instead of doiAmount  
 - [ ] connecting a failing electrumx node needs to try the next server and remove it from the current list
 - [ ] dc1qeefktgyshgm0hackjds55ry2l2936fw2uegw09 doesn't show any transactions or takes very long
 - [ ] changing network doesn't result in changing addresses in +page.svelte
