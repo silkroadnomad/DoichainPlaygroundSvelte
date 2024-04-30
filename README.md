@@ -105,8 +105,8 @@ With the Doichain Playground you can:
     - [ ] BitBox
     - [ ] Trezor
 - [ ] create name_doi, name_first, name_update transaction and store
-  - a proof-of-existence
-  - a Doichain-NFT (NFC non-fungible-coin)
+  - [ ] a proof-of-existence
+  - [ ] a Doichain-NFT (NFC non-fungible-coin)
 - [ ] create name_show call [How is that done in electrum-nmc](https://github.com/namecoin/electrum-nmc/blob/b0f3af4a8ef64211fb27c21c6985352ecc8b9fdc/electrum_nmc/electrum/commands.py#L1447)
 - [ ] find and show NFCs via Electrumx
 - [ ] spend from a multisig address
@@ -114,6 +114,7 @@ With the Doichain Playground you can:
 - [ ] research and test DoiWallet and ElectrumDoi seed phrases and keys
 
 ## Nice 2 have:
+- [ ] auto-select enough utxo's from the datatable depending on the amount to send
 - [ ] progress bar or similar when loading many txs
 - [ ] indexDB cache for transaction history and its txs 
 - [ ] add xpub support for transaction list (full wallet balance and txs) 
@@ -126,7 +127,8 @@ With the Doichain Playground you can:
 - [ ] use a better entropy / random generator
 
 ## Bugs
-- [ ] when spending an utxo, for some reason it could be re-used (choosen by checkbox) for a new transaction
+- [ ] when iterating over utxos, datatable doesn't update reactively (but counters are doing so)
+- [ ] when spending an utxo, for some reason it could be re-used (choosen by checkbox) for a new transaction and caused error when sending
 - [ ] Chrome does not connect to local Electrum websocket with self signed ssl certificate - warning and fix needed 
 - [x] ~~sending doiAmount to an address sents the fee instead of doiAmount~~
 - [ ] connecting a failing Electrumx node needs to try the next server and remove it from the current list

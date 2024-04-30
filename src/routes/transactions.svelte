@@ -30,6 +30,8 @@
     import { getAddressTxs } from '$lib/getAddressTxs.js';
     import { getBalance } from '$lib/getBalance.js';
 
+    let txName = ""
+    let txValue = ""
     let doiAddress = "";
     let recipientAddress = ''
     let doiAmount = 0
@@ -180,7 +182,18 @@
             active = false;
         }}
         >
-
+        <TextInput
+          class="margin"
+          name="txName"
+          labelText="Enter a name to store on Doichain"
+          bind:value={txName}
+        />
+        <TextInput
+          class="margin"
+          name="txValue"
+          labelText="Enter value to store on Doichain"
+          bind:value={txValue}
+        />
         <TextInput
           class="margin"
           labelText="Enter recipients Doichain address "
