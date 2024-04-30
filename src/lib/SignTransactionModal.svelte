@@ -20,7 +20,7 @@
     export let PrimaryButtonText = 'Sign transaction'
     export let CancelOperationButtonText = 'Cancel'
     export let recipientAddress
-    export let changeAddress
+    export let doiAddress
     export let transactionFee = 88100
     export let doiAmount = 100000000 //in schwartz
     export let changeAmount = 0
@@ -29,14 +29,13 @@
 
     // const signMethods = ["Seed in browser wallet", "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
     const signMethods = ["Wif (PrivKey)"] //, "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
-
+    let changeAddress = doiAddress
     let selectedSigningMethod = signMethods[1];
     
     $: transactionFee = Number(transactionFee)
     $: utxoSum = utxos.reduce((sum, utxo) => sum + (utxo.value*100000000), 0); //get sum of all utxo values
 
     $: changeAmount = utxoSum - (doiAmount+transactionFee)
-    $: changeAddress = utxos.length > 0 ? utxos[utxos.length - 1].address : '';
 
     console.log("transactionFee",transactionFee)
     console.log("doiAmount",doiAmount)

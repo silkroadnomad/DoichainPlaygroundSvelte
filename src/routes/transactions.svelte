@@ -193,7 +193,7 @@
           bind:value={doiAmount}
         />
         <Button disabled={selectedRowIds.length === 0} on:click={() => {
-             sign({utxos: $txs.filter(tx => selectedRowIds.includes(tx.id)),recipientAddress,doiAmount})
+             sign({doiAddress, utxos: $txs.filter(tx => selectedRowIds.includes(tx.id)),recipientAddress,doiAmount})
         }}>Sign</Button>
         </ToolbarBatchActions>
         <ToolbarContent>

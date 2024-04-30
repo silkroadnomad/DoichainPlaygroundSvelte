@@ -94,11 +94,12 @@ With the Doichain Playground you can:
   - [x] sign transaction by entering optional private key (wif)
   - [x] sign non-witness transactions (legacy)
   - [x] sign witness transactions (segwit)
-  - [ ] change address
-    - [ ] send change back to same address
+  - [x] change address
+    - [x] send change back to same address
     - [ ] generate change address from derivation path 
-  - [ ] calculate fee (and substract from utxos amount to be sent)
-  - [ ] sign in Electrum (psbt)
+  - [x] enter fee (and substract from utxos amount to be sent)
+  - [ ] sign in Electrum as partially signed transaction)
+  - [ ] sign transaction by seed (from mnemonic dropdown)
   - [ ] sign by hardware wallet 
     - [ ] Ledger
     - [ ] BitBox
@@ -125,11 +126,11 @@ With the Doichain Playground you can:
 - [ ] use a better entropy / random generator
 
 ## Bugs
-- [ ] when spending an utxo for some reason it could be re-used (choosen by checkbox) for a new transaction
+- [ ] when spending an utxo, for some reason it could be re-used (choosen by checkbox) for a new transaction
 - [ ] Chrome does not connect to local Electrum websocket with self signed ssl certificate - warning and fix needed 
 - [x] ~~sending doiAmount to an address sents the fee instead of doiAmount~~
 - [ ] connecting a failing Electrumx node needs to try the next server and remove it from the current list
 - [x] dc1qeefktgyshgm0hackjds55ry2l2936fw2uegw09 doesn't show any transactions or takes very long
-- [ ] changing network doesn't result in changing addresses in +page.svelte
+- [x] changing network doesn't result in changing addresses in +page.svelte
 
 
