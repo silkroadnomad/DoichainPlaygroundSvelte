@@ -105,9 +105,11 @@ With the Doichain Playground you can:
     - [ ] BitBox
     - [ ] Trezor
 - [ ] create name_doi, name_first, name_update transaction and store
-  - [ ] a proof-of-existence
-  - [ ] a Doichain-NFT (NFC non-fungible-coin)
+  - [ ] legacy destination addresses
+  - [ ] segwit destination addresses
 - [ ] create name_show call [How is that done in electrum-nmc](https://github.com/namecoin/electrum-nmc/blob/b0f3af4a8ef64211fb27c21c6985352ecc8b9fdc/electrum_nmc/electrum/commands.py#L1447)
+- [ ] create a proof-of-existence example
+- [ ] create Doichain-NFT (NFC non-fungible-coin) example
 - [ ] find and show NFCs via Electrumx
 - [ ] spend from a multisig address
 - [ ] automate spending from a multisig address
