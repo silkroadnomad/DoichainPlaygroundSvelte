@@ -190,13 +190,13 @@
         >
         <TextInput
           class="margin"
-          name="txName"
+          name="nameId"
           labelText="Enter a name to store on Doichain"
           bind:value={nameId}
         />
         <TextInput
           class="margin"
-          name="txValue"
+          name="nameValue"
           labelText="Enter value to store on Doichain"
           bind:value={nameValue}
         />
@@ -217,8 +217,8 @@
                  senderAddress: doiAddress,
                  recipientAddress,
                  doiAmount,
-                 txName,
-                 txValue,
+                 nameId,
+                 nameValue,
                  utxos: $txs.filter(tx => selectedRowIds.includes(tx.id))})
 
                  if(result) {

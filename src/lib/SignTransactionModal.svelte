@@ -150,11 +150,11 @@ Opens a confirmation modal that should sign a transaction and send it to Electru
     <ModalBody hasForm>
         <Grid>
             <Row>
-                <Column><h5>TxName:</h5></Column>
+                <Column><h5>NameId:</h5></Column>
                 <Column><h5>{nameId}</h5></Column>
             </Row>
             <Row>
-                <Column><h5>TxValue:</h5></Column>
+                <Column><h5>NameValue:</h5></Column>
                 <Column><h5>{nameValue}</h5></Column>
             </Row>
             <Row>
