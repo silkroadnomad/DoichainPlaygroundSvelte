@@ -15,19 +15,14 @@
 	import Home from './+page.svelte'
 	import Transactions from './transactions.svelte'
 	import { expoIn } from 'svelte/easing';
-	import { DOICHAIN, DOICHAIN_TESTNET, DOICHAIN_REGTEST } from '$lib/doichain.js';
 
 	let isOpen
 	let sideNavOpen
 	let theme = "g90";// "white" | "g10" | "g80" | "g90" | "g100"
 
-	import { network } from './store.js';
-
-	const networks = [
-		{ id: 'doichain-mainnet', text: 'Doichain-Mainnet', value: DOICHAIN },
-		// { id: 'testnet', text: 'Testnet', value: DOICHAIN_TESTNET },
-		{ id: 'doichain-regtest', text: 'Doichain-Regtest', value: DOICHAIN_REGTEST }
-	];
+	import { network, networks } from './store.js';
+	$:console.log("network", $network)
+	$:localStorage.setItem('network',JSON.stringify($network)	)
 
 	const routes = {
 		'/': Home,
@@ -47,7 +42,7 @@
 				size="sm"
 				label="Select Network"	
 				items={networks}
-				selectedId={networks.find(n => n.value===$network).id }
+				selectedId={ networks.find( n => n.value.name===$network.name).id}
 				itemToString={(item) => item.text}
 				on:select={e=>$network = networks.find(n=>n.id===e.detail.selectedId).value}
 			/>

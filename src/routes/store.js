@@ -1,7 +1,12 @@
 import { writable } from 'svelte/store';
 
-import { DOICHAIN } from '$lib/doichain.js'
-export const network = writable(DOICHAIN);
+import { DOICHAIN, DOICHAIN_REGTEST } from '$lib/doichain.js';
+export const networks = [
+	{ id: 'doichain-mainnet', text: 'Doichain-Mainnet', value: DOICHAIN },
+	// { id: 'testnet', text: 'Testnet', value: DOICHAIN_TESTNET },
+	{ id: 'doichain-regtest', text: 'Doichain-Regtest', value: DOICHAIN_REGTEST }
+];
+export const network = writable(localStorage.getItem('network')?JSON.parse(localStorage.getItem('network')):DOICHAIN);
 export const electrumClient = writable();
 export const electrumServerVersion = writable();
 export const electrumServerBanner = writable();
