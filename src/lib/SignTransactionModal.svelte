@@ -6,7 +6,7 @@
     } from 'carbon-components-svelte';
 
     import { createEventDispatcher, onMount } from 'svelte';
-    import { electrumClient, network, electrumBlockchainRelayfee } from '../routes/store.js';
+    import { electrumClient, network, electrumBlockchainRelayfee,currentWif } from '../routes/store.js';
     import * as bitcoin from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
     import ECPairFactory from 'ecpair';
@@ -25,11 +25,11 @@
     export let recipientAddress
     export let nameId
     export let nameValue
-    // export let doiAddress
+
     export let doiAmount = 100000000 //in schwartz
     export let changeAmount = 0
     export let utxos
-    export let wifPrivKey = "cNkd3aynhaDXyhWv1E6GG36N52o6R5R9HoFRG9oHLva8Y1WKZqpe" //TODO remove this test-key
+
 
     // const signMethods = ["Seed in browser wallet", "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
     const signMethods = ["Wif (PrivKey)"] //, "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
@@ -62,8 +62,8 @@
     async function signTransaction() {
 
         let keyPair
-        if(wifPrivKey)
-            keyPair = ECPair.fromWIF(wifPrivKey,$network);
+        if($currentWif)
+            keyPair = ECPair.fromWIF($currentWif,$network);
 
         const psbt = new bitcoin.Psbt({ network: $network });
         utxos.forEach(utxo => {
@@ -230,7 +230,7 @@ Opens a confirmation modal that should sign a transaction and send it to Electru
                           on:click={() => (selectedSigningMethod = value)}
                         >
                             {#if value==='Wif (PrivKey)'}
-                                <TextInput bind:value={wifPrivKey} labelText="PrivateKey (Wif)" placeholder="Enter wif..." />
+                                <TextInput bind:value={$currentWif} labelText="PrivateKey (Wif)" placeholder="Enter wif..." />
                             {:else}
                                 not implemented yet
                             {/if}

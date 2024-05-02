@@ -22,6 +22,7 @@
         electrumBlockchainRelayfee,
         network,
         history,
+        currentWif,
         txs,
         inputCount,
         outputCount, namesCount
@@ -57,7 +58,7 @@
     $: utxoSum = $txs.reduce((sum, utxo) => sum + (utxo.value*100000000), 0);
     $: utxoSelected = $txs.filter(tx => selectedRowIds.includes(tx.id)).reduce((sum, utxo) => sum + (utxo.value*100000000), 0);
     $: $network?connectElectrum($network):null
-
+    console.log("current wif",$currentWif)
     const connectElectrum = async (_network) => {
         if(!_network) return
         const networkNodes = electrumServers.filter(n=>n.network===_network.name)

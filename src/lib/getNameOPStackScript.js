@@ -22,7 +22,7 @@ export const getNameOPStackScript = (nameId,nameValue,recipientAddress,network) 
 		throw new Error("nameId and nameValue must defined");
 
 	if(nameId.length > NAME_MAX_LENGTH || nameId.length < 3)
-		throw new Error(`nameId must be at least 7 characters and not longer then ${NAME_MAX_LENGTH}`);
+		throw new Error(`nameId must be at least 3 characters and not longer then ${NAME_MAX_LENGTH}`);
 
 	if(nameValue.length > VALUE_MAX_LENGTH)
 		throw new Error(`nameValue must be not longer then ${VALUE_MAX_LENGTH}`);

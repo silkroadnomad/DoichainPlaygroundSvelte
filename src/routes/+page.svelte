@@ -14,7 +14,7 @@
     import { generateMnemonic, mnemonicToSeedSync } from 'bip39';
     import { payments } from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
-    import { network } from './store.js';
+    import { currentWif, network } from './store.js';
     import { DB_NAME, openDB, readData, addData, deleteData } from '$lib/indexedDBUtil.js';
     import AES from 'crypto-js/aes';
     import Utf8 from 'crypto-js/enc-utf8';
@@ -40,6 +40,8 @@
     function generateAddresses() {
 
         derivationWif = root.derivePath(derivationPath).toWIF()
+        $currentWif=derivationWif
+
         addressP2pkh = payments.p2pkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
         addressP2wpkh = payments.p2wpkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
         addressP2wpkhP2Sh = payments.p2sh({

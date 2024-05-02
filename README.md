@@ -85,7 +85,7 @@ With the Doichain Playground you can:
 - [x] display wallet balance 
   - [x] of a single address
   - [ ] of a xpub and it's derivations bip32, bip44, bip49,.. 
-- [ ] create a simple coin (DOI) transaction 
+- [x] create a simple coin (DOI) transaction 
   - [x] choose utxos from datatable 
   - [x] add an amount, address textfield
   - [x] storing, deleting, displaying mnemonics via IndexDB
@@ -98,7 +98,8 @@ With the Doichain Playground you can:
     - [x] send change back to same address
     - [ ] generate change address from derivation path 
   - [x] enter fee (and substract from utxos amount to be sent)
-  - [ ] sign transaction by seed (from mnemonic dropdown)
+  - [x] sign transaction by wif (currently derived from mnemonic and wallet screen)
+  - [x] sign transaction by seed (from mnemonic dropdown)
   - [ ] sign transaction by scanning qr-code with DoiWallet (BlueWallet)
   - [ ] sign in Electrum as partially signed transaction)
   - [ ] sign by hardware wallet 
@@ -117,6 +118,7 @@ With the Doichain Playground you can:
 - [x] show min-relay fee in signing modal
 - [ ] create a proof-of-existence example
 - [ ] create Doichain-NFT (NFC non-fungible-coin) example
+- [ ] create libp2p seed node discovery module  
 - [ ] find and show NFCs via Electrumx
 - [ ] spend from a multisig address
 - [ ] automate spending from a multisig address
@@ -139,7 +141,8 @@ With the Doichain Playground you can:
 - [ ] use a better entropy / random generator
 
 ## Bugs
-- [ ] if no private key, transaction fee cannot be calculated?
+- [ ] better error messages and notifications 
+- [ ] if no or wrong private key, transaction fee cannot be calculated
 - [ ] when iterating over utxos, datatable doesn't update reactively (but counters are doing so)
 - [x] when spending an utxo, for some reason it could be re-used (chosen by checkbox) for a new transaction and caused error when sending - re-read utxos  
   - [x] counter check with utxos coming live from Electrumx and exlude utxos not in ElectrumX 
