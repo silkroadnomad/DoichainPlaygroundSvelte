@@ -104,7 +104,8 @@ With the Doichain Playground you can:
     - [ ] Ledger
     - [ ] BitBox
     - [ ] Trezor
-- [x] create name_doi, name_first, name_update transaction
+- [x] create name_doi
+  - [ ] name_first, name_update transaction
   - [x] add storage fee to transaction fee calculation
   - [x] add nameId and nameValue to signing modal
   - [x] legacy name_op transactions
