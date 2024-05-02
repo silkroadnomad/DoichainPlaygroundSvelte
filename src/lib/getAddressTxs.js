@@ -3,17 +3,22 @@ import { DB_NAME, openDB, readData, addData } from '$lib/indexedDBUtil.js';
 import moment from 'moment';
 import Buffer from 'vite-plugin-node-polyfills/shims/buffer/index.js';
 import { txs, inputCount,outputCount  } from '../routes/store.js';
+
+
 let _inputCount,_outputCount = 0;
 inputCount.subscribe((v) => _inputCount = v);
 outputCount.subscribe((v) => _outputCount = v);
+
 export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient, _network) => {
     console.log("now getting transactions of ",_doiAddress)
+
     let script = address.toOutputScript(_doiAddress, _network);
     let hash = crypto.sha256(script);
     let reversedHash = Buffer.from(hash.reverse()).toString("hex");
 
     let _history;
     let ourTxs = []
+
     if (navigator.onLine) {
         console.log("opening db",DB_NAME)
         // const db = await openDB(DB_NAME,"history")
@@ -69,29 +74,21 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
         for (const [index, vout] of decryptedTx.vout.entries()) {
             const _tx = JSON.parse(JSON.stringify(decryptedTx));
             _tx.id = decryptedTx.txid+'_out_'+index;
-            let address, nameId, nameValue
 
             const asm = vout.scriptPubKey.asm
             const asmParts = asm.split(" ")
 
             if (asmParts[0] !== 'OP_10' && asmParts[0] !== 'OP_NAME_DOI') {
                 _tx.address = vout.scriptPubKey?.addresses?vout.scriptPubKey?.addresses[0]:_doiAddress
-                console.log('address', _tx.address)
-                // for (let i = 0; i < addressList.length; i++) { //TODO when displaying a complete xpub with all addresses this becomes interesting
-                //     if (address == addressList[i]) {
-                //         utxo = true
-                //         break
-                //     }
-                // }
             } else {
                 const chunks = vout.scriptPubKey.asm.split(" ")
-                nameId = vout.scriptPubKey.nameOp.name
-                nameValue = vout.scriptPubKey.nameOp.value
-                address = conv(chunks[7], { in: 'hex', out: 'binary' })
+                _tx.nameId = vout.scriptPubKey.nameOp.name
+                _tx.nameValue = vout.scriptPubKey.nameOp.value
+                _tx.address = conv(chunks[7], { in: 'hex', out: 'binary' })
 
-                console.log('name_op nameId', nameId)
-                console.log('name_op nameValue', nameValue)
-                console.log('name_op address', address)
+                console.log('name_op nameId', _tx.nameId)
+                console.log('name_op nameValue', _tx.nameValue)
+                console.log('name_op address', _tx.address)
             }
 
             _tx.value=vout.value
@@ -108,7 +105,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
             }
         }
     }
-    // console.log("_tx",txs)
+
     // Group txs by txid and accumulate values for txs with the same txid
     const groupedTxs = ourTxs.reduce((acc, tx) => {
         // Use txid as the key for grouping
@@ -122,6 +119,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
         }
         return acc;
     }, {});
+
     ourTxs = Object.values(groupedTxs);
     ourTxs = ourTxs.sort((a, b) => b.blocktime - a.blocktime);
     txs.set(ourTxs)

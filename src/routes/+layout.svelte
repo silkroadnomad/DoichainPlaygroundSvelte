@@ -21,7 +21,6 @@
 	let theme = "g90";// "white" | "g10" | "g80" | "g90" | "g100"
 
 	import { network, networks } from './store.js';
-	$:console.log("network", $network)
 	$:localStorage.setItem('network',JSON.stringify($network)	)
 
 	const routes = {

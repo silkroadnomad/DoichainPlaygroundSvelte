@@ -12,6 +12,7 @@
     } from 'carbon-components-svelte';
 
     import {
+        electrumServers,
         electrumServerVersion,
         electrumServerBanner,
         electrumClient,
@@ -21,7 +22,7 @@
         history,
         txs,
         inputCount,
-        outputCount
+        outputCount,
     } from './store.js';
 
     import { afterUpdate, onDestroy, onMount } from 'svelte';
@@ -45,13 +46,6 @@
     let active = true
 
     let randomServer //TODO can we improve that?
-
-    const electrumServers = [
-        { network:'doichain-mainnet', host: 'big-parrot-60.doi.works', port: 50004, protocol: 'wss' },
-        // { network:'doichain-mainnet', host: 'pink-deer-69.doi.works', port: 50004, protocol: 'wss' },
-        { network:'doichain-mainnet', host: 'itchy-jellyfish-89.doi.works', port: 50004, protocol: 'wss' },
-        { network:'doichain-regtest', host: 'localhost', port: 8443, protocol: 'wss' },
-    ];
 
     $: doiAmount = Number(doiAmount)
     $: utxoSum = $txs.reduce((sum, utxo) => sum + (utxo.value*100000000), 0);
@@ -91,7 +85,6 @@
     });
 
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
-
 </script>
 
 <h2>Transactions</h2>
@@ -147,6 +140,7 @@
     </Row>
 </Grid>
 <DataTable
+    sortable
     class="datatable"
     bind:batchSelection
     bind:selectedRowIds
@@ -206,7 +200,13 @@
           bind:value={doiAmount}
         />
         <Button disabled={selectedRowIds.length === 0} on:click={() => {
-             sign({doiAddress, utxos: $txs.filter(tx => selectedRowIds.includes(tx.id)),recipientAddress,doiAmount})
+             sign({
+                 senderAddress: doiAddress,
+                 recipientAddress,
+                 doiAmount,
+                 txName,
+                 txValue,
+                 utxos: $txs.filter(tx => selectedRowIds.includes(tx.id))})
         }}>Sign</Button>
         </ToolbarBatchActions>
         <ToolbarContent>

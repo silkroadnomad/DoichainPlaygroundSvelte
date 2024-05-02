@@ -88,24 +88,28 @@ With the Doichain Playground you can:
   - [ ] of a xpub and it's derivations bip32, bip44, bip49,.. 
 - [ ] create a simple coin (DOI) transaction 
   - [x] choose utxos from datatable 
-  - [x] add an amount, address texfield
+  - [x] add an amount, address textfield
   - [x] storing, deleting, displaying mnemonics via IndexDB
   - [x] encryption and decryption of mnemonic via password 
   - [x] sign transaction by entering optional private key (wif)
   - [x] sign non-witness transactions (legacy)
   - [x] sign witness transactions (segwit)
+  - [x] calculate transaction fee by pre-signing the transaction 
   - [x] change address
     - [x] send change back to same address
     - [ ] generate change address from derivation path 
   - [x] enter fee (and substract from utxos amount to be sent)
-  - [ ] sign in Electrum as partially signed transaction)
   - [ ] sign transaction by seed (from mnemonic dropdown)
+  - [ ] sign transaction by scanning qr-code with DoiWallet (BlueWalelt)
+  - [ ] sign in Electrum as partially signed transaction)
   - [ ] sign by hardware wallet 
     - [ ] Ledger
     - [ ] BitBox
     - [ ] Trezor
-- [ ] create name_doi, name_first, name_update transaction and store
-  - [ ] legacy destination addresses
+- [ ] create name_doi, name_first, name_update transaction
+  - [x] add storage fee to transaction fee calculation
+  - [x] add txName and txValue to signing modal
+  - [x] legacy destination addresses
   - [ ] segwit destination addresses
 - [ ] create name_show call [How is that done in electrum-nmc](https://github.com/namecoin/electrum-nmc/blob/b0f3af4a8ef64211fb27c21c6985352ecc8b9fdc/electrum_nmc/electrum/commands.py#L1447)
 - [ ] create a proof-of-existence example
@@ -116,6 +120,8 @@ With the Doichain Playground you can:
 - [ ] research and test DoiWallet and ElectrumDoi seed phrases and keys
 
 ## Nice 2 have:
+- [ ] transactions should toggle between DOI/schwartz
+- [ ] calculate fees depending on transaction size
 - [ ] auto-select enough utxo's from the datatable depending on the amount to send
 - [ ] progress bar or similar when loading many txs
 - [ ] indexDB cache for transaction history and its txs 
@@ -130,7 +136,7 @@ With the Doichain Playground you can:
 
 ## Bugs
 - [ ] when iterating over utxos, datatable doesn't update reactively (but counters are doing so)
-- [ ] when spending an utxo, for some reason it could be re-used (choosen by checkbox) for a new transaction and caused error when sending
+- [ ] when spending an utxo, for some reason it could be re-used (chosen by checkbox) for a new transaction and caused error when sending - re-read utxos  
 - [ ] Chrome does not connect to local Electrum websocket with self signed ssl certificate - warning and fix needed 
 - [x] ~~sending doiAmount to an address sents the fee instead of doiAmount~~
 - [ ] connecting a failing Electrumx node needs to try the next server and remove it from the current list
