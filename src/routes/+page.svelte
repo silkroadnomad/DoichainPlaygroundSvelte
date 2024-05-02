@@ -31,12 +31,15 @@
     let xpub = '';
     let derivationPath = 'm/0/0/0';
 
+    let derivationWif = ''
     let addressP2pkh = '';
     let addressP2wpkh = '';
     let addressP2wpkhP2Sh = '';
 
     //address generation function
     function generateAddresses() {
+
+        derivationWif = root.derivePath(derivationPath).toWIF()
         addressP2pkh = payments.p2pkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
         addressP2wpkh = payments.p2wpkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
         addressP2wpkhP2Sh = payments.p2sh({
@@ -159,6 +162,10 @@
     <Row>
         <Column><h2>3. Derive addresses from derivation path (bip32)</h2></Column>
         <Column><TextInput labelText="Derivation Path" bind:value={derivationPath} /></Column>
+    </Row>
+    <Row>
+        <Column><h3>Wif (PrivKey):</h3></Column>
+        <Column><h4>{derivationWif || ''}</h4></Column>
     </Row>
     <Row>
         <Column><h3>Address (Legacy):</h3></Column>

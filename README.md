@@ -60,6 +60,7 @@ With the Doichain Playground you can:
 - [x] generate mnemonic
 - [x] create xpriv and xpub from mnemonic 
 - [x] generate new (legacy) p2pkh addressP2pkh from a derivation path 
+- [x] generate wif from a derivation path
 - [x] generate a segwit addressP2pkh p2wpkh
   - https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/addresses.spec.ts#L57
 - [x] generate a segwit addressP2pkh p2sh from p2wpkh  
@@ -138,6 +139,7 @@ With the Doichain Playground you can:
 - [ ] use a better entropy / random generator
 
 ## Bugs
+- [ ] if no private key, transaction fee cannot be calculated?
 - [ ] when iterating over utxos, datatable doesn't update reactively (but counters are doing so)
 - [x] when spending an utxo, for some reason it could be re-used (chosen by checkbox) for a new transaction and caused error when sending - re-read utxos  
   - [x] counter check with utxos coming live from Electrumx and exlude utxos not in ElectrumX 
