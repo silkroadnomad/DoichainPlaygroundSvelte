@@ -1,4 +1,7 @@
-// import { bitcoin } from 'ecpair/src/networks.js';
+// import * as conv from 'conv'
+// import { conv } from 'conv';
+// import converter from "javascript-binary-converter";
+
 import {address,script} from 'bitcoinjs-lib';
 
 export const NAME_MAX_LENGTH = 255
@@ -24,10 +27,13 @@ export const getNameOPStackScript = (nameId,nameValue,recipientAddress,network) 
 	if(nameValue.length > VALUE_MAX_LENGTH)
 		throw new Error(`nameValue must be not longer then ${VALUE_MAX_LENGTH}`);
 
-	// const op_name = conv(nameId, {in: 'binary', out: 'hex'})
-	// let op_value = conv(nameValue, {in: 'binary', out: 'hex'})
-	const op_name = Buffer.from(nameId, 'binary').toString('hex');
-	let op_value = Buffer.from(nameValue, 'binary').toString('hex');
+	const op_name = Buffer.from(nameId).toString('hex');
+	const op_value = Buffer.from(nameValue).toString('hex');
+
+	//const op_name = converter(nameId).toHexString() //conv(nameId, {in: 'binary', out: 'hex'})
+	//let op_value = converter(nameValue).toHexString() //conv(nameValue, {in: 'binary', out: 'hex'})
+	// const op_name = Buffer.from(nameId, 'binary').toString('hex');
+	// let op_value = Buffer.from(nameValue, 'binary').toString('hex');
 
 	//TODO support segwit addrsses
 	// const op_address = base58.decode(recipientAddress).toString('hex').substr(2, 40);
@@ -38,7 +44,7 @@ export const getNameOPStackScript = (nameId,nameValue,recipientAddress,network) 
 	} catch (error) {
 		throw new Error("Invalid recipient address: " + error.message);
 	}
-	op_address = op_address.substring(2,40)
+	//op_address = op_address.substring(2,40)
 
 	const opCodesStackScript = script.fromASM(
 		`

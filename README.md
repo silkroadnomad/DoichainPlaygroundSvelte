@@ -4,8 +4,6 @@
 
 This repository serves as a reference and example for developing Doichain-connected web applications using Svelte. Doichain, a fork of Namecoin (which is itself a Bitcoin fork) created in 2018, supports merge mining with the Bitcoin blockchain.
 
-Originally, Doichain aimed to mitigate email spam by recording email permissions (double opt-ins) without middle men via a 2nd-layer peer-to-peer protocol. Despite the project's cessation due to funding issues, the blockchain remains active.
-
 We believe that a merge-mined blockchain, which utilizes the computational excess from Bitcoin mining to produce blocks, holds big value for storing transactions in a cost-effective and straightforward manner.
 
 Doichain simplifies the process of storing, transferring, finding, displaying name-value pair transactions. Everytime it is doing so, it creates a non-fungible coin (NFC - just like NFTs) For example, the shell command:
@@ -100,18 +98,21 @@ With the Doichain Playground you can:
     - [ ] generate change address from derivation path 
   - [x] enter fee (and substract from utxos amount to be sent)
   - [ ] sign transaction by seed (from mnemonic dropdown)
-  - [ ] sign transaction by scanning qr-code with DoiWallet (BlueWalelt)
+  - [ ] sign transaction by scanning qr-code with DoiWallet (BlueWallet)
   - [ ] sign in Electrum as partially signed transaction)
   - [ ] sign by hardware wallet 
     - [ ] Ledger
     - [ ] BitBox
     - [ ] Trezor
-- [ ] create name_doi, name_first, name_update transaction
+- [x] create name_doi, name_first, name_update transaction
   - [x] add storage fee to transaction fee calculation
-  - [x] add txName and txValue to signing modal
-  - [x] legacy destination addresses
-  - [ ] segwit destination addresses
-- [ ] create name_show call [How is that done in electrum-nmc](https://github.com/namecoin/electrum-nmc/blob/b0f3af4a8ef64211fb27c21c6985352ecc8b9fdc/electrum_nmc/electrum/commands.py#L1447)
+  - [x] add nameId and nameValue to signing modal
+  - [x] legacy name_op transactions
+  - [?] segwit name_op transactions
+  - [x] index name_op transactions 
+  - [x] show name op transactions in transaction list 
+  - [ ] create name_show call [How is that done in electrum-nmc](https://github.com/namecoin/electrum-nmc/blob/b0f3af4a8ef64211fb27c21c6985352ecc8b9fdc/electrum_nmc/electrum/commands.py#L1447)
+- [x] show min-relay fee in signing modal
 - [ ] create a proof-of-existence example
 - [ ] create Doichain-NFT (NFC non-fungible-coin) example
 - [ ] find and show NFCs via Electrumx
@@ -121,9 +122,9 @@ With the Doichain Playground you can:
 
 ## Nice 2 have:
 - [ ] transactions should toggle between DOI/schwartz
-- [ ] calculate fees depending on transaction size
+- [x] calculate fees depending on transaction size
 - [ ] auto-select enough utxo's from the datatable depending on the amount to send
-- [ ] progress bar or similar when loading many txs
+- [x] progress bar or similar when loading many txs
 - [ ] indexDB cache for transaction history and its txs 
 - [ ] add xpub support for transaction list (full wallet balance and txs) 
 - [x] choose current ElectrumX from random list
@@ -131,12 +132,14 @@ With the Doichain Playground you can:
 - [ ] choose from different derivation path standards (bip32, bip44, bip49, ...)
 - [ ] test DoiWallet and ElectrumDoi seed phrases and keys
 - [ ] use alternatively 24-words for seed phrases
-- [ ] add a network dropdown (e.g. Bitcoin-Mainnet, Bitcoin-Testnet, Bitcoin-RegTest, Doichain,...)
+- [x] add network dropdown 
+  - [ ] add more networks (e.g. Bitcoin-Mainnet, Bitcoin-Testnet)
 - [ ] use a better entropy / random generator
 
 ## Bugs
 - [ ] when iterating over utxos, datatable doesn't update reactively (but counters are doing so)
-- [ ] when spending an utxo, for some reason it could be re-used (chosen by checkbox) for a new transaction and caused error when sending - re-read utxos  
+- [x] when spending an utxo, for some reason it could be re-used (chosen by checkbox) for a new transaction and caused error when sending - re-read utxos  
+  - [x] counter check with utxos coming live from Electrumx and exlude utxos not in ElectrumX 
 - [ ] Chrome does not connect to local Electrum websocket with self signed ssl certificate - warning and fix needed 
 - [x] ~~sending doiAmount to an address sents the fee instead of doiAmount~~
 - [ ] connecting a failing Electrumx node needs to try the next server and remove it from the current list

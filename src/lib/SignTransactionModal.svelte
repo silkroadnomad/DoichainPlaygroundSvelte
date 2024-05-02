@@ -6,7 +6,7 @@
     } from 'carbon-components-svelte';
 
     import { createEventDispatcher, onMount } from 'svelte';
-    import { electrumClient, network } from '../routes/store.js';
+    import { electrumClient, network, electrumBlockchainRelayfee } from '../routes/store.js';
     import * as bitcoin from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
     import ECPairFactory from 'ecpair';
@@ -23,13 +23,13 @@
     export let CancelOperationButtonText = 'Cancel'
     export let senderAddress 
     export let recipientAddress
-    export let txName
-    export let txValue
+    export let nameId
+    export let nameValue
     // export let doiAddress
     export let doiAmount = 100000000 //in schwartz
     export let changeAmount = 0
     export let utxos
-    export let wifPrivKey = "cMhr8icXFKEhfrCEq823DsPhQauwwsSgm89bcYyELdMEozoh7gk3" //TODO remove this test-key
+    export let wifPrivKey = "cNkd3aynhaDXyhWv1E6GG36N52o6R5R9HoFRG9oHLva8Y1WKZqpe" //TODO remove this test-key
 
     // const signMethods = ["Seed in browser wallet", "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
     const signMethods = ["Wif (PrivKey)"] //, "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
@@ -37,12 +37,13 @@
 
     let changeAddress = senderAddress 
     let transactionFee = utxos.length * 180 + 3 * 34
-    let schwartzPerByte = 1000 //TODO why is that so high? shoulld be 50x lower
+    let schwartzPerByte = 210 //TODO why is that so high? shoulld be 50x lower
     let storageFee = 500000  //or 88100 - a roughly estimated transaction fee
     let byteLength = 0
-    if(txName) transactionFee += storageFee //storageFee
+    if(nameId) transactionFee += storageFee //storageFee
     
-    $: transactionFee = byteLength*schwartzPerByte+(txName?storageFee:0) //add storagefee when txName was set
+    $: transactionFee = byteLength*schwartzPerByte+(nameId?storageFee:0) //add storagefee when nameId was set
+    $: transactionFee<Number($electrumBlockchainRelayfee*100000000)?transactionFee=Number($electrumBlockchainRelayfee*100000000):0
     $: utxoSum = utxos.reduce((sum, utxo) => sum + (utxo.value*100000000), 0); //get sum of all utxo values
     $: changeAmount = utxoSum - (doiAmount+transactionFee)
 
@@ -90,7 +91,7 @@
             }
         });
 
-        if(!txName){
+        if(!nameId){
             console.log("recipientAddress coin output",recipientAddress)
             psbt.addOutput({
                 address: recipientAddress,
@@ -99,7 +100,7 @@
         }
         else{
             console.log("recipientAddress namescript output",recipientAddress)
-            const opCodesStackScript = getNameOPStackScript(txName,txValue,recipientAddress,$network)
+            const opCodesStackScript = getNameOPStackScript(nameId,nameValue,recipientAddress,$network)
             psbt.setVersion(VERSION) //use this for name transactions
             psbt.addOutput({
                 script: opCodesStackScript,
@@ -128,12 +129,21 @@
 Opens a confirmation modal that should sign a transaction and send it to ElectrumX
 -->
 <ComposedModal open on:close={() => dispatch('result', false)} on:submit={ async () => {
-    const signedTx = await signTransaction()
 
-    console.log("sending transaction to ElectrumX",signedTx.toHex())
-    const txHash = await $electrumClient.request('blockchain.transaction.broadcast',[signedTx.toHex()]);
-    console.log("txid received from node",txHash)
-    dispatch('result', true); // Dispatch the result with the transaction hex
+    try {
+        const signedTx = await signTransaction()
+        console.log("sending transaction to ElectrumX",signedTx.toHex())
+        const txHash = await $electrumClient.request('blockchain.transaction.broadcast',[signedTx.toHex()]);
+        console.log("txid received from node",txHash)
+        dispatch('result', true); // Dispatch the result with the transaction hex
+    }
+    catch(ex){
+        console.log("ex",ex)
+        dispatch('result', false);
+    }
+
+
+
 }}>
     <ModalHeader label="Sign transaction" title={heading} />
 
@@ -141,11 +151,11 @@ Opens a confirmation modal that should sign a transaction and send it to Electru
         <Grid>
             <Row>
                 <Column><h5>TxName:</h5></Column>
-                <Column><h5>{txName}</h5></Column>
+                <Column><h5>{nameId}</h5></Column>
             </Row>
             <Row>
                 <Column><h5>TxValue:</h5></Column>
-                <Column><h5>{txValue}</h5></Column>
+                <Column><h5>{nameValue}</h5></Column>
             </Row>
             <Row>
                 <Column><h5>Recipient Address:</h5></Column>
@@ -176,15 +186,24 @@ Opens a confirmation modal that should sign a transaction and send it to Electru
                 </Column>
             </Row>
             <Row>
-                <Column><h5>Storage Fee:</h5></Column>
-                <Column>
-                    <TextInput type="number" bind:value={storageFee}  min="0" />
-                </Column>
-            </Row>
-            <Row>
                 <Column><h5>Transaction Fee:</h5></Column>
                 <Column>
                     <TextInput type="number" bind:value={transactionFee}  min="0" />
+                </Column>
+            </Row>
+            {#if nameId}
+              <Row>
+                  <Column><h5>Storage Fee:</h5></Column>
+                  <Column>
+                  <TextInput type="number" bind:value={storageFee}  min="0" />
+                  </Column>
+              </Row>
+            {/if}
+
+            <Row>
+                <Column><h5>Min Relay Fee:</h5></Column>
+                <Column>
+                    <TextInput type="number" value={Number($electrumBlockchainRelayfee*100000000)}  min="0" />
                 </Column>
             </Row>
             <Row>

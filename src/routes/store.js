@@ -23,5 +23,6 @@ export const history = writable();
 export const txs = writable([]);
 export const inputCount = writable(0);
 export const outputCount = writable(0);
+export const namesCount = writable(0);
 
 

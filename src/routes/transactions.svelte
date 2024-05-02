@@ -1,4 +1,5 @@
 <script>
+    import { fade } from "svelte/transition";
     import {
         Button,
         Column,
@@ -6,6 +7,7 @@
         Pagination,
         Row,
         TextInput,
+        ToastNotification,
         Toolbar, ToolbarBatchActions,
         ToolbarContent,
         ToolbarSearch
@@ -22,7 +24,7 @@
         history,
         txs,
         inputCount,
-        outputCount,
+        outputCount, namesCount
     } from './store.js';
 
     import { afterUpdate, onDestroy, onMount } from 'svelte';
@@ -31,8 +33,8 @@
     import { getAddressTxs } from '$lib/getAddressTxs.js';
     import { getBalance } from '$lib/getBalance.js';
 
-    let txName = ""
-    let txValue = ""
+    let nameId = ""
+    let nameValue = ""
     let doiAddress = "";
     let recipientAddress = ''
     let doiAmount = 0
@@ -44,6 +46,10 @@
     let selectedRowIds = [];
     let batchSelection = true
     let active = true
+
+    let timeout
+    let toastNotification
+    $: showNotification = timeout !== undefined;
 
     let randomServer //TODO can we improve that?
 
@@ -120,6 +126,7 @@
     <Row><Column>Transactions count:</Column><Column>{$txs.length}</Column><Column></Column><Column></Column></Row>
     <Row><Column>Inputs count:</Column><Column>{$inputCount}</Column><Column></Column><Column></Column></Row>
     <Row><Column>Output count:</Column><Column>{$outputCount}</Column><Column></Column><Column></Column></Row>
+    <Row><Column>Names count:</Column><Column>{$namesCount}</Column><Column></Column><Column></Column></Row>
 </Grid>
 <Grid class="grid-spacing">
     <Row>
@@ -131,6 +138,9 @@
               on:keydown={ async (event) => {
                   if (event.key === 'Enter') {
                     $txs=[]
+                    $namesCount=0
+                    $inputCount=0
+                    $outputCount=0
                     balance = await getBalance(doiAddress, $electrumClient, $network);
                     await getAddressTxs(doiAddress,$history,$electrumClient,$network);
                   }
@@ -151,7 +161,9 @@
     headers={[
         { key: "formattedBlocktime", value: "Time"},
         { key: "txid", value: "TxId" },
-        { key: "address", value: "Address" },
+      //  { key: "address", value: "Address" },
+        { key: "nameId", value: "Name" },
+        { key: "nameValue", value: "Value" },
         { key: "confirmations", value: "Confirmations" },
         { key: "value", value: "Amount (DOI)" }
     ]}
@@ -180,13 +192,13 @@
           class="margin"
           name="txName"
           labelText="Enter a name to store on Doichain"
-          bind:value={txName}
+          bind:value={nameId}
         />
         <TextInput
           class="margin"
           name="txValue"
           labelText="Enter value to store on Doichain"
-          bind:value={txValue}
+          bind:value={nameValue}
         />
         <TextInput
           class="margin"
@@ -200,13 +212,22 @@
           bind:value={doiAmount}
         />
         <Button disabled={selectedRowIds.length === 0} on:click={() => {
-             sign({
+            
+             const result = sign({
                  senderAddress: doiAddress,
                  recipientAddress,
                  doiAmount,
                  txName,
                  txValue,
                  utxos: $txs.filter(tx => selectedRowIds.includes(tx.id))})
+
+                 if(result) {
+                    toastNotification = "Transaction has been successfully sent";
+                    timeout = 3000;
+                 }else{
+                    toastNotification = "Transaction failed";
+                    timeout = 3000;
+                 }
         }}>Sign</Button>
         </ToolbarBatchActions>
         <ToolbarContent>
@@ -224,6 +245,20 @@
     totalItems={filteredRowIds.length}
     pageSizeInputDisabled
 />
+{#if showNotification}
+    <div transition:fade>
+        <ToastNotification
+            {timeout}
+            kind="success"
+            title="Success"
+            subtitle={toastNotification}
+            caption={new Date().toLocaleString()}
+            on:close={() => {
+                timeout = undefined;
+            }}
+        />
+    </div>
+{/if}
 <style>
     :global(.datatable) {
         margin-top: 3rem;

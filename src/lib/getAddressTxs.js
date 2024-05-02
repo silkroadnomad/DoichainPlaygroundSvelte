@@ -2,12 +2,12 @@ import { address, crypto } from 'bitcoinjs-lib';
 import { DB_NAME, openDB, readData, addData } from '$lib/indexedDBUtil.js';
 import moment from 'moment';
 import Buffer from 'vite-plugin-node-polyfills/shims/buffer/index.js';
-import { txs, inputCount,outputCount  } from '../routes/store.js';
+import { txs, inputCount, outputCount, namesCount } from '../routes/store.js';
 
-
-let _inputCount,_outputCount = 0;
+let _inputCount,_outputCount,_namesCount = 0;
 inputCount.subscribe((v) => _inputCount = v);
 outputCount.subscribe((v) => _outputCount = v);
+namesCount.subscribe((v) => _namesCount = v);
 
 export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient, _network) => {
     console.log("now getting transactions of ",_doiAddress)
@@ -18,11 +18,13 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
 
     let _history;
     let ourTxs = []
-
+    let electrumUTXOs = []
     if (navigator.onLine) {
         console.log("opening db",DB_NAME)
         // const db = await openDB(DB_NAME,"history")
         try {
+            electrumUTXOs = await _electrumClient.request('blockchain.scripthash.listunspent', [reversedHash]);
+            console.log("electrumUTXOs",electrumUTXOs)
             _historyStore = await _electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
              // await addData(db,{ id: reversedHash + "_history", data: _historyStore });
         } catch (error) {
@@ -82,10 +84,16 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
                 _tx.address = vout.scriptPubKey?.addresses?vout.scriptPubKey?.addresses[0]:_doiAddress
             } else {
                 const chunks = vout.scriptPubKey.asm.split(" ")
+
                 _tx.nameId = vout.scriptPubKey.nameOp.name
                 _tx.nameValue = vout.scriptPubKey.nameOp.value
-                _tx.address = conv(chunks[7], { in: 'hex', out: 'binary' })
+                _tx.address = vout.scriptPubKey?.addresses[0]
+                namesCount.set(_namesCount+=1)
+                //_tx.address = Buffer.from(chunks[7], 'hex').toString() //.toString('utf-8');
 
+                // console.log(asciiString);
+                // _tx.address = conv(chunks[7], { in: 'hex', out: 'binary' })
+                console.log("tx",_tx.id)
                 console.log('name_op nameId', _tx.nameId)
                 console.log('name_op nameValue', _tx.nameValue)
                 console.log('name_op address', _tx.address)
@@ -95,7 +103,10 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
             _tx.n=vout.n
 
             if(_tx.address===_doiAddress){
-                _tx.utxo=true
+                const isUTXO = electrumUTXOs.some(utxo => utxo.tx_hash === _tx.txid && utxo.tx_pos===_tx.n);
+                if (isUTXO) {
+                    _tx.utxo = true;
+                }
                 ourTxs.push(_tx);
                 txs.update(_txs => {
                     _txs.push(_tx);
@@ -105,7 +116,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
             }
         }
     }
-
+    console.log("ourTxs",ourTxs)
     // Group txs by txid and accumulate values for txs with the same txid
     const groupedTxs = ourTxs.reduce((acc, tx) => {
         // Use txid as the key for grouping
