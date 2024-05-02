@@ -128,7 +128,7 @@
     onMount(loadMnemonic)
 </script>
 
-<h1>Welcome to the Doichain Playground</h1>
+<h1>Welcome to Doichain Developer Playground</h1>
 <h2>Key and Address Generation</h2>
 
 <Grid>

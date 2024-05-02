@@ -99,7 +99,7 @@ With the Doichain Playground you can:
     - [ ] generate change address from derivation path 
   - [x] enter fee (and substract from utxos amount to be sent)
   - [x] sign transaction by wif (currently derived from mnemonic and wallet screen)
-  - [x] sign transaction by seed (from mnemonic dropdown)
+  - [x] sign transaction by seed phrase (from mnemonic dropdown)
   - [ ] sign transaction by scanning qr-code with DoiWallet (BlueWallet)
   - [ ] sign in Electrum as partially signed transaction)
   - [ ] sign by hardware wallet 
@@ -125,6 +125,7 @@ With the Doichain Playground you can:
 - [ ] research and test DoiWallet and ElectrumDoi seed phrases and keys
 
 ## Nice 2 have:
+- [ ] show in mnemonic screen selected legacy (or segwit?) address in transactions
 - [ ] transactions should toggle between DOI/schwartz
 - [x] calculate fees depending on transaction size
 - [ ] auto-select enough utxo's from the datatable depending on the amount to send
