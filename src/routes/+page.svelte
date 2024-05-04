@@ -27,7 +27,7 @@
 
     let wallets = [];
     let mnemonic = '';
-    let selectedMnemonic;
+    let selectedMnemonic = localStorage.getItem('selectedMnemonic') || 0
     let password = 'mnemonic';
     let root = '';
     let xpriv = '';
@@ -67,6 +67,14 @@
     $: if (password) wallets = wallets //as password changes we need to rerender the wallets in order to decrypt the contents
     $: if (mnemonic && password) { try { generateKeys() } catch(e){ console.error(e) }}
     $: if ($network &&derivationPath && root) {try { generateAddresses() } catch(e){ console.error(e) }}
+    $: {
+        if(wallets?.length>0 && selectedMnemonic){
+            localStorage.setItem("selectedMnemonic",selectedMnemonic)
+            const selectedWallet = wallets.find(w => w.id.toString() === selectedMnemonic)
+            mnemonic = decryptMnemonic(selectedWallet.mnemonic)
+
+        }
+    }
 
     let timeout
     let toastNotification
@@ -139,7 +147,6 @@
         await generateKeys()
     });
 
-    $: console.log("selectedMnemonic", selectedMnemonic);
 </script>
 
 <h1>Welcome to Doichain Developer Playground</h1>
@@ -149,10 +156,7 @@
     <Row>
         <Column><h2>1. Generate mnemonic for a new wallet</h2></Column>
         <Column>
-            <Select labelText="Select Wallet" bind:selected={selectedMnemonic} on:change={(e) => {
-                mnemonic = decryptMnemonic(wallets.find(w => w.id.toString() === e.target.value).mnemonic);
-                localStorage.setItem('selectedMnemonic', e.target.value); // Store the selected mnemonic ID, not the index
-            }}>
+            <Select labelText="Select Wallet" bind:selected={selectedMnemonic}>
                 <SelectItem disabled value="" text="Choose a wallet" />
                 {#each wallets as wallet}
                     <SelectItem value={wallet.id.toString()} text={`${decryptMnemonic(wallet.mnemonic)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />

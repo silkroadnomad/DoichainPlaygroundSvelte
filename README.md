@@ -130,7 +130,7 @@ With the Doichain Playground you can:
 
 ## Nice 2 have:
 - [ ] show fees in datatable
-- [ ] show in mnemonic screen selected legacy (or segwit?) address in transactions
+- [x] show mnemonic screen selected legacy (or segwit?) address in transactions
 - [ ] transactions should toggle between DOI/schwartz
 - [x] calculate fees depending on transaction size
 - [ ] auto-select enough utxo's from the datatable depending on the amount to send
@@ -150,13 +150,14 @@ With the Doichain Playground you can:
 
 ## Bugs
 - [ ] better error messages and notifications 
-- [ ] if no or wrong private key, transaction fee cannot be calculated
+- [ ] if no or wrong private key, transaction fee cannot be calculated? Could it be partially signed with a public-key instead? 
 - [ ] when iterating over utxos, datatable doesn't update reactively (but counters are doing so)
+- [ ] Chrome does not connect to local Electrum websocket with self signed ssl certificate - warning and fix needed 
+- [ ] connecting a failing Electrumx node needs to try the next server and remove it from the current list
+- [x] auto selected mnemonic generates wrong address set - dropdown needs to re-select mnemonic then its corretc
 - [x] when spending an utxo, for some reason it could be re-used (chosen by checkbox) for a new transaction and caused error when sending - re-read utxos  
   - [x] counter check with utxos coming live from Electrumx and exlude utxos not in ElectrumX 
-- [ ] Chrome does not connect to local Electrum websocket with self signed ssl certificate - warning and fix needed 
 - [x] ~~sending doiAmount to an address sents the fee instead of doiAmount~~
-- [ ] connecting a failing Electrumx node needs to try the next server and remove it from the current list
 - [x] dc1qeefktgyshgm0hackjds55ry2l2936fw2uegw09 doesn't show any transactions or takes very long
 - [x] changing network doesn't result in changing addresses in +page.svelte
 

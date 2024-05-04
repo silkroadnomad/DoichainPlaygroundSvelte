@@ -25,7 +25,8 @@
         currentWif,
         txs,
         inputCount,
-        outputCount, namesCount
+        outputCount, namesCount,
+        currentAddressP2pkh
     } from './store.js';
 
     import { afterUpdate, onDestroy, onMount } from 'svelte';
@@ -36,7 +37,7 @@
 
     let nameId = ""
     let nameValue = ""
-    let doiAddress = "";
+    let doiAddress = $currentAddressP2pkh
     let recipientAddress = ''
     let doiAmount = 0
     let balance = { confirmed:0 ,unconfirmed:0 }
@@ -55,10 +56,10 @@
     let randomServer //TODO can we improve that?
 
     $: doiAmount = Number(doiAmount)
-    $: utxoSum = $txs.reduce((sum, utxo) => sum + (utxo.value*100000000), 0);
-    $: utxoSelected = $txs.filter(tx => selectedRowIds.includes(tx.id)).reduce((sum, utxo) => sum + (utxo.value*100000000), 0);
+    $: utxoSum = Array.isArray($txs) ? $txs.reduce((sum, utxo) => sum + (utxo.value * 100000000), 0) : 0;
+    $: utxoSelected = Array.isArray($txs) ? $txs.filter(tx => selectedRowIds.includes(tx.id)).reduce((sum, utxo) => sum + (utxo.value*100000000), 0) : 0;
     $: $network?connectElectrum($network):null
-    console.log("current wif",$currentWif)
+
     const connectElectrum = async (_network) => {
         if(!_network) return
         const networkNodes = electrumServers.filter(n=>n.network===_network.name)
@@ -87,11 +88,16 @@
         });
     });
 
-    onMount(() => {
-        connectElectrum($network)
+    onMount(async () => {
+        await connectElectrum($network)
+        doiAddress = $currentAddressP2pkh || localStorage.getItem('doiAddress') || '';
+        if(doiAddress) await getAddressTxs(doiAddress, $history, $electrumClient, $network)
     });
 
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
+    $: doiAddress?localStorage.setItem('doiAddress', doiAddress):null
+
+    $:console.log("$txs",$txs)
 </script>
 
 <h2>Transactions</h2>
@@ -151,26 +157,27 @@
     </Row>
 </Grid>
 <DataTable
-    sortable
-    expandable
-    class="datatable"
-    bind:batchSelection
-    bind:selectedRowIds
-    shouldFilterRows
-    {pageSize}
-    {page}
-    bind:filteredRowIds
-    headers={[
-        { key: "formattedBlocktime", value: "Time"},
-        { key: "txid", value: "TxId" },
-      //  { key: "address", value: "Address" },
-        { key: "nameId", value: "Name" },
-        { key: "nameValue", value: "Value" },
-        { key: "confirmations", value: "Confirmations" },
-        { key: "value", value: "Amount (DOI)" }
-    ]}
-    rows={$txs}
-    rowClassName={({row}) => row.utxo?'utxo':''}
+        sortable
+        expandable
+        class="datatable"
+        bind:batchSelection
+        bind:selectedRowIds
+        shouldFilterRows
+        {pageSize}
+        {page}
+        bind:filteredRowIds
+        headers={[
+            { key: "formattedBlocktime", value: "Time"},
+            { key: "txid", value: "TxId" },
+          //  { key: "address", value: "Address" },
+            { key: "nameId", value: "NameId" },
+            { key: "nameValue", value: "NameValue" },
+            { key: "fee", value: "Fee" },
+            { key: "confirmations", value: "Confirmations" },
+            { key: "value", value: "Amount (DOI)" }
+        ]}
+        rows={$txs}
+        rowClassName={({row}) => row.utxo?'utxo':''}
     >
 
     <svelte:fragment slot="expanded-row" let:row>
@@ -179,9 +186,11 @@
 
     <svelte:fragment slot="cell" let:row let:cell>
         {#if cell.key === "value"}
-            <div style="text-align: right;">{cell.value.toFixed(8)}</div>
+            <div style="text-align: right;">{cell.value?.toFixed(8)}</div>
         {:else if cell.key === "confirmations"}
             <div style="text-align: right;">{cell.value || '0'}</div>
+        {:else if cell.key === "fee"}
+            <div style="text-align: right;">{cell.value?.toFixed(8) || '0' }</div>
         {:else}
             {cell.value || ''}
         {/if}
