@@ -155,7 +155,7 @@
             }}>
                 <SelectItem disabled value="" text="Choose a wallet" />
                 {#each wallets as wallet}
-                    <SelectItem value={wallet.id} text={`${decryptMnemonic(wallet.mnemonic)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />
+                    <SelectItem value={wallet.id.toString()} text={`${decryptMnemonic(wallet.mnemonic)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />
                 {/each}
             </Select>
             <TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} />
