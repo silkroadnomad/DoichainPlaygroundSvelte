@@ -151,7 +151,8 @@ With the Doichain Playground you can:
 - [x] transactions: display mempool transactions in transactions
 
 ## Bugs
-- [ ] dc1qaflwqfck8tgq9uj7pq8de9zjfxekvqtkf57qv9 should show 7 transactions not just 1
+- [ ] negative amounts (outflows) aren't utxos should be there for not selectable.
+- [x] dc1qaflwqfck8tgq9uj7pq8de9zjfxekvqtkf57qv9 should show 7 transactions not just 1
 - [ ] better error messages and notifications 
 - [ ] if no or wrong private key, transaction fee cannot be calculated? Could it be partially signed with a public-key instead? 
 - [ ] when iterating over utxos, datatable doesn't update reactively (but counters are doing so)

@@ -51,7 +51,6 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
 
             // await addData(db,{id: tx.tx_hash,  data: JSON.stringify(decryptedTx)});
         }
-        console.log("decryptedTx",decryptedTx)
         decryptedTx.formattedBlocktime = decryptedTx.blocktime ? moment.unix(decryptedTx.blocktime).format('YYYY-MM-DD HH:mm:ss') : 'mempool'
         decryptedTx.value = 0;
         let inputTotal = 0;
@@ -78,7 +77,6 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
                 }
                 inputTotal += spentOutput.value; // Sum up all input values
             }
-            console.log("_inputCount",_inputCount)
             inputCount.set(_inputCount += 1)
         }
 
@@ -118,6 +116,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
             if (_tx.address === _doiAddress) {
                 const isUTXO = electrumUTXOs.some(utxo => utxo.tx_hash === _tx.txid && utxo.tx_pos === _tx.n);
                 if (isUTXO) {
+                    console.log("is utxos",_tx)
                     _tx.utxo = true;
                 }
                 ourTxs.push(_tx);
@@ -126,7 +125,6 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
                 //     return _txs;
                 // });
                 outputCount.set(_outputCount += 1)
-                console.log("outputCount",_outputCount)
             }
         }
 

@@ -78,10 +78,10 @@
     afterUpdate(() => {
         $txs.forEach(tx => {
             if (!tx.utxo) {
-                const trElement = document.querySelector(`tr[data-row="${tx.id}"] > td:first-child > div`); //{> td:first-child
+                const trElement = document.querySelector(`tr[data-row="${tx.id}"] > td:nth-child(2) > div`); //{> td:first-child
                 if(trElement) trElement.style.display = "none"
             } else {
-                const trElement = document.querySelector(`tr[data-row="${tx.id}"] > td:first-child > div`); //{> td:first-child
+                const trElement = document.querySelector(`tr[data-row="${tx.id}"] > td:nth-child(2) > div`); //{> td:first-child
                 if(trElement)trElement.style.display = "contents"
             }
         });
