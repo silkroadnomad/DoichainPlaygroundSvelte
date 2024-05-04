@@ -6,7 +6,13 @@
     } from 'carbon-components-svelte';
 
     import { createEventDispatcher, onMount } from 'svelte';
-    import { electrumClient, network, electrumBlockchainRelayfee,currentWif } from '../routes/store.js';
+    import {
+        electrumClient,
+        network,
+        electrumBlockchainRelayfee,
+        currentWif,
+        currentAddressP2pkh
+    } from '../routes/store.js';
     import * as bitcoin from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
     import ECPairFactory from 'ecpair';
@@ -21,8 +27,8 @@
     export let heading = 'Simple Coin Transaction ';
     export let PrimaryButtonText = 'Sign transaction'
     export let CancelOperationButtonText = 'Cancel'
-    export let senderAddress 
-    export let recipientAddress
+    export let senderAddress = $currentAddressP2pkh
+    export let recipientAddress = $currentAddressP2pkh
     export let nameId
     export let nameValue
 
@@ -47,9 +53,6 @@
     $: utxoSum = utxos.reduce((sum, utxo) => sum + (utxo.value*100000000), 0); //get sum of all utxo values
     $: changeAmount = utxoSum - (doiAmount+transactionFee)
 
-    console.log("utxos",utxos)
-    console.log("utxoSum",utxoSum)
-
     onMount(()=>{
         signTransaction().then((tx)=>{
             byteLength = tx.byteLength()//schwartz per byte
@@ -66,37 +69,49 @@
             keyPair = ECPair.fromWIF($currentWif,$network);
 
         const psbt = new bitcoin.Psbt({ network: $network });
+        let totalInputAmount = 0;
+
         utxos.forEach(utxo => {
-
             //TODO https://bitcoin.stackexchange.com/questions/116128/how-do-i-determine-whether-an-input-or-output-is-segwit-revisited
-            const scriptPubKeyHex = utxo.scriptPubKey; // Assuming this is provided in hex format
-            const isSegWit = scriptPubKeyHex?.startsWith('0014') || scriptPubKeyHex?.startsWith('0020');
+            const valueInSatoshis = Math.round(utxo.value * 100000000);
 
-            if (isSegWit) {
-                // This is a SegWit UTXO
-                psbt.addInput({
-                    hash: utxo.txid,
-                    index: utxo.n,
-                    witnessUtxo: {
-                        script: Buffer.from(scriptPubKeyHex, 'hex'),
-                        value: utxo.value,
+            utxo.vout.forEach(vout =>{
+                const scriptPubKeyHex = vout.scriptPubKey.hex
+                const isSegWit = scriptPubKeyHex?.startsWith('0014') || scriptPubKeyHex?.startsWith('0020');
+                if(vout.scriptPubKey.addresses[0]===senderAddress){
+                    console.log("adding ",utxo)
+                    if (isSegWit) {
+                        // This is a SegWit UTXO
+                        psbt.addInput({
+                            hash: utxo.txid,
+                            index: vout.n,
+                            witnessUtxo: {
+                                script: Buffer.from(scriptPubKeyHex, 'hex'),
+                                value: valueInSatoshis,
+                            }
+                        });
+                    } else {     // This is a non-SegWit UTXO
+                        psbt.addInput({
+                            hash: utxo.txid,
+                            index: vout.n,
+                            nonWitnessUtxo: Buffer.from(utxo.hex, 'hex')
+                        });
                     }
-                });
-            } else {     // This is a non-SegWit UTXO
-                psbt.addInput({
-                    hash: utxo.txid,
-                    index: utxo.n,
-                    nonWitnessUtxo: Buffer.from(utxo.hex, 'hex')
-                });
-            }
-        });
+                    totalInputAmount += valueInSatoshis;
+                }
 
+            });
+        })
+
+
+        let totalOutputAmount = 0;
         if(!nameId){
             console.log("recipientAddress coin output",recipientAddress)
             psbt.addOutput({
                 address: recipientAddress,
                 value: doiAmount,
             });
+            totalOutputAmount += doiAmount;
         }
         else{
             console.log("recipientAddress namescript output",recipientAddress)
@@ -106,21 +121,33 @@
                 script: opCodesStackScript,
                 value: doiAmount
             })
+            totalOutputAmount += doiAmount;
         }
         psbt.addOutput({
             address: changeAddress,
             value: changeAmount,
         });
+        totalOutputAmount += changeAmount;
+        console.log("changeAddress:     ", changeAmount);
+        console.log("Total Input Amount:", totalInputAmount);
+        console.log("Total Output Amount:", totalOutputAmount);
 
-        utxos.forEach((utxo, index) => {
-             psbt.signInput(index, keyPair);
+        utxos.forEach(utxo => {
+            utxo.vout.forEach((utxo, index) => {
+                if(utxo.scriptPubKey.addresses[0]===senderAddress){
+                    console.log("singing utxo",utxo)
+                    console.log("singing index",index)
+                    psbt.signInput(index, keyPair);
+                }
+            });
         });
 
-        // psbt.validateSignaturesOfInput(0, validator); //TODO https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts
-        psbt.finalizeAllInputs();
+            // psbt.validateSignaturesOfInput(0, validator); //TODO https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts
+            psbt.finalizeAllInputs();
 
-        return psbt.extractTransaction()
+            return psbt.extractTransaction()
     }
+    // })
 
 </script>
 

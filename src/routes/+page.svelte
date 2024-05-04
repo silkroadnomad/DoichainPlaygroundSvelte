@@ -72,7 +72,6 @@
             localStorage.setItem("selectedMnemonic",selectedMnemonic)
             const selectedWallet = wallets.find(w => w.id.toString() === selectedMnemonic)
             mnemonic = decryptMnemonic(selectedWallet.mnemonic)
-
         }
     }
 

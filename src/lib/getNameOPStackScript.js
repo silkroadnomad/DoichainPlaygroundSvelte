@@ -50,20 +50,20 @@ export const getNameOPStackScript = (nameId, nameValue, recipientAddress, networ
         throw new Error(ERRORS.INVALID_ADDRESS + error.message);
     }
 
-    const scriptCommands = [
-        'OP_10',
-        op_name,
-        op_value,
-        'OP_2DROP',
-        'OP_DROP',
-        'OP_DUP',
-        'OP_HASH160',
-        op_address,
-        'OP_EQUALVERIFY',
-        'OP_CHECKSIG'
-    ].join(' ');
-
-    const opCodesStackScript = script.fromASM(scriptCommands.trim());
+    const opCodesStackScript = script.fromASM(
+      `
+                                              OP_10
+                                              ${op_name}
+                                              ${op_value}
+                                              OP_2DROP
+                                              OP_DROP
+                                              OP_DUP
+                                              OP_HASH160
+                                              ${op_address}
+                                              OP_EQUALVERIFY
+                                              OP_CHECKSIG
+                                        `.trim().replace(/\s+/g, ' '),
+    )
     console.log(opCodesStackScript);
     return opCodesStackScript;
 };

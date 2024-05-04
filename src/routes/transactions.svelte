@@ -38,7 +38,7 @@
     let nameId = ""
     let nameValue = ""
     let doiAddress = $currentAddressP2pkh
-    let recipientAddress = ''
+    let recipientAddress = $currentAddressP2pkh
     let doiAmount = 0
     let balance = { confirmed:0 ,unconfirmed:0 }
     let pageSize = 10;

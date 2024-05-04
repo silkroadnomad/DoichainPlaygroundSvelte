@@ -106,7 +106,7 @@ With the Doichain Playground you can:
     - [ ] Ledger
     - [ ] BitBox
     - [ ] Trezor
-- [x] create name_doi
+- [x] create name_op transaction
   - [x] add storage fee to transaction fee calculation
   - [x] add nameId and nameValue to signing modal
   - [x] legacy name_op transactions
@@ -129,24 +129,24 @@ With the Doichain Playground you can:
 - [ ] research and test DoiWallet and ElectrumDoi seed phrases and keys
 
 ## Nice 2 have:
-- [ ] show fees in datatable
-- [x] show mnemonic screen selected legacy (or segwit?) address in transactions
-- [ ] transactions should toggle between DOI/schwartz
-- [x] calculate fees depending on transaction size
-- [ ] auto-select enough utxo's from the datatable depending on the amount to send
-- [x] progress bar or similar when loading many txs
-- [ ] indexDB cache for transaction history and its txs 
-- [ ] add xpub support for transaction list (full wallet balance and txs) 
-- [x] choose current ElectrumX from random list
-- [ ] deploy to IPFS
-- [ ] choose from different derivation path standards (bip32, bip44, bip49, ...)
-- [ ] test DoiWallet and ElectrumDoi seed phrases and keys
-- [ ] use alternatively 24-words for seed phrases
-- [x] add network dropdown 
+- [x] transactions: show fees in datatable
+- [x] mnemonic / transactions: show mnemonic screen selected legacy (or segwit?) address in transaction list
+- [ ] transactions: amounts should toggle between DOI/schwartz (and store value in localhost default DOI)
+- [x] transaction signing: calculate fees depending on transaction size
+- [ ] transaction signing: auto-select enough utxo's from the datatable depending on the amount to send
+- [x] transactions: progress bar or similar when loading many txs
+- [ ] transactions: indexDB cache for transaction history and its txs 
+- [ ] transactions: add xpub support for transaction list (full wallet balance and txs) 
+- [x] mnemonic / transactions: choose current ElectrumX from random list
+- [ ] app: deploy to IPFS
+- [ ] mnemonic: choose from different derivation path standards (bip32, bip44, bip49, ...)
+- [ ] mnemonic: test DoiWallet and ElectrumDoi seed phrases and keys
+- [ ] mnemonic: use alternatively 24-words for seed phrases
+- [x] mnemonic: add network dropdown 
   - [ ] add more networks (e.g. Bitcoin-Mainnet, Bitcoin-Testnet)
-- [ ] use a better entropy / random generator
-- [x] expandable datatable rows with raw transaction details
-- [x] display mempool transactions in transactions
+- [ ] mnemonic: use a better entropy / random generator
+- [x] transactions: expandable datatable rows with raw transaction details
+- [x] transactions: display mempool transactions in transactions
 
 ## Bugs
 - [ ] better error messages and notifications 
