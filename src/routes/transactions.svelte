@@ -22,13 +22,12 @@
         electrumBlockchainRelayfee,
         network,
         history,
-        currentWif,
         txs,
         inputCount,
         outputCount, namesCount,
         currentAddressP2pkh
     } from './store.js';
-
+	  import { path } from './router.js'
     import { afterUpdate, onDestroy, onMount } from 'svelte';
     import { sign} from '$lib/signTransactionModal.js'
     import { ElectrumxClient } from '$lib/electrumx-client.js';
@@ -37,7 +36,7 @@
 
     let nameId = ""
     let nameValue = ""
-    let doiAddress = $currentAddressP2pkh
+    let doiAddress = $currentAddressP2pkh || $path.substring($path.lastIndexOf("/")+1) || ''
     let recipientAddress = $currentAddressP2pkh
     let doiAmount = 0
     let balance = { confirmed:0 ,unconfirmed:0 }
@@ -97,7 +96,7 @@
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
     $: doiAddress?localStorage.setItem('doiAddress', doiAddress):null
 
-    $:console.log("$txs",$txs)
+    $:console.log("$path",$path)
 </script>
 
 <h2>Transactions</h2>

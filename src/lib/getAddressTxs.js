@@ -37,7 +37,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
         _historyStore = _history ? _history.data : null;
     }
 
-    console.log('_historyStore', _historyStore)
+    // console.log('_historyStore', _historyStore)
     for (const tx of _historyStore) {
 
         // const db = await openDB(DB_NAME,"txs")
@@ -55,8 +55,8 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
         decryptedTx.value = 0;
         let inputTotal = 0;
         let outputTotal = 0;
-        console.log("decryptedTx",decryptedTx)
-        console.log("decryptedTx.formattedBlocktime",decryptedTx.formattedBlocktime)
+        // console.log("decryptedTx",decryptedTx)
+        // console.log("decryptedTx.formattedBlocktime",decryptedTx.formattedBlocktime)
 
         for (const [index, vin] of decryptedTx.vin.entries()) {
             if (!vin.coinbase) {
@@ -128,17 +128,17 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
         }
 
         const fee = inputTotal - outputTotal; // Calculate the fee
-        console.log("fee",fee)
+        // console.log("fee",fee)
         //we forgot the fee we need to add it now
         ourTxs.forEach(__tx => {
-            console.log("__tx.txid",__tx.txid)
-            console.log("tx",decryptedTx.txid)
+            // console.log("__tx.txid",__tx.txid)
+            // console.log("tx",decryptedTx.txid)
             if (__tx.txid.startsWith(decryptedTx.txid)) {
                 __tx.fee = fee;
             }
         });
 
-        console.log("ourTxs", ourTxs)
+        // console.log("ourTxs", ourTxs)
         // Group txs by txid and accumulate values for txs with the same txid
         const groupedTxs = ourTxs.reduce((acc, tx) => {
             // Use txid as the key for grouping

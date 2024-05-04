@@ -116,12 +116,14 @@ With the Doichain Playground you can:
   - [ ] create name_show call [How is that done in electrum-nmc](https://github.com/namecoin/electrum-nmc/blob/b0f3af4a8ef64211fb27c21c6985352ecc8b9fdc/electrum_nmc/electrum/commands.py#L1447)
   - [ ] name_first, name_update transaction
   - [ ] scan blockchain for name ops identify & categories
-    - [ ] namespaces (e.g. d/, doi/, nfc/, libp2p/, jpg/, png/, s/)
-  - [ ] watch live for name ops
-    - [ ] display data
-- [x] show min-relay fee in signing modal
-- [ ] create a proof-of-existence example
+    - [ ] namespaces (e.g. did/ id/ d/, doi/, nfc/, libp2p/, jpg/, png/, s/)
+- [ ] watch live for name ops
+  - [ ] display data depending on "content-type" / namespace
 - [ ] create Doichain-NFT (NFC non-fungible-coin) example
+  - [ ] scan blockchain backwards from now if nft/ found 
+  - [ ] display media (png, jpg, etc.)
+- [ ] create a proof-of-existence example
+- [x] show min-relay fee in signing modal
 - [ ] find and show NFCs via Electrumx
 - [ ] create libp2p seed node discovery module  
 - [ ] spend from a multisig address
@@ -149,6 +151,7 @@ With the Doichain Playground you can:
 - [x] transactions: display mempool transactions in transactions
 
 ## Bugs
+- [ ] dc1qaflwqfck8tgq9uj7pq8de9zjfxekvqtkf57qv9 should show 7 transactions not just 1
 - [ ] better error messages and notifications 
 - [ ] if no or wrong private key, transaction fee cannot be calculated? Could it be partially signed with a public-key instead? 
 - [ ] when iterating over utxos, datatable doesn't update reactively (but counters are doing so)
