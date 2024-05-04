@@ -107,24 +107,29 @@ With the Doichain Playground you can:
     - [ ] BitBox
     - [ ] Trezor
 - [x] create name_doi
-  - [ ] name_first, name_update transaction
   - [x] add storage fee to transaction fee calculation
   - [x] add nameId and nameValue to signing modal
   - [x] legacy name_op transactions
-  - [?] segwit name_op transactions
+  - [ ] segwit name_op transactions (untested)
   - [x] index name_op transactions 
   - [x] show name op transactions in transaction list 
   - [ ] create name_show call [How is that done in electrum-nmc](https://github.com/namecoin/electrum-nmc/blob/b0f3af4a8ef64211fb27c21c6985352ecc8b9fdc/electrum_nmc/electrum/commands.py#L1447)
+  - [ ] name_first, name_update transaction
+  - [ ] scan blockchain for name ops identify & categories
+    - [ ] namespaces (e.g. d/, doi/, nfc/, libp2p/, jpg/, png/, s/)
+  - [ ] watch live for name ops
+    - [ ] display data
 - [x] show min-relay fee in signing modal
 - [ ] create a proof-of-existence example
 - [ ] create Doichain-NFT (NFC non-fungible-coin) example
-- [ ] create libp2p seed node discovery module  
 - [ ] find and show NFCs via Electrumx
+- [ ] create libp2p seed node discovery module  
 - [ ] spend from a multisig address
 - [ ] automate spending from a multisig address
 - [ ] research and test DoiWallet and ElectrumDoi seed phrases and keys
 
 ## Nice 2 have:
+- [ ] show fees in datatable
 - [ ] show in mnemonic screen selected legacy (or segwit?) address in transactions
 - [ ] transactions should toggle between DOI/schwartz
 - [x] calculate fees depending on transaction size
@@ -140,6 +145,8 @@ With the Doichain Playground you can:
 - [x] add network dropdown 
   - [ ] add more networks (e.g. Bitcoin-Mainnet, Bitcoin-Testnet)
 - [ ] use a better entropy / random generator
+- [x] expandable datatable rows with raw transaction details
+- [x] display mempool transactions in transactions
 
 ## Bugs
 - [ ] better error messages and notifications 
