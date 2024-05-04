@@ -7,62 +7,63 @@ import {address,script} from 'bitcoinjs-lib';
 export const NAME_MAX_LENGTH = 255
 export const VALUE_MAX_LENGTH = 520
 
+const ERRORS = {
+    NAME_ID_DEFINED: "nameId and nameValue must be defined",
+    NAME_ID_LENGTH: `nameId must be at least 3 characters and not longer than ${NAME_MAX_LENGTH}`,
+    NAME_VALUE_LENGTH: `nameValue must not be longer than ${VALUE_MAX_LENGTH}`,
+    INVALID_ADDRESS: "Invalid recipient address: "
+};
+
 /**
- * Creates a NameOPStackScript from a nameId, nameValue and recipientAddress
- * https://github.com/brandonrobertz/bitcore-namecoin/blob/master/lib/names.js
- * https://github.com/doichain/doichain-transaction
+ * Creates a NameOPStackScript from a nameId, nameValue, and recipientAddress
+ * Reference implementations:
+ * - https://github.com/brandonrobertz/bitcore-namecoin/blob/master/lib/names.js
+ * - https://github.com/doichain/doichain-transaction
  *
- * @param nameId
- * @param nameValue
- * @param destAddress
- * @returns {*}
+ * @param {string} nameId - The identifier for the name.
+ * @param {string} nameValue - The value associated with the name.
+ * @param {string} recipientAddress - The recipient's Doichain address.
+ * @param {string} network - The Doichain network (e.g., 'mainent', 'testnet', 'regtest').
+ * @returns {Buffer} The compiled script as a Buffer.
  */
-export const getNameOPStackScript = (nameId,nameValue,recipientAddress,network) => {
-	if(!nameId || !nameValue)
-		throw new Error("nameId and nameValue must defined");
+export const getNameOPStackScript = (nameId, nameValue, recipientAddress, network) => {
+    if (!nameId || !nameValue) {
+        throw new Error(ERRORS.NAME_ID_DEFINED);
+    }
 
-	if(nameId.length > NAME_MAX_LENGTH || nameId.length < 3)
-		throw new Error(`nameId must be at least 3 characters and not longer then ${NAME_MAX_LENGTH}`);
+    if (nameId.length > NAME_MAX_LENGTH || nameId.length < 3) {
+        throw new Error(ERRORS.NAME_ID_LENGTH);
+    }
 
-	if(nameValue.length > VALUE_MAX_LENGTH)
-		throw new Error(`nameValue must be not longer then ${VALUE_MAX_LENGTH}`);
+    if (nameValue.length > VALUE_MAX_LENGTH) {
+        throw new Error(ERRORS.NAME_VALUE_LENGTH);
+    }
 
-	const op_name = Buffer.from(nameId).toString('hex');
-	const op_value = Buffer.from(nameValue).toString('hex');
+    const op_name = Buffer.from(nameId).toString('hex');
+    const op_value = Buffer.from(nameValue).toString('hex');
 
-	//const op_name = converter(nameId).toHexString() //conv(nameId, {in: 'binary', out: 'hex'})
-	//let op_value = converter(nameValue).toHexString() //conv(nameValue, {in: 'binary', out: 'hex'})
-	// const op_name = Buffer.from(nameId, 'binary').toString('hex');
-	// let op_value = Buffer.from(nameValue, 'binary').toString('hex');
+    let op_address;
+    try {
+        const decoded = address.fromBase58Check(recipientAddress, network);
+        op_address = decoded.hash.toString('hex');
+    } catch (error) {
+        throw new Error(ERRORS.INVALID_ADDRESS + error.message);
+    }
 
-	//TODO support segwit addrsses
-	// const op_address = base58.decode(recipientAddress).toString('hex').substr(2, 40);
-	let op_address;
-	try {
-		const decoded = address.fromBase58Check(recipientAddress,network);
-		op_address = decoded.hash.toString('hex');
-	} catch (error) {
-		throw new Error("Invalid recipient address: " + error.message);
-	}
-	//op_address = op_address.substring(2,40)
+    const scriptCommands = [
+        'OP_10',
+        op_name,
+        op_value,
+        'OP_2DROP',
+        'OP_DROP',
+        'OP_DUP',
+        'OP_HASH160',
+        op_address,
+        'OP_EQUALVERIFY',
+        'OP_CHECKSIG'
+    ].join(' ');
 
-	const opCodesStackScript = script.fromASM(
-		`
-                                              OP_10
-                                              ${op_name}
-                                              ${op_value}
-                                              OP_2DROP
-                                              OP_DROP
-                                              OP_DUP
-                                              OP_HASH160
-                                              ${op_address}
-                                              OP_EQUALVERIFY
-                                              OP_CHECKSIG
-                                        `.trim().replace(/\s+/g, ' '),
-	)
-	console.log(opCodesStackScript)
-	return opCodesStackScript
-}
-
-
-
+    const opCodesStackScript = script.fromASM(scriptCommands.trim());
+    console.log(opCodesStackScript);
+    return opCodesStackScript;
+};
