@@ -152,6 +152,7 @@
 </Grid>
 <DataTable
     sortable
+    expandable
     class="datatable"
     bind:batchSelection
     bind:selectedRowIds
@@ -171,6 +172,11 @@
     rows={$txs}
     rowClassName={({row}) => row.utxo?'utxo':''}
     >
+
+    <svelte:fragment slot="expanded-row" let:row>
+        <pre>{JSON.stringify(row, null, 2)}</pre>
+    </svelte:fragment>
+
     <svelte:fragment slot="cell" let:row let:cell>
         {#if cell.key === "value"}
             <div style="text-align: right;">{cell.value.toFixed(8)}</div>

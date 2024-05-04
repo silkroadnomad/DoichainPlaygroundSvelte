@@ -50,7 +50,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
            // await addData(db,{id: tx.tx_hash,  data: JSON.stringify(decryptedTx)});
         }
 
-        decryptedTx.formattedBlocktime = moment.unix(decryptedTx.blocktime).format('YYYY-MM-DD HH:mm:ss');
+        decryptedTx.formattedBlocktime = decryptedTx.blocktime?moment.unix(decryptedTx.blocktime).format('YYYY-MM-DD HH:mm:ss'):'mempool'
         decryptedTx.value = 0; // Update this as per your logic
 
         for (const [index, vin] of decryptedTx.vin.entries()) {
