@@ -26,6 +26,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
             electrumUTXOs = await _electrumClient.request('blockchain.scripthash.listunspent', [reversedHash]);
             console.log("electrumUTXOs", electrumUTXOs)
             _historyStore = await _electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
+            console.log("_historyStore", _historyStore)
             // await addData(db,{ id: reversedHash + "_history", data: _historyStore });
         } catch (error) {
             console.error("Error fetching online, trying cache...", error);
@@ -50,12 +51,12 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
 
             // await addData(db,{id: tx.tx_hash,  data: JSON.stringify(decryptedTx)});
         }
-
+        console.log("decryptedTx",decryptedTx)
         decryptedTx.formattedBlocktime = decryptedTx.blocktime ? moment.unix(decryptedTx.blocktime).format('YYYY-MM-DD HH:mm:ss') : 'mempool'
         decryptedTx.value = 0;
         let inputTotal = 0;
         let outputTotal = 0;
-        // console.log("decryptedTx",decryptedTx)
+
         // console.log("decryptedTx.formattedBlocktime",decryptedTx.formattedBlocktime)
 
         for (const [index, vin] of decryptedTx.vin.entries()) {
@@ -77,6 +78,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
                 }
                 inputTotal += spentOutput.value; // Sum up all input values
             }
+            console.log("_inputCount",_inputCount)
             inputCount.set(_inputCount += 1)
         }
 
@@ -124,6 +126,7 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
                 //     return _txs;
                 // });
                 outputCount.set(_outputCount += 1)
+                console.log("outputCount",_outputCount)
             }
         }
 
@@ -156,6 +159,6 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
         // ourTxs = Object.values(groupedTxs);
         ourTxs = ourTxs.sort((a, b) => b.blocktime - a.blocktime);
         txs.set(ourTxs)
-        return ourTxs
     }
+    return ourTxs
 }

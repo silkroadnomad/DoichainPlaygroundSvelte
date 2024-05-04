@@ -36,7 +36,7 @@
 
     let nameId = ""
     let nameValue = ""
-    let doiAddress = $currentAddressP2pkh || $path.substring($path.lastIndexOf("/")+1) || ''
+    let doiAddress = $currentAddressP2pkh || $path.substring($path.lastIndexOf("/")+1)!=='transactions'?$path.substring($path.lastIndexOf("/")+1):localStorage.getItem('doiAddress') || ''
     let recipientAddress = $currentAddressP2pkh
     let doiAmount = 0
     let balance = { confirmed:0 ,unconfirmed:0 }
@@ -143,6 +143,7 @@
               bind:value={ doiAddress }
               on:keydown={ async (event) => {
                   if (event.key === 'Enter') {
+                      localStorage.setItem('doiAddress',doiAddress)
                     $txs=[]
                     $namesCount=0
                     $inputCount=0
