@@ -14,7 +14,10 @@
     import { generateMnemonic, mnemonicToSeedSync } from 'bip39';
     import { payments } from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
-    import { currentWif, network } from './store.js';
+    import { currentWif, network,
+     currentAddressP2pkh, 
+     currentAddressP2wpkh, 
+     currentAddressP2wpkhP2Sh } from './store.js';
     import { DB_NAME, openDB, readData, addData, deleteData } from '$lib/indexedDBUtil.js';
     import AES from 'crypto-js/aes';
     import Utf8 from 'crypto-js/enc-utf8';
@@ -43,14 +46,17 @@
         $currentWif=derivationWif
 
         addressP2pkh = payments.p2pkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
+        $currentAddressP2pkh=addressP2pkh
         addressP2wpkh = payments.p2wpkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
+        $currentAddressP2wpkh=addressP2wpkh
         addressP2wpkhP2Sh = payments.p2sh({
             redeem: payments.p2wpkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network })
         }).address;
+        $currentAddressP2wpkhP2Sh=addressP2wpkhP2Sh
     }
 
     // Generate master seed root, xpriv, and xpub
-    async function createKeys() {
+    async function generateKeys() {
         const seed = mnemonicToSeedSync(mnemonic, password);
         root = bip32.fromSeed(seed, $network);
         xpriv = root.toBase58();
@@ -59,7 +65,7 @@
     }
 
     $: if (password) wallets = wallets //as password changes we need to rerender the wallets in order to decrypt the contents
-    $: if (mnemonic && password) { try { createKeys() } catch(e){ console.error(e) }}
+    $: if (mnemonic && password) { try { generateKeys() } catch(e){ console.error(e) }}
     $: if ($network &&derivationPath && root) {try { generateAddresses() } catch(e){ console.error(e) }}
 
     let timeout
@@ -95,10 +101,12 @@
         try {
             const db = await openDB(DB_NAME, "wallets")
             wallets = await readData(db) || []
-            toastNotification = "Mnemonics have been successfully loaded."
+            selectedMnemonic = localStorage.getItem('selectedMnemonic'); // Get the mnemonic ID directly
+            console.log("Wallets loaded", wallets);
+            toastNotification = "Mnemonics have been successfully loaded.";
             timeout = 3000;
         } catch (error) {
-            toastNotification = "Failed to load mnemonics from db"
+            toastNotification = "Failed to load mnemonics from db";
             timeout = 3000;
         }
     }
@@ -125,7 +133,13 @@
         return originalText;
     }
     
-    onMount(loadMnemonic)
+    onMount(async () => {
+        await loadMnemonic();
+        selectedMnemonic = localStorage.getItem('selectedMnemonic'); // Get the mnemonic ID directly
+        await generateKeys()
+    });
+
+    $: console.log("selectedMnemonic", selectedMnemonic);
 </script>
 
 <h1>Welcome to Doichain Developer Playground</h1>
@@ -135,10 +149,13 @@
     <Row>
         <Column><h2>1. Generate mnemonic for a new wallet</h2></Column>
         <Column>
-            <Select labelText="Select Wallet" bind:selected={selectedMnemonic} on:change={(e) => mnemonic = decryptMnemonic(wallets.find(w => w.id.toString() === e.target.value).mnemonic)}>
-                <SelectItem disabled selected value="" text="Choose a wallet" />
+            <Select labelText="Select Wallet" bind:selected={selectedMnemonic} on:change={(e) => {
+                mnemonic = decryptMnemonic(wallets.find(w => w.id.toString() === e.target.value).mnemonic);
+                localStorage.setItem('selectedMnemonic', e.target.value); // Store the selected mnemonic ID, not the index
+            }}>
+                <SelectItem disabled value="" text="Choose a wallet" />
                 {#each wallets as wallet}
-                    <SelectItem value={wallet.id} text={`${decryptMnemonic(wallet.mnemonic)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />-->
+                    <SelectItem value={wallet.id} text={`${decryptMnemonic(wallet.mnemonic)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />
                 {/each}
             </Select>
             <TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} />
