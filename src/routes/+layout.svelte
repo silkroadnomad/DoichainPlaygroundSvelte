@@ -14,6 +14,7 @@
 	import { hash } from './router.js'
 	import Home from './+page.svelte'
 	import Transactions from './transactions.svelte'
+	import NameOps from './nameOpUtxos.svelte'
 	import { expoIn } from 'svelte/easing';
 
 	let isOpen
@@ -26,7 +27,8 @@
 	const routes = {
 		'/': Home,
 		'': Home,
-		'/transactions': Transactions
+		'/transactions': Transactions,
+		'/nameOpUtxos': NameOps
 	}
 	$: view = routes[$hash]
 </script>
@@ -56,6 +58,7 @@
 				<HeaderPanelDivider>Doichain</HeaderPanelDivider>
 				<HeaderPanelLink href={ `#/` }>Mnemonics, Keys & Addresses</HeaderPanelLink>
 				<HeaderPanelLink href={ `#/transactions` }>Transactions</HeaderPanelLink>
+				<HeaderPanelLink href={ `#/nameOpUtxos` }>Name Ops</HeaderPanelLink>
 
 <!--				<HeaderPanelDivider>OrbitDB</HeaderPanelDivider>-->
 <!--				<HeaderPanelLink  href={ `#/orbitdb/custom-access-controller` }>orbit-db custom access controller</HeaderPanelLink>-->

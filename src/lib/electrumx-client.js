@@ -28,6 +28,7 @@ export const createPromiseResultBatch = (resolve, reject, argz) => {
 		else resolve(result);
 	};
 };
+
 export class ElectrumxClient {
 
 	constructor(host, port, protocol, options) {
@@ -38,6 +39,10 @@ export class ElectrumxClient {
 		this.subscribe = new EventEmitter();
 		this._protocol = protocol; // saving defaults
 		this._options = options;
+	}
+
+	getStatus() {
+		return this.status;
 	}
 
 	connect() {
