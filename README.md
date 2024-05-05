@@ -115,10 +115,12 @@ With the Doichain Playground you can:
   - [x] show name op transactions in transaction list 
   - [ ] create name_show call [How is that done in electrum-nmc](https://github.com/namecoin/electrum-nmc/blob/b0f3af4a8ef64211fb27c21c6985352ecc8b9fdc/electrum_nmc/electrum/commands.py#L1447)
   - [ ] name_first, name_update transaction
-  - [ ] scan blockchain for name ops identify & categories
+  - [x] scan blockchain for name ops identify & categories
     - [ ] namespaces (e.g. did/ id/ d/, doi/, nfc/, libp2p/, jpg/, png/, s/)
-- [ ] watch live for name ops
-  - [ ] display data depending on "content-type" / namespace
+- [x] scan/watch live for name ops
+  - [x] scan backwards and display name_ops and collect namespaces
+  - [ ] scan transactions of current mempoool
+  - [ ] store found scan results in a orbitdb writable by all 
 - [ ] create Doichain-NFT (NFC non-fungible-coin) example
   - [ ] scan blockchain backwards from now if nft/ found 
   - [ ] display media (png, jpg, etc.)
