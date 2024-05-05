@@ -97,11 +97,6 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
                 _tx.address = vout.scriptPubKey?.addresses[0]
 
                 namesCount.set(_namesCount += 1)
-                //_tx.address = Buffer.from(chunks[7], 'hex').toString() //.toString('utf-8');
-
-                // console.log(asciiString);
-                // _tx.address = conv(chunks[7], { in: 'hex', out: 'binary' })
-                console.log("tx", _tx.id)
                 console.log('name_op nameId', _tx.nameId)
                 console.log('name_op nameValue', _tx.nameValue)
                 console.log('name_op address', _tx.address)

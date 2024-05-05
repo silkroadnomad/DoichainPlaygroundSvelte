@@ -2,6 +2,15 @@
     import { onMount,onDestroy } from 'svelte';
     import { ElectrumxClient } from '$lib/electrumx-client.js';
     import { electrumClient, electrumServers, network } from './store.js';
+    // import { sign } from '$lib/signTransactionModal.js';
+    import {
+        Button,
+        DataTable, Pagination,
+        Toolbar,
+        ToolbarBatchActions,
+        ToolbarContent, ToolbarSearch
+    } from 'carbon-components-svelte';
+    import moment from 'moment/moment.js';
 
     let nameSpaces = []
     let quatsch = []
@@ -12,8 +21,14 @@
     let counter = 0
     let transactionsScanned = 0
     let outputsScanned = 0
-    $:console.log("nameSpaces",nameSpaces)
-    $:console.log("quatsch",quatsch)
+
+    let filteredRowIds = [];
+    let selectedRowIds = [];
+    let batchSelection = true
+    let pageSize = 10;
+    let page = 1
+    let active = true
+
     onMount(async () => {
         if(!$electrumClient || $electrumClient.getStatus()===0)await connectElectrum();
         await scanBlockchain();
@@ -61,6 +76,7 @@
 
                             nameOpUtxos.push({
                                 txid: txDetails.txid,
+                                formattedBlocktime:  txDetails.blocktime ? moment.unix(txDetails.blocktime).format('YYYY-MM-DD HH:mm:ss') : 'mempool',
                                 n: vout.n,
                                 value: vout.value,
                                 nameId: vout.scriptPubKey.nameOp.name,
@@ -104,12 +120,118 @@ Found Quatsch:
     <li>{q}</li>
 {/each}
 <p>&nbsp;</p>
-{#if nameOpUtxos.length > 0}
-    <ul>
-        {#each nameOpUtxos as utxo}
-            <li>NameId: {utxo.nameId} nameValue: {utxo.nameValue} - txid:{utxo.txid} - Index: {utxo.n} - Value: {utxo.value}  Address: {utxo.address} </li>
-        {/each}
-    </ul>
-{:else}
-    <p>No Name Operation UTXOs found.</p>
-{/if}
+<!--{#if nameOpUtxos.length > 0}-->
+<!--    <ul>-->
+<!--        {#each nameOpUtxos as utxo}-->
+<!--            <li>NameId: {utxo.nameId} nameValue: {utxo.nameValue} - txid:{utxo.txid} - Index: {utxo.n} - Value: {utxo.value}  Address: {utxo.address} </li>-->
+<!--        {/each}-->
+<!--    </ul>-->
+<!--{:else}-->
+<!--    <p>No Name Operation UTXOs found.</p>-->
+<!--{/if}-->
+
+<DataTable
+  sortable
+  expandable
+  class="datatable"
+  bind:batchSelection
+  bind:selectedRowIds
+  shouldFilterRows
+  {pageSize}
+  {page}
+  bind:filteredRowIds
+  headers={[
+            { key: "formattedBlocktime", value: "Time"},
+            { key: "txid", value: "TxId" },
+            { key: "value", value: "Amount (DOI)" },
+            { key: "address", value: "Address" },
+            { key: "nameId", value: "NameId" },
+            { key: "nameValue", value: "NameValue" },
+        ]}
+  rows={nameOpUtxos}
+  rowClassName={({row}) => row.utxo?'utxo':''}
+>
+
+    <svelte:fragment slot="expanded-row" let:row>
+        <pre>{JSON.stringify(row, null, 2)}</pre>
+    </svelte:fragment>
+
+    <svelte:fragment slot="cell" let:row let:cell>
+        {#if cell.key === "value"}
+            <div style="text-align: right;">{cell.value?.toFixed(8)}</div>
+        {:else if cell.key === "nameId"}
+            <div style="text-align: right;">{cell.value?cell.value.substring(0,25):'?'}</div>
+        {:else if cell.key === "nameValue"}
+            <div style="text-align: right;">{cell.value?cell.value.substring(0,25):'?'}</div>
+        {:else if cell.key === "fee"}
+            <div style="text-align: right;">{cell.value?.toFixed(8) || '0' }</div>
+        {:else}
+            {cell.value || ''}
+        {/if}
+    </svelte:fragment>
+    <Toolbar>
+        <ToolbarBatchActions
+          active={selectedRowIds.length>0}
+          on:cancel={(e) => {
+                e.preventDefault();
+                selectedRowIds=[]
+                active = false;
+          }}
+        >
+<!--            <TextInput-->
+<!--              class="margin"-->
+<!--              name="nameId"-->
+<!--              labelText="Enter a name to store on Doichain"-->
+<!--              bind:value={nameId}-->
+<!--            />-->
+<!--            <TextInput-->
+<!--              class="margin"-->
+<!--              name="nameValue"-->
+<!--              labelText="Enter value to store on Doichain"-->
+<!--              bind:value={nameValue}-->
+<!--            />-->
+<!--            <TextInput-->
+<!--              class="margin"-->
+<!--              labelText="Enter recipients Doichain address "-->
+<!--              bind:value={recipientAddress}-->
+<!--            />-->
+<!--            <TextInput-->
+<!--              class="margin"-->
+<!--              labelText="Enter amount in DOI to send "-->
+<!--              type="number"-->
+<!--              bind:value={doiAmount}-->
+<!--            />-->
+            <Button disabled={selectedRowIds.length === 0} on:click={() => {
+
+             // const result = sign({
+             //     senderAddress: doiAddress,
+             //     recipientAddress,
+             //     doiAmount,
+             //     nameId,
+             //     nameValue,
+             //     utxos: $txs.filter(tx => selectedRowIds.includes(tx.id))})
+             //
+             //     if(result) {
+             //        toastNotification = "Transaction has been successfully sent";
+             //        timeout = 3000;
+             //     }else{
+             //        toastNotification = "Transaction failed";
+             //        timeout = 3000;
+             //     }
+        }}>Sign</Button>
+        </ToolbarBatchActions>
+        <ToolbarContent>
+            <ToolbarSearch
+              persistent
+              shouldFilterRows
+              bind:filteredRowIds
+            />
+        </ToolbarContent>
+    </Toolbar>
+</DataTable>
+<Pagination
+  bind:pageSize
+  bind:page
+  totalItems={filteredRowIds.length}
+  pageSizeInputDisabled
+/>
