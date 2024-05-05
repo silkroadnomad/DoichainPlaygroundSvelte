@@ -160,11 +160,11 @@ Found Quatsch:
         {#if cell.key === "value"}
             <div style="text-align: right;">{cell.value?.toFixed(8)}</div>
         {:else if cell.key === "nameId"}
-            <div style="text-align: right;">{cell.value?cell.value.substring(0,25):'?'}</div>
+            <div>{cell.value?cell.value.substring(0,10):'?'}</div>
         {:else if cell.key === "nameValue"}
-            <div style="text-align: right;">{cell.value?cell.value.substring(0,25):'?'}</div>
-        {:else if cell.key === "fee"}
-            <div style="text-align: right;">{cell.value?.toFixed(8) || '0' }</div>
+            <div>{cell.value?cell.value.substring(0,10):'?'}</div>
+        {:else if cell.key === "txid"}
+            <div >{cell.value?cell.value.substring(0,10):'?'}</div>
         {:else}
             {cell.value || ''}
         {/if}
