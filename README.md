@@ -59,11 +59,11 @@ With the Doichain Playground you can:
     - [ ] add nginx, letsencrypt and enable wss for Electrumx for production use
 - [x] generate mnemonic
 - [x] create xpriv and xpub from mnemonic 
-- [x] generate new (legacy) p2pkh addressP2pkh from a derivation path 
+- [x] generate new (legacy) p2pkh from a derivation path 
 - [x] generate wif from a derivation path
-- [x] generate a segwit addressP2pkh p2wpkh
+- [x] generate a segwit p2wpkh
   - https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/addresses.spec.ts#L57
-- [x] generate a segwit addressP2pkh p2sh from p2wpkh  
+- [x] generate a segwit p2sh from p2wpkh  
   - https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/addresses.spec.ts#L66
 - [ ] generate a P2WSH (SegWit), pay-to-multisig (3-of-4) addressP2pkh 
   - https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/addresses.spec.ts#L77
@@ -133,14 +133,16 @@ With the Doichain Playground you can:
 - [ ] research and test DoiWallet and ElectrumDoi seed phrases and keys
 
 ## Nice 2 have:
-- [x] transactions: show fees in datatable
-- [x] mnemonic / transactions: show mnemonic screen selected legacy (or segwit?) address in transaction list
+- [x] scan QR-code modal when clicking on qr-code icon next to mnemonic, xpub, xpriv, wif, 
+- [ ] electrumx connection: retry up to 10 times, recover connection when changing network (e.g. switching wifi / vp network)
 - [ ] transactions: amounts should toggle between DOI/schwartz (and store value in localhost default DOI)
-- [x] transaction signing: calculate fees depending on transaction size
 - [ ] transaction signing: auto-select enough utxo's from the datatable depending on the amount to send
-- [x] transactions: progress bar or similar when loading many txs
 - [ ] transactions: indexDB cache for transaction history and its txs 
 - [ ] transactions: add xpub support for transaction list (full wallet balance and txs) 
+- [x] transactions: show fees in datatable
+- [x] mnemonic / transactions: show mnemonic screen selected legacy (or segwit?) address in transaction list
+- [x] transaction signing: calculate fees depending on transaction size
+- [x] transactions: progress bar or similar when loading many txs
 - [x] mnemonic / transactions: choose current ElectrumX from random list
 - [ ] app: deploy to IPFS
 - [ ] mnemonic: choose from different derivation path standards (bip32, bip44, bip49, ...)
@@ -153,7 +155,8 @@ With the Doichain Playground you can:
 - [x] transactions: display mempool transactions in transactions
 
 ## Bugs
-- [ ] negative amounts (outflows) aren't utxos should be there for not selectable.
+- [ ] generated mnemonic with m/84'/0'/0' show different addresses then in DoiWallet
+- [x] negative amounts (outflows) aren't utxos, they shouldn't be not selectable.
 - [x] dc1qaflwqfck8tgq9uj7pq8de9zjfxekvqtkf57qv9 should show 7 transactions not just 1
 - [ ] better error messages and notifications 
 - [ ] if no or wrong private key, transaction fee cannot be calculated? Could it be partially signed with a public-key instead? 

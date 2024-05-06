@@ -30,7 +30,7 @@
     } from './store.js';
 	  import { path } from './router.js'
     import { afterUpdate, onDestroy, onMount } from 'svelte';
-    import { sign} from '$lib/signTransactionModal.js'
+    import { sign} from '$lib/components/signTransactionModal.js'
     import { ElectrumxClient } from '$lib/electrumx-client.js';
     import { getAddressTxs } from '$lib/getAddressTxs.js';
     import { getBalance } from '$lib/getBalance.js';

@@ -10,18 +10,18 @@
 		Theme, Row, Dropdown
 	} from 'carbon-components-svelte';
 	import LogoGithub from "carbon-icons-svelte/lib/LogoGithub.svelte";
-
+	import { network, networks,qrCodeOpen, qrCodeData } from './store.js';
 	import { hash } from './router.js'
 	import Home from './+page.svelte'
 	import Transactions from './transactions.svelte'
 	import NameOps from './nameOpUtxos.svelte'
 	import { expoIn } from 'svelte/easing';
+	import QRCodeModal from '$lib/components/QRCodeModal.svelte';
 
 	let isOpen
 	let sideNavOpen
 	let theme = "g90";// "white" | "g10" | "g80" | "g90" | "g100"
 
-	import { network, networks } from './store.js';
 	$:localStorage.setItem('network',JSON.stringify($network)	)
 
 	const routes = {
@@ -34,6 +34,15 @@
 </script>
 
 <Theme bind:theme persist persistKey="__carbon-theme" />
+<QRCodeModal bind:qrCodeOpen={ $qrCodeOpen } bind:qrCodeData={ $qrCodeData } />
+<!--<Modal bind:open={ $qrCodeOpen }-->
+<!--			 modalHeading="Scan"-->
+<!--			 primaryButtonText="OK"-->
+<!--			 secondaryButtonText=""-->
+<!--			 on:click:button&#45;&#45;primary={ () => dispatch('close') }-->
+<!--			 on:click:button&#45;&#45;secondary={ () => dispatch('close') }-->
+<!--			 on:close={()=>dispatch('close')}/>-->
+
 <Header company="Doichain" platformName="Developer Playground " bind:sideNavOpen href={ `#/` }>
 	<div class="right-aligned">
 		<div on:click={()=>document.location.href='https://github.com/silkroadnomad/DoichainPlaygroundSvelte'}>

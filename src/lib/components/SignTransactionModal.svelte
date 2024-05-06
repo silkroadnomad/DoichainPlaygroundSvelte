@@ -12,7 +12,7 @@
         electrumBlockchainRelayfee,
         currentWif,
         currentAddressP2pkh
-    } from '../routes/store.js';
+    } from '../../routes/store.js';
     import * as bitcoin from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
     import ECPairFactory from 'ecpair';

@@ -1,6 +1,7 @@
 <script>
     import "carbon-components-svelte/css/all.css";
     import { fade } from "svelte/transition";
+    import QrCode from "carbon-icons-svelte/lib/QrCode.svelte";
     import {
         Button,
         TextArea,
@@ -14,10 +15,13 @@
     import { generateMnemonic, mnemonicToSeedSync } from 'bip39';
     import { payments } from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
-    import { currentWif, network,
-     currentAddressP2pkh, 
-     currentAddressP2wpkh, 
-     currentAddressP2wpkhP2Sh } from './store.js';
+    import {
+        qrCodeOpen,qrCodeData,
+        currentWif, network,
+        currentAddressP2pkh,
+        currentAddressP2wpkh,
+        currentAddressP2wpkhP2Sh
+    } from './store.js';
     import { DB_NAME, openDB, readData, addData, deleteData } from '$lib/indexedDBUtil.js';
     import AES from 'crypto-js/aes';
     import Utf8 from 'crypto-js/enc-utf8';
@@ -63,12 +67,11 @@
         xpub = root.neutered().toBase58();
         generateAddresses();
     }
-
     $: if (password) wallets = wallets //as password changes we need to rerender the wallets in order to decrypt the contents
-    $: if (mnemonic && password) { try { generateKeys() } catch(e){ console.error(e) }}
+    $: if (mnemonic && password!==undefined) { try { generateKeys() } catch(e){ console.error(e) }}
     $: if ($network &&derivationPath && root) {try { generateAddresses() } catch(e){ console.error(e) }}
     $: {
-        if(wallets?.length>0 && selectedMnemonic){
+        if(wallets?.length>0 && selectedMnemonic && Number(selectedMnemonic)>0){
             localStorage.setItem("selectedMnemonic",selectedMnemonic)
             const selectedWallet = wallets.find(w => w.id.toString() === selectedMnemonic)
             mnemonic = decryptMnemonic(selectedWallet.mnemonic)
@@ -156,17 +159,18 @@
         <Column><h2>1. Generate mnemonic for a new wallet</h2></Column>
         <Column>
             <Select labelText="Select Wallet" bind:selected={selectedMnemonic}>
-                <SelectItem disabled value="" text="Choose a wallet" />
+                <SelectItem value="0" text="Choose a wallet" />
                 {#each wallets as wallet}
                     <SelectItem value={wallet.id.toString()} text={`${decryptMnemonic(wallet.mnemonic)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />
                 {/each}
             </Select>
             <TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} />
-            <Button on:click={async () => {
+            <Button size="small"  on:click={async () => {
                 mnemonic = generateMnemonic()
             }}>Generate Mnemonic</Button>
-            <Button on:click={storeMnemonic}>Store Mnemonic</Button>
-            <Button on:click={deleteMnemonic} class="delete-button">Delete Mnemonic</Button>
+            <Button size="small" on:click={storeMnemonic}>Save</Button>
+            <Button size="small" on:click={deleteMnemonic} class="delete-button">Delete</Button>
+            <Button size="small"  on:click={ () => {$qrCodeData=mnemonic;$qrCodeOpen=true}}><QrCode size="16"/></Button>
         </Column>
     </Row>
     <Row>
@@ -190,11 +194,11 @@
         <Column><h4>{derivationWif || ''}</h4></Column>
     </Row>
     <Row>
-        <Column><h3>Address (Legacy):</h3></Column>
+        <Column><h3>p2pkh Address (Legacy):</h3></Column>
         <Column><h4>{addressP2pkh || ''}</h4></Column>
     </Row>
     <Row>
-        <Column><h3>Address (Segwit):</h3></Column>
+        <Column><h3>p2wpkh Address (Segwit):</h3></Column>
         <Column><h4>{addressP2wpkh || ''}</h4></Column>
     </Row>
     <Row>

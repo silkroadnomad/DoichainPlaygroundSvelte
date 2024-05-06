@@ -12,6 +12,8 @@ export const networks = [
 	// { id: 'testnet', text: 'Testnet', value: DOICHAIN_TESTNET },
 	{ id: 'doichain-regtest', text: 'Doichain-Regtest', value: DOICHAIN_REGTEST }
 ];
+export const qrCodeOpen = writable(false)
+export const qrCodeData = writable()
 export const network = writable(localStorage.getItem('network')?JSON.parse(localStorage.getItem('network')):DOICHAIN);
 export const electrumClient = writable();
 export const electrumServerVersion = writable();
