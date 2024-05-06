@@ -1,6 +1,7 @@
 <script>
     import "carbon-components-svelte/css/all.css";
     import { fade } from "svelte/transition";
+    import { FileUploaderDropContainer } from "carbon-components-svelte";
     import QrCode from "carbon-icons-svelte/lib/QrCode.svelte";
     import {
         Button,

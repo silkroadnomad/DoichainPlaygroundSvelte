@@ -4,7 +4,7 @@
     import {
         Button,
         Column,
-        DataTable, Grid,
+        DataTable, FileUploaderDropContainer, Grid,
         Pagination,
         Row,
         TextInput,
@@ -205,6 +205,33 @@
             active = false;
         }}
         >
+            <FileUploaderDropContainer
+              labelText="Drag and drop a file here or click to upload"
+              validateFiles={(files) => {
+                  console.log("files",files)
+
+                if (files && files.length > 0) {
+                    const file = files[0]; // Assuming you're handling the first file
+                    const reader = new FileReader();
+                    reader.readAsArrayBuffer(file);
+                    reader.onload = async (event) => {
+                        console.log("onload...")
+                        const arrayBuffer = event.target.result;
+                        const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+                        const hashArray = Array.from(new Uint8Array(hashBuffer)); // Convert buffer to byte array
+                        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // Convert bytes to hex string
+                        console.log("SHA-256 Hash:", hashHex);
+                        nameId="pe/"+hashHex
+                    };
+                }
+                return true //files.filter((file) => file.size < 1_024);
+              }}
+              on:change={(e) => {
+                    console.log("files", e.detail);
+              }}
+
+
+            />
         <TextInput
           class="margin"
           name="nameId"

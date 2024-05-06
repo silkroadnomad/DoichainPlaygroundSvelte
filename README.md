@@ -124,7 +124,9 @@ With the Doichain Playground you can:
 - [ ] create Doichain-NFT (NFC non-fungible-coin) example
   - [ ] scan blockchain backwards from now if nft/ found 
   - [ ] display media (png, jpg, etc.)
-- [ ] create a proof-of-existence example
+- [x] create a proof-of-existence example
+  - [x] add file upload to utxo selction toolbar 
+  - [x] generate sha256 hash and greate pe/{sha256} hash with it.
 - [x] show min-relay fee in signing modal
 - [ ] find and show NFCs via Electrumx
 - [ ] create libp2p seed node discovery module  
