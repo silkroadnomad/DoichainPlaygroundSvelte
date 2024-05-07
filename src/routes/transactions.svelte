@@ -21,6 +21,7 @@
         history,
         txs,
         inputCount,
+        connectedServer,
         outputCount, namesCount,
         currentAddressP2pkh
     } from './store.js';
@@ -85,7 +86,7 @@
     </Row>
     <Row>
         <Column>Connection URL:</Column>
-<!--        <Column>{randomServer.protocol}://{randomServer.host}:{randomServer.port} </Column>-->
+        <Column>{$connectedServer} </Column>
         <Column></Column>
         <Column></Column>
     </Row>
