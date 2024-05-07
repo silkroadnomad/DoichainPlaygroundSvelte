@@ -15,15 +15,15 @@
     import { generateMnemonic } from 'bip39';
     import { payments } from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
-    import { qrCodeOpen, qrCodeData, network } from './store.js';
+    import { qrCodeOpen, qrCodeData, network, electrumClient } from './store.js';
     import { generateKeys } from '$lib/generateKeys.js'
     import { decryptMnemonic } from '$lib/decryptMnemonic.js';
     import { DB_NAME, openDB, readData, addData, deleteData } from '$lib/indexedDBUtil.js';
     import AES from 'crypto-js/aes';
     import BIP32Factory from 'bip32';
     import * as mn from 'electrum-mnemonic';
-    import { onMount } from 'svelte';
-    import * as b58 from 'bitcoinjs-lib/src/bip66.js';
+    import { onDestroy, onMount } from 'svelte';
+    import { getBalance } from '$lib/getBalance.js';
     const bip32 = BIP32Factory(ecc);
 
     let wallets = [];
@@ -74,6 +74,7 @@
                     pubkey: node.derive(internal).derive(index).publicKey,
                     network: $network
                 }).address;
+
                 const addr = {
                     id: index,
                     index,
@@ -81,15 +82,10 @@
                     address: address,
                     publicKey:publicKey.toString('hex'),
                     privateKey:privateKey.toString('hex'),
-                    wif}
+                    wif }
+
                 addresses = [...addresses, addr];
             }
-
-            // bitcoinjs does not support zpub yet, so we just convert it from xpub
-            // let data = b58.decode(_xpub);
-            // data = data.slice(4);
-            // data = Buffer.concat([Buffer.from('04b24746', 'hex'), data]);
-            // xpub = b58.encode(data);
         }
 
         if(selectedDerivationStandard==='electrum-segwit'){
@@ -98,7 +94,6 @@
             const PREFIX = mn.PREFIXES.segwit;
             const args = { prefix: PREFIX};
             if (password) args.password = password;
-            // if (this.passphrase) args.passphrase = this.passphrase;
             root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
             xpriv = root.toBase58();
             xpub = root.derivePath(derivationPath).neutered().toBase58();
@@ -115,7 +110,6 @@
                     pubkey: node.derive(internal).derive(index).publicKey,
                     network: $network
                 }).address;
-
                 const addr = {
                     id: index,
                     index,
@@ -139,10 +133,6 @@
                 const privateKey = root.derive(0).derive(internal).derive(index).privateKey
 
                 const wif = root.derive(internal).derive(index).toWIF()
-                // const address = payments.p2wpkh({
-                //     pubkey: xpubNode.derive(internal).derive(index).publicKey,
-                //     network: $network
-                // }).address;
                 const address = payments.p2pkh({
                     pubkey,
                     network: $network
@@ -151,25 +141,15 @@
                 const addr = {
                     id: index,
                     index,
-                    path:`m/${internal}/${index}`,
+                    path:`m/0/${internal}/${index}`,
                     address: address,
+                    balance: address,
                     publicKey:pubkey.toString('hex'),
                     privateKey:privateKey.toString('hex'),
-                    wif}
+                    wif }
                 addresses = [...addresses, addr];
             }
         }
-
-        // $currentAddressP2pkh=addressP2pkh
-        // addressP2wpkh = payments.p2wpkh({ pubkey: xpubNode.derivePath(derivationPath).publicKey, network: $network }).address;
-        // $currentAddressP2wpkh=addressP2wpkh
-        // addressP2wpkhP2Sh = payments.p2sh({
-        //     redeem: payments.p2wpkh({ pubkey: xpubNode.derivePath(derivationPath).publicKey, network: $network })
-        // }).address;
-        // $currentAddressP2wpkhP2Sh=addressP2wpkhP2Sh
-        //
-        // derivationWif = root.derivePath(derivationPath).toWIF()
-        // $currentWif=derivationWif
     }
 
 
@@ -188,16 +168,7 @@
     $: if ($network && derivationPath && selectedDerivationStandard && root && xpriv && xpub) { try { generateAddresses(addresses) } catch(e){ console.error(e) }}
     $: localStorage.setItem("selectedMnemonic",selectedMnemonic)
     $: localStorage.setItem("selectedDerivationStandard",selectedDerivationStandard || 0)
-    $: console.log("addresses",addresses)
-    // $: {
-    //     if(wallets?.length>0 && selectedMnemonic && Number(selectedMnemonic)>0){
-    //         console.log("wallets",wallets)
-    //         localStorage.setItem("selectedMnemonic",selectedMnemonic)
-    //         // const selectedWallet = wallets.find(w => w.id.toString() === selectedMnemonic)
-    //         // mnemonic = decryptMnemonic(selectedWallet.mnemonic,password)
-    //     }
-    // }
-
+    
     let timeout
     let toastNotification
     $: showNotification = timeout !== undefined;
@@ -232,7 +203,6 @@
             const db = await openDB(DB_NAME, "wallets")
             wallets = await readData(db) || []
             selectedMnemonic = localStorage.getItem('selectedMnemonic'); // Get the mnemonic ID directly
-            console.log("Wallets loaded", wallets);
             toastNotification = "Mnemonics have been successfully loaded.";
             timeout = 3000;
         } catch (error) {
@@ -255,8 +225,14 @@
             timeout = 3000;
         }
     }
+    let _electrumClient
+    let _network
+    let unsubscribeEC
+    let unsubscribeN
 
     onMount(async () => {
+        unsubscribeEC = electrumClient.subscribe((value) => _electrumClient = value)
+        unsubscribeN = network.subscribe((value) => _network = value)
         await loadMnemonic();
         mnemonic = decryptMnemonic(mnemonic,password) //auto decrypt on startup
         selectedMnemonic = localStorage.getItem('selectedMnemonic'); // Get the mnemonic ID directly
@@ -268,6 +244,10 @@
         } catch(e){ console.error(e) }
     });
 
+    onDestroy(()=>{
+        unsubscribeEC()
+        unsubscribeN()
+    })
 </script>
 
 <h1>Welcome to Doichain Developer Playground</h1>
@@ -330,9 +310,10 @@
             { key: "index", value: "Index"},
             { key: "path", value: "Path" },
             { key: "address", value: "Address" },
-            { key: "publicKey", value: "Public Key" },
-            { key: "privateKey", value: "Private Key" },
-            { key: "wif", value: "WIF" },
+            { key: "balance", value: "Balance" },
+            // { key: "publicKey", value: "Public Key" },
+            // { key: "privateKey", value: "Private Key" },
+            // { key: "wif", value: "WIF" },
         ]}
   rows={addresses}
 >
@@ -342,7 +323,14 @@
     </svelte:fragment>
 
     <svelte:fragment slot="cell" let:row let:cell>
-        {#if cell.key === "value"}
+        {#if cell.key === "balance"}
+            {#await getBalance(cell.value, _electrumClient, _network)}
+                <p>...waiting</p>
+            {:then number}
+                <p>{number.confirmed}/{number.unconfirmed}</p>
+            {:catch error}
+                <p style="color: red">{error.message}</p>
+            {/await}
         {:else}
             {cell.value || ''}
         {/if}

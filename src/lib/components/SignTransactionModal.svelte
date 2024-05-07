@@ -34,15 +34,17 @@
 
     export let doiAmount = 100000000 //in schwartz
     export let changeAmount = 0
-    export let utxos
+    export let selectedRowIds
+    export let txs
 
 
+    let utxos = []
     // const signMethods = ["Seed in browser wallet", "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
     const signMethods = ["Wif (PrivKey)"] //, "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
     let selectedSigningMethod = signMethods[1];
 
     let changeAddress = senderAddress 
-    let transactionFee = utxos.length * 180 + 3 * 34
+    let transactionFee = selectedRowIds.length * 180 + 3 * 34
     let schwartzPerByte = 210 //TODO why is that so high? shoulld be 50x lower
     let storageFee = 500000  //or 88100 - a roughly estimated transaction fee
     let byteLength = 0
@@ -50,10 +52,11 @@
     
     $: transactionFee = byteLength*schwartzPerByte+(nameId?storageFee:0) //add storagefee when nameId was set
     $: transactionFee<Number($electrumBlockchainRelayfee*100000000)?transactionFee=Number($electrumBlockchainRelayfee*100000000):0
-    $: utxoSum = utxos.reduce((sum, utxo) => sum + (utxo.value*100000000), 0); //get sum of all utxo values
+    $: utxoSum = 0 //TODO utxos.reduce((sum, utxo) => sum + (utxo.value*100000000), 0); //get sum of all utxo values
     $: changeAmount = utxoSum - (doiAmount+transactionFee)
 
     onMount(()=>{
+        parseSelectedRowIds()
         signTransaction().then((tx)=>{
             byteLength = tx.byteLength()//schwartz per byte
             transactionFee = byteLength*schwartzPerByte
@@ -61,6 +64,28 @@
             console.log("transactionFee",transactionFee)
         })
     })
+
+    function parseSelectedRowIds() {
+        const parsedUtxos = [];
+        selectedRowIds.forEach(rowId => {
+            const underscoreIndex = rowId.lastIndexOf('_');
+            const txid = rowId.substring(0, underscoreIndex);
+            const n = parseInt(rowId.substring(underscoreIndex + 1), 10);
+
+            txs.forEach(tx => {
+                tx.vout.forEach(vout => {
+                    if (vout.n === n && tx.txid === txid) {
+                        parsedUtxos.push({
+                            txid: tx.txid,
+                            vout: [vout] // Wrap in an array to maintain structure
+                        });
+                    }
+                });
+            });
+        });
+        utxos = parsedUtxos;
+        console.log("parsedUtxos",parsedUtxos)
+    }
 
     async function signTransaction() {
 
@@ -73,34 +98,34 @@
 
         utxos.forEach(utxo => {
             //TODO https://bitcoin.stackexchange.com/questions/116128/how-do-i-determine-whether-an-input-or-output-is-segwit-revisited
-            const valueInSatoshis = Math.round(utxo.value * 100000000);
-
-            utxo.vout.forEach(vout =>{
-                const scriptPubKeyHex = vout.scriptPubKey.hex
-                const isSegWit = scriptPubKeyHex?.startsWith('0014') || scriptPubKeyHex?.startsWith('0020');
-                if(vout.scriptPubKey.addresses[0]===senderAddress){
-                    console.log("adding ",utxo)
-                    if (isSegWit) {
-                        // This is a SegWit UTXO
-                        psbt.addInput({
-                            hash: utxo.txid,
-                            index: vout.n,
-                            witnessUtxo: {
-                                script: Buffer.from(scriptPubKeyHex, 'hex'),
-                                value: valueInSatoshis,
-                            }
-                        });
-                    } else {     // This is a non-SegWit UTXO
-                        psbt.addInput({
-                            hash: utxo.txid,
-                            index: vout.n,
-                            nonWitnessUtxo: Buffer.from(utxo.hex, 'hex')
-                        });
-                    }
-                    totalInputAmount += valueInSatoshis;
-                }
-
-            });
+            // const valueInSatoshis = Math.round(utxo.value * 100000000);
+            console.log("adding utxo to transaction",utxo)
+            // utxo.vout.forEach(vout =>{
+            //     const scriptPubKeyHex = vout.scriptPubKey.hex
+            //     const isSegWit = scriptPubKeyHex?.startsWith('0014') || scriptPubKeyHex?.startsWith('0020');
+            //     if(vout.scriptPubKey.addresses[0]===senderAddress){
+            //         console.log("adding ",utxo)
+            //         if (isSegWit) {
+            //             // This is a SegWit UTXO
+            //             psbt.addInput({
+            //                 hash: utxo.txid,
+            //                 index: vout.n,
+            //                 witnessUtxo: {
+            //                     script: Buffer.from(scriptPubKeyHex, 'hex'),
+            //                     value: valueInSatoshis,
+            //                 }
+            //             });
+            //         } else {     // This is a non-SegWit UTXO
+            //             psbt.addInput({
+            //                 hash: utxo.txid,
+            //                 index: vout.n,
+            //                 nonWitnessUtxo: Buffer.from(utxo.hex, 'hex')
+            //             });
+            //         }
+            //         totalInputAmount += valueInSatoshis;
+            //     }
+            //
+            // });
         })
 
 

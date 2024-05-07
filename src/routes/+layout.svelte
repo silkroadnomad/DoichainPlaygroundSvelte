@@ -9,20 +9,23 @@
 		SkipToContent,
 		Theme, Row, Dropdown
 	} from 'carbon-components-svelte';
+
 	import LogoGithub from "carbon-icons-svelte/lib/LogoGithub.svelte";
-	import { network, networks,qrCodeOpen, qrCodeData } from './store.js';
+	import { network, networks, qrCodeOpen, qrCodeData, electrumServerBanner,connectedServer } from './store.js';
 	import { hash } from './router.js'
 	import Home from './+page.svelte'
 	import Transactions from './transactions.svelte'
 	import NameOps from './nameOpUtxos.svelte'
 	import { expoIn } from 'svelte/easing';
 	import QRCodeModal from '$lib/components/QRCodeModal.svelte';
+	import { connectElectrum } from '$lib/connectElectrum.js';
 
 	let isOpen
 	let sideNavOpen
 	let theme = "g90";// "white" | "g10" | "g80" | "g90" | "g100"
-
 	$:localStorage.setItem('network',JSON.stringify($network)	)
+	$:console.log("$network",$network)
+	$:$network?connectElectrum($network):null
 
 	const routes = {
 		'/': Home,
@@ -38,7 +41,7 @@
 <Header company="Doichain" platformName="Developer Playground " bind:sideNavOpen href={ `#/` }>
 	<div class="right-aligned">
 		<div on:click={ () => document.location.href='https://github.com/silkroadnomad/DoichainPlaygroundSvelte'}>
-			<LogoGithub  /></div>
+			<LogoGithub/></div>
 		<div>
 			<Dropdown
 				size="sm"
@@ -49,6 +52,7 @@
 				on:select={e=>$network = networks.find(n=>n.id===e.detail.selectedId).value}
 			/>
 		</div>
+		<div>{$electrumServerBanner} @ {$connectedServer}</div>
 	</div>
 	<svelte:fragment slot="skip-to-content">
 		<SkipToContent />

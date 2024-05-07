@@ -1,6 +1,5 @@
 <script>
     import { fade } from "svelte/transition";
-
     import {
         Button,
         Column,
@@ -15,12 +14,9 @@
     } from 'carbon-components-svelte';
 
     import {
-        electrumServers,
-        electrumServerVersion,
         electrumServerBanner,
         electrumClient,
         electrumBlockchainBlockHeadersSubscribe,
-        electrumBlockchainRelayfee,
         network,
         history,
         txs,
@@ -28,10 +24,11 @@
         outputCount, namesCount,
         currentAddressP2pkh
     } from './store.js';
+
 	  import { path } from './router.js'
     import { afterUpdate, onDestroy, onMount } from 'svelte';
     import { sign} from '$lib/components/signTransactionModal.js'
-    import { ElectrumxClient } from '$lib/electrumx-client.js';
+
     import { getAddressTxs } from '$lib/getAddressTxs.js';
     import { getBalance } from '$lib/getBalance.js';
 
@@ -46,6 +43,7 @@
 
     let filteredRowIds = [];
     let selectedRowIds = [];
+
     let batchSelection = true
     let active = true
 
@@ -53,28 +51,11 @@
     let toastNotification
     $: showNotification = timeout !== undefined;
 
-    let randomServer //TODO can we improve that?
-
     $: doiAmount = Number(doiAmount)
     $: utxoSum = Array.isArray($txs) ? $txs.reduce((sum, utxo) => sum + (utxo.value * 100000000), 0) : 0;
     $: utxoSelected = Array.isArray($txs) ? $txs.filter(tx => selectedRowIds.includes(tx.id)).reduce((sum, utxo) => sum + (utxo.value*100000000), 0) : 0;
-    $: $network?connectElectrum($network):null
 
-    const connectElectrum = async (_network) => {
-        if(!_network) return
-        const networkNodes = electrumServers.filter(n=>n.network===_network.name)
-        randomServer = networkNodes[Math.floor(Math.random() * networkNodes.length)];
-        $electrumClient = new ElectrumxClient(randomServer.host, randomServer.port, randomServer.protocol);
 
-        await $electrumClient.connect("electrum-client-js", "1.4.2");
-        $electrumServerVersion = await $electrumClient.request('server.version');
-        console.log("electrumServerVersion",$electrumServerVersion)
-        console.log("network",randomServer.protocol+"://"+randomServer.host+":"+randomServer.port)
-        $electrumServerBanner = await $electrumClient.request('server.banner');
-        // $electrumBlockchainBlockHeaders = await $electrumClient.request('blockchain.block.headers', [10000, 10]);
-        $electrumBlockchainBlockHeadersSubscribe = await $electrumClient.request('blockchain.headers.subscribe');
-        $electrumBlockchainRelayfee = await $electrumClient.request('blockchain.relayfee');
-    }
 
     afterUpdate(() => {
         $txs.forEach(tx => {
@@ -89,15 +70,12 @@
     });
 
     onMount(async () => {
-        await connectElectrum($network)
         doiAddress = $currentAddressP2pkh || localStorage.getItem('doiAddress') || '';
         if(doiAddress) await getAddressTxs(doiAddress, $history, $electrumClient, $network)
     });
 
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
     $: doiAddress?localStorage.setItem('doiAddress', doiAddress):null
-
-    $:console.log("$path",$path)
 </script>
 
 <h2>Transactions</h2>
@@ -107,7 +85,7 @@
     </Row>
     <Row>
         <Column>Connection URL:</Column>
-        <Column>{randomServer.protocol}://{randomServer.host}:{randomServer.port} </Column>
+<!--        <Column>{randomServer.protocol}://{randomServer.host}:{randomServer.port} </Column>-->
         <Column></Column>
         <Column></Column>
     </Row>
@@ -170,6 +148,7 @@
         headers={[
             { key: "formattedBlocktime", value: "Time"},
             { key: "txid", value: "TxId" },
+            { key: "n", value: "n" },
           //  { key: "address", value: "Address" },
             { key: "nameId", value: "NameId" },
             { key: "nameValue", value: "NameValue" },
@@ -192,6 +171,8 @@
             <div style="text-align: right;">{cell.value || '0'}</div>
         {:else if cell.key === "fee"}
             <div style="text-align: right;">{cell.value?.toFixed(8) || '0' }</div>
+        {:else if cell.key === "n"}
+            <div style="text-align: right;">{Number(cell.value || 0)}</div>
         {:else}
             {cell.value || ''}
         {/if}
@@ -227,10 +208,8 @@
                 return true //files.filter((file) => file.size < 1_024);
               }}
               on:change={(e) => {
-                    console.log("files", e.detail);
+                    // console.log("files", e.detail);
               }}
-
-
             />
         <TextInput
           class="margin"
@@ -263,7 +242,10 @@
                  doiAmount,
                  nameId,
                  nameValue,
-                 utxos: $txs.filter(tx => selectedRowIds.includes(tx.id))})
+                 selectedRowIds,
+                 txs: $txs
+             })
+                 // utxos: $txs.filter(tx => selectedRowIds.includes(tx.id))
 
                  if(result) {
                     toastNotification = "Transaction has been successfully sent";
@@ -287,7 +269,6 @@
     bind:pageSize
     bind:page
     totalItems={filteredRowIds.length}
-    pageSizeInputDisabled
 />
 {#if showNotification}
     <div transition:fade>
