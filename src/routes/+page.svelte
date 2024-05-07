@@ -1,7 +1,6 @@
 <script>
     import "carbon-components-svelte/css/all.css";
     import { fade } from "svelte/transition";
-    import { FileUploaderDropContainer } from "carbon-components-svelte";
     import QrCode from "carbon-icons-svelte/lib/QrCode.svelte";
     import {
         Button,
@@ -11,73 +10,193 @@
         Column,
         TextInput,
         ToastNotification,
-        SelectItem, Select
+        SelectItem, Select, DataTable
     } from 'carbon-components-svelte';
-    import { generateMnemonic, mnemonicToSeedSync } from 'bip39';
+    import { generateMnemonic } from 'bip39';
     import { payments } from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
-    import {
-        qrCodeOpen,qrCodeData,
-        currentWif, network,
-        currentAddressP2pkh,
-        currentAddressP2wpkh,
-        currentAddressP2wpkhP2Sh
-    } from './store.js';
+    import { qrCodeOpen, qrCodeData, network } from './store.js';
+    import { generateKeys } from '$lib/generateKeys.js'
+    import { decryptMnemonic } from '$lib/decryptMnemonic.js';
     import { DB_NAME, openDB, readData, addData, deleteData } from '$lib/indexedDBUtil.js';
     import AES from 'crypto-js/aes';
-    import Utf8 from 'crypto-js/enc-utf8';
     import BIP32Factory from 'bip32';
+    import * as mn from 'electrum-mnemonic';
     import { onMount } from 'svelte';
+    import * as b58 from 'bitcoinjs-lib/src/bip66.js';
     const bip32 = BIP32Factory(ecc);
 
     let wallets = [];
     let mnemonic = '';
     let selectedMnemonic = localStorage.getItem('selectedMnemonic') || 0
     let password = 'mnemonic';
-    let root = '';
+    let root;
     let xpriv = '';
     let xpub = '';
+
     let derivationPath = 'm/0/0/0';
 
-    let derivationWif = ''
-    let addressP2pkh = '';
-    let addressP2wpkh = '';
-    let addressP2wpkhP2Sh = '';
+    let derivationStandards = [
+        {id:'electrum-legacy', name:'Electrum-Legacy', path:'m'},
+        {id:'electrum-segwit', name:'Electrum-Segwit', path:'m/0'},
+        {id:'bip32', name:'BIP32', path:'m/0/0/0'}
+    ]
+    let selectedDerivationStandard = localStorage.getItem("selectedDerivationStandard") || 0
+    let addresses = [];
 
-    //address generation function
     function generateAddresses() {
+        addresses = []
+        /*
+         * Electrum Mnemonic Tools https://www.npmjs.com/package/electrum-mnemonic
+         * Electrum Legacy https://github.com/BlueWallet/BlueWallet/blob/6aa4c25cd1cb91a5f7576243e8d2f2d6a1cbce95/class/wallets/hd-legacy-electrum-seed-p2pkh-wallet.ts
+         */
+        if(selectedDerivationStandard==='electrum-legacy'){
+            console.log("generating ",selectedDerivationStandard)
+            const PREFIX = mn.PREFIXES.standard;
+            if(!mn.validateMnemonic(mnemonic,  mn.PREFIXES.standard))
+                throw new Error("Mnemonic invalid")
 
-        derivationWif = root.derivePath(derivationPath).toWIF()
-        $currentWif=derivationWif
+            const args = { prefix: PREFIX}; //,   passphrase: '', skipCheck: true
+            if (password) args.password = password;
+            root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
+            xpriv = root
+            xpub = root.neutered().toBase58();
 
-        addressP2pkh = payments.p2pkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
-        $currentAddressP2pkh=addressP2pkh
-        addressP2wpkh = payments.p2wpkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network }).address;
-        $currentAddressP2wpkh=addressP2wpkh
-        addressP2wpkhP2Sh = payments.p2sh({
-            redeem: payments.p2wpkh({ pubkey: root.derivePath(derivationPath).publicKey, network: $network })
-        }).address;
-        $currentAddressP2wpkhP2Sh=addressP2wpkhP2Sh
+            const node = bip32.fromBase58(xpub);
+            const internal = 0 // or 1 for internal adddresses (change addresses)
+
+            for (let index = 0; index <= 10; index++) {
+                const publicKey = node.derive(internal).derive(index).publicKey
+                const privateKey = root.derive(internal).derive(index).privateKey
+
+                const wif = root.derive(internal).derive(index).toWIF()
+                const address = payments.p2pkh({
+                    pubkey: node.derive(internal).derive(index).publicKey,
+                    network: $network
+                }).address;
+                const addr = {
+                    id: index,
+                    index,
+                    path:`m/${internal}/${index}`,
+                    address: address,
+                    publicKey:publicKey.toString('hex'),
+                    privateKey:privateKey.toString('hex'),
+                    wif}
+                addresses = [...addresses, addr];
+            }
+
+            // bitcoinjs does not support zpub yet, so we just convert it from xpub
+            // let data = b58.decode(_xpub);
+            // data = data.slice(4);
+            // data = Buffer.concat([Buffer.from('04b24746', 'hex'), data]);
+            // xpub = b58.encode(data);
+        }
+
+        if(selectedDerivationStandard==='electrum-segwit'){
+
+            const derivationPath = "m/0'";
+            const PREFIX = mn.PREFIXES.segwit;
+            const args = { prefix: PREFIX};
+            if (password) args.password = password;
+            // if (this.passphrase) args.passphrase = this.passphrase;
+            root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
+            xpriv = root.toBase58();
+            xpub = root.derivePath(derivationPath).neutered().toBase58();
+
+            const node = bip32.fromBase58(xpub);
+            const internal = 0 // or 1 for internal adddresses (change addresses)
+
+            for (let index = 0; index <= 10; index++) {
+                const publicKey = node.derive(internal).derive(index).publicKey
+                const privateKey = root.derive(internal).derive(index).privateKey
+
+                const wif = root.derive(internal).derive(index).toWIF()
+                const address = payments.p2wpkh({
+                    pubkey: node.derive(internal).derive(index).publicKey,
+                    network: $network
+                }).address;
+
+                const addr = {
+                    id: index,
+                    index,
+                    path:`m/${internal}/${index}`,
+                    address: address,
+                    publicKey:publicKey.toString('hex'),
+                    privateKey:privateKey.toString('hex'),
+                    wif}
+                addresses = [...addresses, addr];
+            }
+        }
+
+        if(selectedDerivationStandard==='bip32'){
+            const xpubNode = bip32.fromBase58(xpub);
+
+            const internal = 0 // or 1 for internal addresses (change addresses)
+
+            for (let index = 0; index <= 10; index++) {
+
+                const pubkey = xpubNode.derive(0).derive(internal).derive(index).publicKey
+                const privateKey = root.derive(0).derive(internal).derive(index).privateKey
+
+                const wif = root.derive(internal).derive(index).toWIF()
+                // const address = payments.p2wpkh({
+                //     pubkey: xpubNode.derive(internal).derive(index).publicKey,
+                //     network: $network
+                // }).address;
+                const address = payments.p2pkh({
+                    pubkey,
+                    network: $network
+                }).address;
+
+                const addr = {
+                    id: index,
+                    index,
+                    path:`m/${internal}/${index}`,
+                    address: address,
+                    publicKey:pubkey.toString('hex'),
+                    privateKey:privateKey.toString('hex'),
+                    wif}
+                addresses = [...addresses, addr];
+            }
+        }
+
+        // $currentAddressP2pkh=addressP2pkh
+        // addressP2wpkh = payments.p2wpkh({ pubkey: xpubNode.derivePath(derivationPath).publicKey, network: $network }).address;
+        // $currentAddressP2wpkh=addressP2wpkh
+        // addressP2wpkhP2Sh = payments.p2sh({
+        //     redeem: payments.p2wpkh({ pubkey: xpubNode.derivePath(derivationPath).publicKey, network: $network })
+        // }).address;
+        // $currentAddressP2wpkhP2Sh=addressP2wpkhP2Sh
+        //
+        // derivationWif = root.derivePath(derivationPath).toWIF()
+        // $currentWif=derivationWif
     }
 
-    // Generate master seed root, xpriv, and xpub
-    async function generateKeys() {
-        const seed = mnemonicToSeedSync(mnemonic, password);
-        root = bip32.fromSeed(seed, $network);
-        xpriv = root.toBase58();
-        xpub = root.neutered().toBase58();
-        generateAddresses();
-    }
+
     $: if (password) wallets = wallets //as password changes we need to rerender the wallets in order to decrypt the contents
-    $: if (mnemonic && password!==undefined) { try { generateKeys() } catch(e){ console.error(e) }}
-    $: if ($network &&derivationPath && root) {try { generateAddresses() } catch(e){ console.error(e) }}
     $: {
-        if(wallets?.length>0 && selectedMnemonic && Number(selectedMnemonic)>0){
-            localStorage.setItem("selectedMnemonic",selectedMnemonic)
-            const selectedWallet = wallets.find(w => w.id.toString() === selectedMnemonic)
-            mnemonic = decryptMnemonic(selectedWallet.mnemonic)
+        if (mnemonic && password!==undefined){
+            try {
+                const keys = generateKeys(mnemonic,password,$network)
+                xpriv = keys.xpriv
+                xpub  = keys.xpub
+                root = keys.root
+            } catch(e){ console.error(e) }
         }
     }
+
+    $: if ($network && derivationPath && selectedDerivationStandard && root && xpriv && xpub) { try { generateAddresses(addresses) } catch(e){ console.error(e) }}
+    $: localStorage.setItem("selectedMnemonic",selectedMnemonic)
+    $: localStorage.setItem("selectedDerivationStandard",selectedDerivationStandard || 0)
+    $: console.log("addresses",addresses)
+    // $: {
+    //     if(wallets?.length>0 && selectedMnemonic && Number(selectedMnemonic)>0){
+    //         console.log("wallets",wallets)
+    //         localStorage.setItem("selectedMnemonic",selectedMnemonic)
+    //         // const selectedWallet = wallets.find(w => w.id.toString() === selectedMnemonic)
+    //         // mnemonic = decryptMnemonic(selectedWallet.mnemonic,password)
+    //     }
+    // }
 
     let timeout
     let toastNotification
@@ -91,9 +210,9 @@
                 throw new Error("Failed to open database");
             }
             wallets = await readData(db) || [];
-            if (!mnemonic || !password) {
-                toastNotification = "Mnemonic or password is empty.";
-                throw new Error("Mnemonic or password is empty");
+            if (!mnemonic) {
+                toastNotification = "Mnemonic is empty.";
+                throw new Error("Mnemonic is empty");
             }
             const encryptedMnemonic = AES.encrypt(mnemonic, password).toString();
             const data = { id: (wallets.length + 1), mnemonic: encryptedMnemonic, date: new Date() };
@@ -137,17 +256,16 @@
         }
     }
 
-    function decryptMnemonic(encryptedMnemonic) {
-        const bytes = AES.decrypt(encryptedMnemonic || '', password);
-        let originalText
-          try { originalText = bytes.toString(Utf8)}catch(ex){}
-        return originalText;
-    }
-    
     onMount(async () => {
         await loadMnemonic();
+        mnemonic = decryptMnemonic(mnemonic,password) //auto decrypt on startup
         selectedMnemonic = localStorage.getItem('selectedMnemonic'); // Get the mnemonic ID directly
-        await generateKeys()
+        try {
+            const keys = generateKeys(mnemonic, password, $network)
+            xpriv = keys.xpriv
+            xpub  = keys.xpub
+            root = keys.root
+        } catch(e){ console.error(e) }
     });
 
 </script>
@@ -158,55 +276,79 @@
 <Grid>
     <Row>
         <Column><h2>1. Generate mnemonic for a new wallet</h2></Column>
+        <Column><TextInput labelText="Password" bind:value={password} />
+            <Button size="small" on:click={()=>{
+                       const selectedWallet = wallets.find(w => w.id.toString() === selectedMnemonic)
+                       mnemonic = decryptMnemonic(selectedWallet.mnemonic,password)
+            }}>Decrypt</Button></Column>
+    </Row>
+    <Row>
+        <Column>&nbsp;</Column>
         <Column>
-            <Select labelText="Select Wallet" bind:selected={selectedMnemonic}>
+            <Select labelText="Select Wallet" bind:selected={ selectedMnemonic }>
                 <SelectItem value="0" text="Choose a wallet" />
                 {#each wallets as wallet}
-                    <SelectItem value={wallet.id.toString()} text={`${decryptMnemonic(wallet.mnemonic)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />
+                    <SelectItem value={wallet.id.toString()} text={`${decryptMnemonic(wallet.mnemonic,password)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />
                 {/each}
             </Select>
             <TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} />
             <Button size="small"  on:click={async () => {
                 mnemonic = generateMnemonic()
             }}>Generate Mnemonic</Button>
-            <Button size="small" on:click={storeMnemonic}>Save</Button>
-            <Button size="small" on:click={deleteMnemonic} class="delete-button">Delete</Button>
-            <Button size="small"  on:click={ () => {$qrCodeData=mnemonic;$qrCodeOpen=true}}><QrCode size="16"/></Button>
+            <Button size="small" on:click={ storeMnemonic }>Save</Button>
+            <Button size="small" on:click={ deleteMnemonic } class="delete-button">Delete</Button>
+            <Button size="small" on:click={ () => {$qrCodeData=mnemonic;$qrCodeOpen=true}}><QrCode size="16"/></Button>
         </Column>
     </Row>
     <Row>
         <Column><h2>2. Get XPriv and XPub from mnemonic</h2></Column>
-        <Column><TextInput labelText="Password" bind:value={password}/></Column>
+        <Column>&nbsp;</Column>
     </Row>
     <Row>
         <Column><h2>xpriv (HD node root key) (base58)</h2></Column>
-        <Column><TextInput labelText="xpriv" bind:value={xpriv} readonly/></Column>
+        <Column><TextInput labelText="xpriv" bind:value={xpriv}/></Column>
     </Row>
     <Row>
         <Column><h2>xpub</h2></Column>
-        <Column><TextInput labelText="xpub" bind:value={xpub} readonly /></Column>
+        <Column><TextInput labelText="xpub" bind:value={xpub} /></Column>
     </Row>
     <Row>
-        <Column><h2>3. Derive addresses from derivation path (bip32)</h2></Column>
-        <Column><TextInput labelText="Derivation Path" bind:value={derivationPath} /></Column>
-    </Row>
-    <Row>
-        <Column><h3>Wif (PrivKey):</h3></Column>
-        <Column><h4>{derivationWif || ''}</h4></Column>
-    </Row>
-    <Row>
-        <Column><h3>p2pkh Address (Legacy):</h3></Column>
-        <Column><h4>{addressP2pkh || ''}</h4></Column>
-    </Row>
-    <Row>
-        <Column><h3>p2wpkh Address (Segwit):</h3></Column>
-        <Column><h4>{addressP2wpkh || ''}</h4></Column>
-    </Row>
-    <Row>
-        <Column><h3>Address (Segwit via P2SH):</h3></Column>
-        <Column><h4>{addressP2wpkhP2Sh || ''}</h4></Column>
+        <Column><h2>3. Derivation Standard</h2></Column>
+        <Column>
+            <Select labelText="Select Wallet" bind:selected={ selectedDerivationStandard }>
+                <SelectItem value="0" text="Choose derivation standard" />
+                {#each derivationStandards as ds}
+                    <SelectItem value={ds.id} text={`${ds.name}`} />
+                {/each}
+            </Select>
+        </Column>
     </Row>
 </Grid>
+<DataTable
+  class="datatable"
+  headers={[
+            { key: "index", value: "Index"},
+            { key: "path", value: "Path" },
+            { key: "address", value: "Address" },
+            { key: "publicKey", value: "Public Key" },
+            { key: "privateKey", value: "Private Key" },
+            { key: "wif", value: "WIF" },
+        ]}
+  rows={addresses}
+>
+
+    <svelte:fragment slot="expanded-row" let:row>
+        <pre>{JSON.stringify(row, null, 2)}</pre>
+    </svelte:fragment>
+
+    <svelte:fragment slot="cell" let:row let:cell>
+        {#if cell.key === "value"}
+        {:else}
+            {cell.value || ''}
+        {/if}
+    </svelte:fragment>
+
+</DataTable>
 
 {#if showNotification}
     <div transition:fade>

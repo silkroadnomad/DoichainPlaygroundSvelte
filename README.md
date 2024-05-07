@@ -44,12 +44,13 @@ With the Doichain Playground you can:
 8. Create a new block to observe the transaction.
 
 ## References:
-- Learning Bitcooin https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/tree/master
-- Cryptography-Toolkit https://guggero.github.io/cryptography-toolkit/#!/
-  - Hierarchical Deterministic Wallet (BIP32/38/39/44/49/84) https://guggero.github.io/cryptography-toolkit/#!/hd-wallet
-- Bitcoin-Improvement Proposals (bips) https://github.com/bitcoin/bips
 - BitcoinJS-Lib https://github.com/bitcoinjs/bitcoinjs-lib
 - Electrum Protocol https://electrumx.readthedocs.io/en/latest/protocol.html
+- Bitcoin-Improvement Proposals (bips) https://github.com/bitcoin/bips
+- Learning Bitcoin https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/tree/master
+- Cryptography-Toolkit https://guggero.github.io/cryptography-toolkit/#!/
+  - Hierarchical Deterministic Wallet (BIP32/38/39/44/49/84) https://guggero.github.io/cryptography-toolkit/#!/hd-wallet
+- Ian Coleman https://iancoleman.io/
 
 ## Todos:
 - [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX
@@ -96,16 +97,17 @@ With the Doichain Playground you can:
   - [x] calculate transaction fee by pre-signing the transaction 
   - [x] change address
     - [x] send change back to same address
-    - [ ] generate change address from derivation path 
+    - [ ] generate change address from a derivation path 
   - [x] enter fee (and substract from utxos amount to be sent)
   - [x] sign transaction by wif (currently derived from mnemonic and wallet screen)
   - [x] sign transaction by seed phrase (from mnemonic dropdown)
-  - [ ] sign transaction by scanning qr-code with DoiWallet (BlueWallet)
-  - [ ] sign in Electrum as partially signed transaction)
-  - [ ] sign by hardware wallet 
-    - [ ] Ledger
-    - [ ] BitBox
+  - [ ] sign PSBT by scanning qr-code with DoiWallet (BlueWallet)
+  - [ ] sign PSBT file / qr code in Electrum-DOI 
+  - [ ] sign by hardware wallet (and check PSBT)
+    - [ ] Ledger https://developers.ledger.com/docs/connectivity/ledgerJS/integration-walkthrough/web-application/web-hid-usb
+    - [ ] BitBox https://bitbox.swiss/blog/bitbox02-javascript-api/
     - [ ] Trezor
+    - [ ] Seed Signer https://seedsigner.com/
 - [x] create name_op transaction
   - [x] add storage fee to transaction fee calculation
   - [x] add nameId and nameValue to signing modal
@@ -128,30 +130,39 @@ With the Doichain Playground you can:
   - [x] add file upload to utxo selction toolbar 
   - [x] generate sha256 hash and greate pe/{sha256} hash with it.
 - [x] show min-relay fee in signing modal
-- [ ] find and show NFCs via Electrumx
-- [ ] create libp2p seed node discovery module  
+- [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery)  
 - [ ] spend from a multisig address
 - [ ] automate spending from a multisig address
-- [ ] research and test DoiWallet and ElectrumDoi seed phrases and keys
-
+- [ ] research and test DoiWallet and Electrum-DOI seed phrases and keys
+  - [x] DoiWallet can import Electrum-DOI seeds and shows correct addresses 
+    - [x] test spending from DoiWallet with Electrum seed
+  - [x] mnemonic: implement Electrum-Legacy support
+    - [ ] generate change addresses 
+  - [x] mnemonic: implement Electrum-Segwit support 
+    - [x] implement bip32 support
+    - [ ] generate change addresses 
+  - [ ] implement bip44 support 
+  - [ ] implement bip49 support
+  - [ ] implement bip84 support
+  
 ## Nice 2 have:
 - [x] scan QR-code modal when clicking on qr-code icon next to mnemonic, xpub, xpriv, wif, 
 - [ ] electrumx connection: retry up to 10 times, recover connection when changing network (e.g. switching wifi / vp network)
 - [ ] transactions: amounts should toggle between DOI/schwartz (and store value in localhost default DOI)
 - [ ] transaction signing: auto-select enough utxo's from the datatable depending on the amount to send
 - [ ] transactions: indexDB cache for transaction history and its txs 
-- [ ] transactions: add xpub support for transaction list (full wallet balance and txs) 
+- [x] transactions: add xpub support for transaction list (full wallet balance and txs) 
 - [x] transactions: show fees in datatable
 - [x] mnemonic / transactions: show mnemonic screen selected legacy (or segwit?) address in transaction list
 - [x] transaction signing: calculate fees depending on transaction size
 - [x] transactions: progress bar or similar when loading many txs
 - [x] mnemonic / transactions: choose current ElectrumX from random list
 - [ ] app: deploy to IPFS
-- [ ] mnemonic: choose from different derivation path standards (bip32, bip44, bip49, ...)
-- [ ] mnemonic: test DoiWallet and ElectrumDoi seed phrases and keys
+- [x] mnemonic: choose from different derivation path standards (electrum, bip32, bip44, bip49, ...)
+- [x] mnemonic: test DoiWallet and ElectrumDoi seed phrases and keys
 - [ ] mnemonic: use alternatively 24-words for seed phrases
 - [x] mnemonic: add network dropdown 
-  - [ ] add more networks (e.g. Bitcoin-Mainnet, Bitcoin-Testnet)
+  - [x] add Bitcoin-Mainnet
 - [ ] mnemonic: use a better entropy / random generator
 - [x] transactions: expandable datatable rows with raw transaction details
 - [x] transactions: display mempool transactions in transactions
@@ -159,7 +170,7 @@ With the Doichain Playground you can:
 ## Bugs
 - [ ] generated mnemonic with m/84'/0'/0' show different addresses then in DoiWallet
 - [x] negative amounts (outflows) aren't utxos, they shouldn't be not selectable.
-- [x] dc1qaflwqfck8tgq9uj7pq8de9zjfxekvqtkf57qv9 should show 7 transactions not just 1
+- [x] transactions: dc1qaflwqfck8tgq9uj7pq8de9zjfxekvqtkf57qv9 should show 7 transactions not just 1
 - [ ] better error messages and notifications 
 - [ ] if no or wrong private key, transaction fee cannot be calculated? Could it be partially signed with a public-key instead? 
 - [ ] when iterating over utxos, datatable doesn't update reactively (but counters are doing so)
