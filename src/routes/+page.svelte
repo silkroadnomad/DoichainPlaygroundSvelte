@@ -59,7 +59,7 @@
             const args = { prefix: PREFIX}; //,   passphrase: '', skipCheck: true
             if (password) args.password = password;
             root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
-            xpriv = root
+            xpriv = root.toBase58();
             xpub = root.neutered().toBase58();
 
             const node = bip32.fromBase58(xpub);
@@ -80,6 +80,7 @@
                     index,
                     path:`m/${internal}/${index}`,
                     address: address,
+                    balance: address,
                     publicKey:publicKey.toString('hex'),
                     privateKey:privateKey.toString('hex'),
                     wif }
@@ -115,6 +116,7 @@
                     index,
                     path:`m/${internal}/${index}`,
                     address: address,
+                    balance: address,
                     publicKey:publicKey.toString('hex'),
                     privateKey:privateKey.toString('hex'),
                     wif}

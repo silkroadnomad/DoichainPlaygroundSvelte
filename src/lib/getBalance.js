@@ -14,6 +14,5 @@ export const getBalance = async (_doiAddress, _electrumClient, _network) => {
     let reversedHash = Buffer.from(hash.reverse()).toString("hex");
 
     const balance = await _electrumClient.request('blockchain.scripthash.get_balance', [reversedHash]);
-    console.log("balance is",balance)
     return balance;
 };
