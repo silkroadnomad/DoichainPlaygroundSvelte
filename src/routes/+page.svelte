@@ -282,8 +282,9 @@
     <Row>
         <Column>&nbsp;</Column>
         <Column>
-            <Select labelText="Select Wallet" bind:selected={ selectedMnemonic } on:change={() => {
-                  selectedDerivationStandard = wallets.find((w) => w.id.toString() === selectedMnemonic)?.derivationStandard
+            <Select labelText="Select Wallet" bind:selected={ selectedMnemonic } on:change={(e) => {
+                  selectedDerivationStandard = wallets.find((w) => w.id.toString() === e.target.value)?.derivationStandard
+
             }}>
                 <SelectItem value="0" text="Choose a wallet" />
                 {#each wallets as wallet}
