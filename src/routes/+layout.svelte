@@ -11,7 +11,16 @@
 	} from 'carbon-components-svelte';
 
 	import LogoGithub from "carbon-icons-svelte/lib/LogoGithub.svelte";
-	import { network, networks, qrCodeOpen, qrCodeData, electrumServerBanner,connectedServer } from './store.js';
+	import {
+		network,
+		networks,
+		qrCodeOpen,
+		qrCodeData,
+		electrumServerBanner,
+		connectedServer,
+		scanOpen,
+		scanData
+	} from './store.js';
 	import { hash } from './router.js'
 	import Home from './+page.svelte'
 	import Transactions from './transactions.svelte'
@@ -19,12 +28,12 @@
 	import { expoIn } from 'svelte/easing';
 	import QRCodeModal from '$lib/components/QRCodeModal.svelte';
 	import { connectElectrum } from '$lib/connectElectrum.js';
+	import ScanModal from '$lib/components/ScanModal.svelte';
 
 	let isOpen
 	let sideNavOpen
 	let theme = "g90";// "white" | "g10" | "g80" | "g90" | "g100"
 	$:localStorage.setItem('network',JSON.stringify($network)	)
-	$:console.log("$network",$network)
 	$:$network?connectElectrum($network):null
 
 	const routes = {
@@ -38,6 +47,11 @@
 
 <Theme bind:theme persist persistKey="__carbon-theme" />
 <QRCodeModal bind:qrCodeOpen={ $qrCodeOpen } bind:qrCodeData={ $qrCodeData } />
+>
+{#if $scanOpen}
+	<ScanModal bind:scanOpen={ $scanOpen } bind:scanData={ $scanData } />
+{/if}
+
 <Header company="Doichain" platformName="Developer Playground " bind:sideNavOpen href={ `#/` }>
 	<div class="right-aligned">
 		<div on:click={ () => document.location.href='https://github.com/silkroadnomad/DoichainPlaygroundSvelte'}>

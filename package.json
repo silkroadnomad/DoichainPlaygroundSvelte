@@ -38,6 +38,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@peerpiper/qrcode-scanner-svelte": "^1.0.7",
 		"binstring": "^0.2.1",
 		"bip32": "^4.0.0",
 		"bip39": "^3.1.0",

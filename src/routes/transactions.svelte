@@ -36,7 +36,7 @@
     let nameId = ""
     let nameValue = ""
     let doiAddress = $currentAddressP2pkh || $path.substring($path.lastIndexOf("/")+1)!=='transactions'?$path.substring($path.lastIndexOf("/")+1):localStorage.getItem('doiAddress') || ''
-    let recipientAddress = $currentAddressP2pkh
+    let recipientAddress = $currentAddressP2pkh || doiAddress
     let doiAmount = 0
     let balance = { confirmed:0 ,unconfirmed:0 }
     let pageSize = 10;
@@ -55,8 +55,6 @@
     $: doiAmount = Number(doiAmount)
     $: utxoSum = Array.isArray($txs) ? $txs.reduce((sum, utxo) => sum + (utxo.value * 100000000), 0) : 0;
     $: utxoSelected = Array.isArray($txs) ? $txs.filter(tx => selectedRowIds.includes(tx.id)).reduce((sum, utxo) => sum + (utxo.value*100000000), 0) : 0;
-
-
 
     afterUpdate(() => {
         $txs.forEach(tx => {
@@ -186,26 +184,25 @@
             selectedRowIds=[]
             active = false;
         }}
-        >
-            <FileUploaderDropContainer
-              labelText="Drag and drop a file here or click to upload"
-              validateFiles={(files) => {
-                  console.log("files",files)
-
-                if (files && files.length > 0) {
-                    const file = files[0]; // Assuming you're handling the first file
-                    const reader = new FileReader();
-                    reader.readAsArrayBuffer(file);
-                    reader.onload = async (event) => {
-                        console.log("onload...")
-                        const arrayBuffer = event.target.result;
-                        const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
-                        const hashArray = Array.from(new Uint8Array(hashBuffer)); // Convert buffer to byte array
-                        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join(''); // Convert bytes to hex string
-                        console.log("SHA-256 Hash:", hashHex);
-                        nameId="pe/"+hashHex
-                    };
-                }
+        ><Grid class="grid-spacing">
+            <Row>
+                <Column>
+                    <FileUploaderDropContainer
+                      labelText="Drag and drop a file here or click to upload"
+                      validateFiles={(files) => {
+                    console.log("files",files)
+                    if (files && files.length > 0) {
+                        const file = files[0]; // Assuming you're handling the first file
+                        const reader = new FileReader();
+                        reader.readAsArrayBuffer(file);
+                        reader.onload = async (event) => {
+                            const hashBuffer = await crypto.subtle.digest('SHA-256', event.target.result);
+                            const hashHex = Buffer.from(hashBuffer).toString("hex");
+                            console.log("SHA-256 Hash:", hashHex);
+                            nameId="pe/"+hashHex
+                            nameValue='poe'
+                        };
+                    }
                 return true //files.filter((file) => file.size < 1_024);
               }}
               on:change={(e) => {
@@ -224,38 +221,41 @@
           labelText="Enter value to store on Doichain"
           bind:value={nameValue}
         />
-        <TextInput
-          class="margin"
-          labelText="Enter recipients Doichain address "
-          bind:value={recipientAddress}
-        />
-        <TextInput
-          class="margin"
-          labelText="Enter amount in DOI to send "
-          type="number"
-          bind:value={doiAmount}
-        />
-        <Button disabled={selectedRowIds.length === 0} on:click={() => {
-            
-             const result = sign({
-                 senderAddress: doiAddress,
-                 recipientAddress,
-                 doiAmount,
-                 nameId,
-                 nameValue,
-                 selectedRowIds,
-                 txs: $txs
-             })
-                 // utxos: $txs.filter(tx => selectedRowIds.includes(tx.id))
+                </Column>
+                <Column>
+                <TextInput
+                  class="margin"
+                  labelText="Enter recipients Doichain address "
+                  bind:value={recipientAddress}
+                />
+                <TextInput
+                  class="margin"
+                  labelText="Enter amount in DOI to send "
+                  type="number"
+                  bind:value={doiAmount}
+                />
+                <Button disabled={selectedRowIds.length === 0} on:click={() => {
 
-                 if(result) {
-                    toastNotification = "Transaction has been successfully sent";
-                    timeout = 3000;
-                 }else{
-                    toastNotification = "Transaction failed";
-                    timeout = 3000;
-                 }
-        }}>Sign</Button>
+                     const result = sign({
+                         senderAddress: doiAddress,
+                         recipientAddress,
+                         doiAmount,
+                         nameId,
+                         nameValue,
+                         selectedRowIds,
+                         txs: $txs
+                     })
+                         if(result) {
+                            toastNotification = "Transaction has been successfully sent";
+                            timeout = 3000;
+                         }else{
+                            toastNotification = "Transaction failed";
+                            timeout = 3000;
+                         }
+                }}>Sign</Button>
+                </Column>
+            </Row>
+        </Grid>
         </ToolbarBatchActions>
         <ToolbarContent>
             <ToolbarSearch

@@ -2,6 +2,8 @@
     import "carbon-components-svelte/css/all.css";
     import { fade } from "svelte/transition";
     import QrCode from "carbon-icons-svelte/lib/QrCode.svelte";
+    import Scan from "carbon-icons-svelte/lib/Scan.svelte";
+
     import {
         Button,
         TextArea,
@@ -15,7 +17,7 @@
     import { generateMnemonic } from 'bip39';
     import { payments } from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
-    import { qrCodeOpen, qrCodeData, network, electrumClient } from './store.js';
+    import { scanOpen, qrCodeOpen, qrCodeData, network, electrumClient, scanData } from './store.js';
     import { generateKeys } from '$lib/generateKeys.js'
     import { decryptMnemonic } from '$lib/decryptMnemonic.js';
     import { DB_NAME, openDB, readData, addData, deleteData } from '$lib/indexedDBUtil.js';
@@ -165,7 +167,7 @@
             } catch(e){ console.error(e) }
         }
     }
-
+    $: mnemonic=$scanData //scanner has new data set mnemonic!
     $: if ($network && derivationPath && selectedDerivationStandard && root && xpriv && xpub) { try { generateAddresses(addresses) } catch(e){ console.error(e) }}
     $: localStorage.setItem("selectedMnemonic",selectedMnemonic)
     $: { //if chosen wallet changes we need set the selectedDerivationStandard from the wallets data
@@ -280,7 +282,7 @@
     <Row>
         <Column>&nbsp;</Column>
         <Column>
-            <Select labelText="Select Wallet" bind:selected={ selectedMnemonic } on:click={() => {
+            <Select labelText="Select Wallet" bind:selected={ selectedMnemonic } on:change={() => {
                   selectedDerivationStandard = wallets.find((w) => w.id.toString() === selectedMnemonic)?.derivationStandard
             }}>
                 <SelectItem value="0" text="Choose a wallet" />
@@ -294,7 +296,8 @@
             }}>Generate Mnemonic</Button>
             <Button size="small" on:click={ storeMnemonic }>Save</Button>
             <Button size="small" on:click={ deleteMnemonic } class="delete-button">Delete</Button>
-            <Button size="small" on:click={ () => {$qrCodeData=mnemonic;$qrCodeOpen=true}}><QrCode size="16"/></Button>
+            <Button size="small" on:click={ () => {$qrCodeData=mnemonic;$qrCodeOpen=true}}><QrCode size={16}/></Button>
+            <Button size="small" on:click={ () => {$scanOpen=true}}><Scan size={16}/></Button>
         </Column>
     </Row>
     <Row>

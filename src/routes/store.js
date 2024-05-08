@@ -29,6 +29,9 @@ export const networks = [
 	{ id: 'doichain-regtest', text: 'Doichain-Regtest', value: DOICHAIN_REGTEST },
 	{ id: 'bitcoin-mainnet', text: 'Bitcoin-Mainnet', value: BITCOIN_MAINNET }
 ];
+
+export const scanOpen = writable(false)
+export const scanData = writable()
 export const qrCodeOpen = writable(false)
 export const qrCodeData = writable()
 export const network = writable(localStorage.getItem('network')?JSON.parse(localStorage.getItem('network')):DOICHAIN);

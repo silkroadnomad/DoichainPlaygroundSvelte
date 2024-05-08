@@ -146,7 +146,8 @@ With the Doichain Playground you can:
   - [ ] implement bip84 support
   
 ## Nice 2 have:
-- [ ] mnemonic: expandable rows showis privkey, wif, pubkey of address
+- [x] add Scanner https://github.com/peerpiper/qrcode-scanner-svelte
+- [ ] mnemonic: expandable rows shows privkey, wif, pubkey of address
 - [ ] mnemonic/transactions: use OrbitDB to store wallets, history
 - [ ] electrumx connection: retry up to 10 times, recover connection when changing network (e.g. switching wifi / vp network)
 - [ ] transactions: amounts should toggle between DOI/schwartz (and store value in localhost default DOI)
