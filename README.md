@@ -137,7 +137,7 @@ With the Doichain Playground you can:
   - [x] DoiWallet can import Electrum-DOI seeds and shows correct addresses 
     - [x] test spending from DoiWallet with Electrum seed
   - [x] mnemonic: implement Electrum-Legacy support
-    - [ ] generate change addresses 
+    - [ ] generate change addresses (e.g. into second address colum)
   - [x] mnemonic: implement Electrum-Segwit support 
     - [x] implement bip32 support
     - [ ] generate change addresses 
@@ -146,36 +146,41 @@ With the Doichain Playground you can:
   - [ ] implement bip84 support
   
 ## Nice 2 have:
-- [x] scan QR-code modal when clicking on qr-code icon next to mnemonic, xpub, xpriv, wif, 
+- [ ] mnemonic: expandable rows showis privkey, wif, pubkey of address
+- [ ] mnemonic/transactions: use OrbitDB to store wallets, history
 - [ ] electrumx connection: retry up to 10 times, recover connection when changing network (e.g. switching wifi / vp network)
 - [ ] transactions: amounts should toggle between DOI/schwartz (and store value in localhost default DOI)
 - [ ] transaction signing: auto-select enough utxo's from the datatable depending on the amount to send
 - [ ] transactions: indexDB cache for transaction history and its txs 
+- [ ] app: deploy to IPFS
+- [ ] mnemonic: use alternatively 24-words for seed phrases
+- [ ] mnemonic: use a better entropy / random generator
+- [x] scan QR-code modal when clicking on qr-code icon next to mnemonic, xpub, xpriv, wif, 
 - [x] transactions: add xpub support for transaction list (full wallet balance and txs) 
 - [x] transactions: show fees in datatable
 - [x] mnemonic / transactions: show mnemonic screen selected legacy (or segwit?) address in transaction list
 - [x] transaction signing: calculate fees depending on transaction size
 - [x] transactions: progress bar or similar when loading many txs
 - [x] mnemonic / transactions: choose current ElectrumX from random list
-- [ ] app: deploy to IPFS
 - [x] mnemonic: choose from different derivation path standards (electrum, bip32, bip44, bip49, ...)
 - [x] mnemonic: test DoiWallet and ElectrumDoi seed phrases and keys
-- [ ] mnemonic: use alternatively 24-words for seed phrases
 - [x] mnemonic: add network dropdown 
   - [x] add Bitcoin-Mainnet
-- [ ] mnemonic: use a better entropy / random generator
 - [x] transactions: expandable datatable rows with raw transaction details
 - [x] transactions: display mempool transactions in transactions
 
 ## Bugs
+- [ ] when generating mnemonic for Electrum it must be generated with another Electrum mnemonic generator otherwise it's not recognized as valid
 - [ ] generated mnemonic with m/84'/0'/0' show different addresses then in DoiWallet
-- [x] negative amounts (outflows) aren't utxos, they shouldn't be not selectable.
-- [x] transactions: dc1qaflwqfck8tgq9uj7pq8de9zjfxekvqtkf57qv9 should show 7 transactions not just 1
-- [ ] better error messages and notifications 
+- [ ] better error messages and notifications
+  - [ ] when changing derivation standard (e.g. with incompatible Electrum mnemonic)
+  - [ ] when mnemonic could not be decrypted, loaded, saved, generated
 - [ ] if no or wrong private key, transaction fee cannot be calculated? Could it be partially signed with a public-key instead? 
 - [ ] when iterating over utxos, datatable doesn't update reactively (but counters are doing so)
 - [ ] Chrome does not connect to local Electrum websocket with self signed ssl certificate - warning and fix needed 
 - [ ] connecting a failing Electrumx node needs to try the next server and remove it from the current list
+- [x] negative amounts (outflows) aren't utxos, they shouldn't be not selectable.
+- [x] transactions: dc1qaflwqfck8tgq9uj7pq8de9zjfxekvqtkf57qv9 should show 7 transactions not just 1
 - [x] auto selected mnemonic generates wrong address set - dropdown needs to re-select mnemonic then its corretc
 - [x] when spending an utxo, for some reason it could be re-used (chosen by checkbox) for a new transaction and caused error when sending - re-read utxos  
   - [x] counter check with utxos coming live from Electrumx and exlude utxos not in ElectrumX 

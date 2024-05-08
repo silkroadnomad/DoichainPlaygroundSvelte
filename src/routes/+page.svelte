@@ -154,7 +154,6 @@
         }
     }
 
-
     $: if (password) wallets = wallets //as password changes we need to rerender the wallets in order to decrypt the contents
     $: {
         if (mnemonic && password!==undefined){
@@ -169,6 +168,15 @@
 
     $: if ($network && derivationPath && selectedDerivationStandard && root && xpriv && xpub) { try { generateAddresses(addresses) } catch(e){ console.error(e) }}
     $: localStorage.setItem("selectedMnemonic",selectedMnemonic)
+    $: { //if chosen wallet changes we need set the selectedDerivationStandard from the wallets data
+
+       // if (selectedMnemonic) {
+       //     console.log(selectedMnemonic,selectedDerivationStandard)
+           //|| selectedDerivationStandard
+       // if(_selectedDerivationStandard !== selectedDerivationStandard)
+              // }
+        // console.log(selectedMnemonic,selectedDerivationStandard)
+    }
     $: localStorage.setItem("selectedDerivationStandard",selectedDerivationStandard || 0)
     
     let timeout
@@ -188,7 +196,12 @@
                 throw new Error("Mnemonic is empty");
             }
             const encryptedMnemonic = AES.encrypt(mnemonic, password).toString();
-            const data = { id: (wallets.length + 1), mnemonic: encryptedMnemonic, date: new Date() };
+            const data = {
+                id: (wallets.length + 1),
+                mnemonic: encryptedMnemonic,
+                derivationStandard: selectedDerivationStandard,
+                date: new Date()
+            };
             wallets.push(data);
             await addData(db, data);
             toastNotification = "Mnemonic has been successfully stored.";
@@ -215,7 +228,7 @@
 
     async function deleteMnemonic() {
         const db = await openDB(DB_NAME, "wallets");
-        const selectedWallet = wallets.find(w => w.id === selectedMnemonic);
+        const selectedWallet = wallets.find(w => w.id.toString() === selectedMnemonic);
         if (selectedWallet) {
             await deleteData(db, selectedWallet.id);
             wallets = wallets.filter(w => w.id !== selectedWallet.id);
@@ -259,7 +272,7 @@
     <Row>
         <Column><h2>1. Generate mnemonic for a new wallet</h2></Column>
         <Column><TextInput labelText="Password" bind:value={password} />
-            <Button size="small" on:click={()=>{
+            <Button size="small" on:click={ () => {
                        const selectedWallet = wallets.find(w => w.id.toString() === selectedMnemonic)
                        mnemonic = decryptMnemonic(selectedWallet.mnemonic,password)
             }}>Decrypt</Button></Column>
@@ -267,7 +280,9 @@
     <Row>
         <Column>&nbsp;</Column>
         <Column>
-            <Select labelText="Select Wallet" bind:selected={ selectedMnemonic }>
+            <Select labelText="Select Wallet" bind:selected={ selectedMnemonic } on:click={() => {
+                  selectedDerivationStandard = wallets.find((w) => w.id.toString() === selectedMnemonic)?.derivationStandard
+            }}>
                 <SelectItem value="0" text="Choose a wallet" />
                 {#each wallets as wallet}
                     <SelectItem value={wallet.id.toString()} text={`${decryptMnemonic(wallet.mnemonic,password)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />
