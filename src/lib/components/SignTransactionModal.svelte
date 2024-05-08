@@ -4,7 +4,7 @@
         RadioButtonGroup,
         RadioButton, Column, Grid, Row, TextInput
     } from 'carbon-components-svelte';
-
+    import QrCode from "svelte-qrcode"
     import { createEventDispatcher, onMount } from 'svelte';
     import {
         electrumClient,
@@ -16,7 +16,7 @@
     import * as bitcoin from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
     import ECPairFactory from 'ecpair';
-    import {VERSION} from "$lib/doichain.js"
+    import { NETWORK_FEE, VERSION } from '$lib/doichain.js';
     import { getNameOPStackScript } from '$lib/getNameOPStackScript.js';
 
     const ECPair = ECPairFactory(ecc);
@@ -37,57 +37,76 @@
     export let selectedRowIds
     export let txs
 
-
+    let psbtBaseText
+    let utxoSum = 0
     let utxos = []
-    // const signMethods = ["Seed in browser wallet", "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
-    const signMethods = ["Wif (PrivKey)"] //, "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
-    let selectedSigningMethod = signMethods[1];
+
+    const signMethods = ["PSBT (QR)","PSBT (TXT)","Wif (PrivKey)"] //, "Wif (PrivKey)", "Copy & paste seed phrase", "External Pst (E.g. Ethereum)", "Hardware Wallet"];
+    let selectedSigningMethod = signMethods[0];
 
     let changeAddress = senderAddress 
-    let transactionFee = selectedRowIds.length * 180 + 3 * 34
+    let transactionFee = selectedRowIds.length * 180 + 3 * 34*500
     let schwartzPerByte = 210 //TODO why is that so high? shoulld be 50x lower
-    let storageFee = 500000  //or 88100 - a roughly estimated transaction fee
+    let storageFee = NETWORK_FEE.satoshis  //or 88100 - a roughly estimated transaction fee
     let byteLength = 0
-    if(nameId) transactionFee += storageFee //storageFee
+    // if(nameId) transactionFee += storageFee
     
-    $: transactionFee = byteLength*schwartzPerByte+(nameId?storageFee:0) //add storagefee when nameId was set
-    $: transactionFee<Number($electrumBlockchainRelayfee*100000000)?transactionFee=Number($electrumBlockchainRelayfee*100000000):0
-    $: utxoSum = 0 //TODO utxos.reduce((sum, utxo) => sum + (utxo.value*100000000), 0); //get sum of all utxo values
-    $: changeAmount = utxoSum - (doiAmount+transactionFee)
+    // $: transactionFee = byteLength*schwartzPerByte+(nameId?storageFee:0) //add storagefee when nameId was set
+    // $: transactionFee<Number($electrumBlockchainRelayfee*100000000)?transactionFee=Number($electrumBlockchainRelayfee*100000000):0
 
-    onMount(()=>{
-        parseSelectedRowIds()
-        signTransaction().then((tx)=>{
-            byteLength = tx.byteLength()//schwartz per byte
-            transactionFee = byteLength*schwartzPerByte
-            console.log("test sign transaction to calculated tx byte length",tx.byteLength())
-            console.log("transactionFee",transactionFee)
-        })
+    // $:changeAmount = utxoSum - (doiAmount+transactionFee+(nameId?storageFee:0))
+    $:console.log("utxoSum",utxoSum)
+    $:console.log("transactionFee",transactionFee)
+    $:console.log("changeAmount",changeAmount)
+    onMount(async ()=>{
+        const _utxoSum = parseSelectedRowIds()
+        console.log("_utxoSum",_utxoSum)
+        console.log("doiAmount",doiAmount)
+        console.log("transactionFee",transactionFee)
+        console.log("storageFee",nameId?storageFee:0)
+        console.log("transactionFee+(nameId?storageFee:0)",transactionFee+(nameId?storageFee:0))
+        changeAmount = utxoSum - (doiAmount+transactionFee+(nameId?storageFee:0))
+        console.log("_changeAmount",changeAmount)
+        const tx =  await signTransaction()
+
+            // byteLength = tx.byteLength()//schwartz per byte
+            // transactionFee = byteLength*schwartzPerByte
+            // console.log("test sign transaction to calculated tx byte length",tx.byteLength())
+            // console.log("transactionFee",transactionFee)
+        // })
+
     })
 
     function parseSelectedRowIds() {
         const parsedUtxos = [];
         selectedRowIds.forEach(rowId => {
-            const underscoreIndex = rowId.lastIndexOf('_');
-            const txid = rowId.substring(0, underscoreIndex);
-            const n = parseInt(rowId.substring(underscoreIndex + 1), 10);
-
+            const txid = rowId.substring(0, rowId.indexOf('_'));
+            const n = parseInt(rowId.substring(rowId.lastIndexOf('_') + 1), 10);
+            const scannedTxs = []
             txs.forEach(tx => {
-                tx.vout.forEach(vout => {
-                    if (vout.n === n && tx.txid === txid) {
-                        parsedUtxos.push({
-                            txid: tx.txid,
-                            vout: [vout] // Wrap in an array to maintain structure
-                        });
-                    }
-                });
+
+                if(scannedTxs.indexOf(txid)===-1){
+                    tx.vout.forEach(vout => {
+                        if (vout.n === n) {
+                            vout.txid=txid
+                            vout.hash=tx.hash
+                            vout.hex=tx.hex
+                            const valueInSatoshis = Math.round(vout.value * 100000000);
+                            utxoSum = utxoSum+valueInSatoshis
+                            parsedUtxos.push(vout)
+                        }
+                    });
+                    scannedTxs.push(txid)
+                }
             });
         });
         utxos = parsedUtxos;
-        console.log("parsedUtxos",parsedUtxos)
+        console.log("parsedUtxos", parsedUtxos);
+            console.log("utxoSum",utxoSum)
+        return (parsedUtxos,utxoSum)
     }
 
-    async function signTransaction() {
+    function signTransaction() {
 
         let keyPair
         if($currentWif)
@@ -98,40 +117,35 @@
 
         utxos.forEach(utxo => {
             //TODO https://bitcoin.stackexchange.com/questions/116128/how-do-i-determine-whether-an-input-or-output-is-segwit-revisited
-            // const valueInSatoshis = Math.round(utxo.value * 100000000);
-            console.log("adding utxo to transaction",utxo)
-            // utxo.vout.forEach(vout =>{
-            //     const scriptPubKeyHex = vout.scriptPubKey.hex
-            //     const isSegWit = scriptPubKeyHex?.startsWith('0014') || scriptPubKeyHex?.startsWith('0020');
-            //     if(vout.scriptPubKey.addresses[0]===senderAddress){
-            //         console.log("adding ",utxo)
-            //         if (isSegWit) {
+            const valueInSatoshis = Math.round(utxo.value * 100000000);
+                const scriptPubKeyHex = utxo.scriptPubKey.hex
+                const isSegWit = scriptPubKeyHex?.startsWith('0014') || scriptPubKeyHex?.startsWith('0020');
+                    if (isSegWit) {
             //             // This is a SegWit UTXO
-            //             psbt.addInput({
-            //                 hash: utxo.txid,
-            //                 index: vout.n,
-            //                 witnessUtxo: {
-            //                     script: Buffer.from(scriptPubKeyHex, 'hex'),
-            //                     value: valueInSatoshis,
-            //                 }
-            //             });
-            //         } else {     // This is a non-SegWit UTXO
-            //             psbt.addInput({
-            //                 hash: utxo.txid,
-            //                 index: vout.n,
-            //                 nonWitnessUtxo: Buffer.from(utxo.hex, 'hex')
-            //             });
-            //         }
-            //         totalInputAmount += valueInSatoshis;
-            //     }
-            //
-            // });
+                        psbt.addInput({
+                            hash: utxo.hash,
+                            index: utxo.n,
+                            witnessUtxo: {
+                                script: Buffer.from(scriptPubKeyHex, 'hex'),
+                                value: valueInSatoshis,
+                            }
+                        });
+                    } else {     // This is a non-SegWit UTXO
+                        console.log("utxo.hex",utxo.hex)
+                        psbt.addInput({
+                            hash: utxo.hash,
+                            index: utxo.n,
+                            nonWitnessUtxo: Buffer.from(utxo.hex, 'hex')
+                        });
+                    }
+                    totalInputAmount += valueInSatoshis;
         })
-
 
         let totalOutputAmount = 0;
         if(!nameId){
-            console.log("recipientAddress coin output",recipientAddress)
+
+            console.log(`recipientAddress coin output ${doiAmount}`,recipientAddress)
+
             psbt.addOutput({
                 address: recipientAddress,
                 value: doiAmount,
@@ -139,41 +153,40 @@
             totalOutputAmount += doiAmount;
         }
         else{
-            console.log("recipientAddress namescript output",recipientAddress)
+            console.log(`recipientAddress namescript output ${doiAmount}`,recipientAddress)
             const opCodesStackScript = getNameOPStackScript(nameId,nameValue,recipientAddress,$network)
             psbt.setVersion(VERSION) //use this for name transactions
             psbt.addOutput({
                 script: opCodesStackScript,
-                value: doiAmount
+                value: storageFee //not the doiAmount here!
             })
-            totalOutputAmount += doiAmount;
+
+            totalOutputAmount += storageFee;
         }
+        console.log(`changeAddress ${changeAddress} gets`,(changeAmount))
         psbt.addOutput({
             address: changeAddress,
-            value: changeAmount,
+            value: (changeAmount),
         });
         totalOutputAmount += changeAmount;
-        console.log("changeAddress:     ", changeAmount);
+        console.log("changeAmount:     ", changeAmount);
         console.log("Total Input Amount:", totalInputAmount);
         console.log("Total Output Amount:", totalOutputAmount);
+        // psbt.finalizeAllInputs();
+        // console.log("00-psbt.extractTransaction()",psbt.extractTransaction())
+        // utxos.forEach((utxo, index) => {
+        //     console.log("singing utxo",utxo)
+        //     console.log("singing index",index)
+        //     psbt.signInput(index, keyPair);
+        // });
+        psbtBaseText = psbt.toBase64();
 
-        utxos.forEach(utxo => {
-            utxo.vout.forEach((utxo, index) => {
-                if(utxo.scriptPubKey.addresses[0]===senderAddress){
-                    console.log("singing utxo",utxo)
-                    console.log("singing index",index)
-                    psbt.signInput(index, keyPair);
-                }
-            });
-        });
-
+        psbt.signAllInputs(keyPair)
             // psbt.validateSignaturesOfInput(0, validator); //TODO https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts
-            psbt.finalizeAllInputs();
+        psbt.finalizeAllInputs();
 
-            return psbt.extractTransaction()
+        return psbt.extractTransaction()
     }
-    // })
-
 </script>
 
 <!--
@@ -274,20 +287,15 @@ Opens a confirmation modal that should sign a transaction and send it to Electru
                 </RadioButtonGroup>
 
                 <div style="margin: var(--cds-layout-03) 0">
-                    {#each signMethods as value (value)}
-                        <Button
-                          size="small"
-                          kind="secondary"
-                          disabled={selectedSigningMethod === value}
-                          on:click={() => (selectedSigningMethod = value)}
-                        >
-                            {#if value==='Wif (PrivKey)'}
+                            {#if selectedSigningMethod==='Wif (PrivKey)'}
                                 <TextInput bind:value={$currentWif} labelText="PrivateKey (Wif)" placeholder="Enter wif..." />
+                            {:else if selectedSigningMethod==='PSBT (QR)'}
+                                <QrCode value={psbtBaseText} />
+                            {:else if selectedSigningMethod==='PSBT (TXT)'}
+                                <TextInput value={psbtBaseText} />
                             {:else}
                                 not implemented yet
                             {/if}
-                        </Button>
-                    {/each}
                 </div>
                 Selected Signature Method:
                 <strong>{selectedSigningMethod}</strong>

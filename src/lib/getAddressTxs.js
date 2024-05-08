@@ -111,7 +111,6 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
             if (_tx.address === _doiAddress) {
                 const isUTXO = electrumUTXOs.some(utxo => utxo.tx_hash === _tx.txid && utxo.tx_pos === _tx.n);
                 if (isUTXO) {
-                    console.log("is utxos",_tx)
                     _tx.utxo = true;
                 }
                 ourTxs.push(_tx);

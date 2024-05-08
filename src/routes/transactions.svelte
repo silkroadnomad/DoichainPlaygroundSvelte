@@ -190,37 +190,39 @@
                     <FileUploaderDropContainer
                       labelText="Drag and drop a file here or click to upload"
                       validateFiles={(files) => {
-                    console.log("files",files)
-                    if (files && files.length > 0) {
-                        const file = files[0]; // Assuming you're handling the first file
-                        const reader = new FileReader();
-                        reader.readAsArrayBuffer(file);
-                        reader.onload = async (event) => {
-                            const hashBuffer = await crypto.subtle.digest('SHA-256', event.target.result);
-                            const hashHex = Buffer.from(hashBuffer).toString("hex");
-                            console.log("SHA-256 Hash:", hashHex);
-                            nameId="pe/"+hashHex
-                            nameValue='poe'
-                        };
-                    }
+
+                      console.log("files",files)
+
+                      if (files && files.length > 0) {
+                            const file = files[0]; // Assuming you're handling the first file
+                            const reader = new FileReader();
+                            reader.readAsArrayBuffer(file);
+                            reader.onload = async (event) => {
+                                const hashBuffer = await crypto.subtle.digest('SHA-256', event.target.result);
+                                const hashHex = Buffer.from(hashBuffer).toString("hex");
+                                console.log("SHA-256 Hash:", hashHex);
+                                nameId="pe/"+hashHex
+                                nameValue='poe'
+                            };
+                      }
                 return true //files.filter((file) => file.size < 1_024);
               }}
               on:change={(e) => {
                     // console.log("files", e.detail);
               }}
             />
-        <TextInput
-          class="margin"
-          name="nameId"
-          labelText="Enter a name to store on Doichain"
-          bind:value={nameId}
-        />
-        <TextInput
-          class="margin"
-          name="nameValue"
-          labelText="Enter value to store on Doichain"
-          bind:value={nameValue}
-        />
+                <TextInput
+                  class="margin"
+                  name="nameId"
+                  labelText="Enter a name to store on Doichain"
+                  bind:value={nameId}
+                />
+                <TextInput
+                  class="margin"
+                  name="nameValue"
+                  labelText="Enter value to store on Doichain"
+                  bind:value={nameValue}
+                />
                 </Column>
                 <Column>
                 <TextInput

@@ -8,7 +8,7 @@ export function openDB(_dbName,_storeName) {
 
 	return new Promise((resolve, reject) => {
 
-		const request = indexedDB.open(_dbName, 4);
+		const request = indexedDB.open(_dbName, 5);
 		request.onupgradeneeded = (event) => {
 			// Handle database schema creation or updates
 			const db = event.target.result;

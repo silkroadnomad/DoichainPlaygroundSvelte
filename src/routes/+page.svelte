@@ -17,7 +17,16 @@
     import { generateMnemonic } from 'bip39';
     import { payments } from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
-    import { scanOpen, qrCodeOpen, qrCodeData, network, electrumClient, scanData,currentAddressP2pkh } from './store.js';
+    import {
+        scanOpen,
+        qrCodeOpen,
+        qrCodeData,
+        network,
+        electrumClient,
+        scanData,
+        currentAddressP2pkh,
+        currentWif
+    } from './store.js';
     import { generateKeys } from '$lib/generateKeys.js'
     import { decryptMnemonic } from '$lib/decryptMnemonic.js';
     import { DB_NAME, openDB, readData, addData, deleteData } from '$lib/indexedDBUtil.js';
@@ -76,7 +85,12 @@
                     pubkey: node.derive(internal).derive(index).publicKey,
                     network: $network
                 }).address;
-                if(index===0)$currentAddressP2pkh=address
+
+                if(index===0){
+                    $currentAddressP2pkh=address
+                    $currentWif=wif
+                }
+
                 const addr = {
                     id: index,
                     index,
@@ -114,7 +128,10 @@
                     network: $network
                 }).address;
 
-                if(index===0)$currentAddressP2pkh=address
+                if(index===0){
+                    $currentAddressP2pkh=address
+                    $currentWif=wif
+                }
 
                 const addr = {
                     id: index,
@@ -145,7 +162,10 @@
                     network: $network
                 }).address;
 
-                if(index===0)$currentAddressP2pkh=address
+                if(index===0){
+                    $currentAddressP2pkh=address
+                    $currentWif=wif
+                }
 
                 const addr = {
                     id: index,
@@ -323,6 +343,7 @@
 </Grid>
 <DataTable
   class="datatable"
+  expandable
   headers={[
             { key: "index", value: "Index"},
             { key: "path", value: "Path" },
@@ -335,23 +356,23 @@
   rows={addresses}
 >
 
-    <svelte:fragment slot="expanded-row" let:row>
-        <pre>{JSON.stringify(row, null, 2)}</pre>
-    </svelte:fragment>
+<svelte:fragment slot="expanded-row" let:row>
+    <pre>{JSON.stringify(row, null, 2)}</pre>
+</svelte:fragment>
 
-    <svelte:fragment slot="cell" let:row let:cell>
-        {#if cell.key === "balance"}
-            {#await getBalance(cell.value, _electrumClient, _network)}
-                <p>...waiting</p>
-            {:then number}
-                <p>{number.confirmed}/{number.unconfirmed}</p>
-            {:catch error}
-                <p style="color: red">{error.message}</p>
-            {/await}
-        {:else}
-            {cell.value || ''}
-        {/if}
-    </svelte:fragment>
+<svelte:fragment slot="cell" let:row let:cell>
+    {#if cell.key === "balance"}
+        {#await getBalance(cell.value, _electrumClient, _network)}
+            <p>...waiting</p>
+        {:then number}
+            <p>{number.confirmed}/{number.unconfirmed}</p>
+        {:catch error}
+            <p style="color: red">{error.message}</p>
+        {/await}
+    {:else}
+        {cell.value || ''}
+    {/if}
+</svelte:fragment>
 
 </DataTable>
 

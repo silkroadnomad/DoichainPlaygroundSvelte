@@ -64,6 +64,5 @@ export const getNameOPStackScript = (nameId, nameValue, recipientAddress, networ
                                               OP_CHECKSIG
                                         `.trim().replace(/\s+/g, ' '),
     )
-    console.log(opCodesStackScript);
     return opCodesStackScript;
 };
