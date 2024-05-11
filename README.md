@@ -44,13 +44,17 @@ With the Doichain Playground you can:
 8. Create a new block to observe the transaction.
 
 ## References:
+- Crypto 101 is an introductory course on cryptography, freely available for programmers of all ages and skill levels. 
+  - https://www.crypto101.io/
 - BitcoinJS-Lib https://github.com/bitcoinjs/bitcoinjs-lib
 - Electrum Protocol https://electrumx.readthedocs.io/en/latest/protocol.html
+- Namecoin / ElectrumX Name Scripts https://www.namecoin.org/2018/07/15/electrumx-name-scripts.html
 - Bitcoin-Improvement Proposals (bips) https://github.com/bitcoin/bips
 - Learning Bitcoin https://github.com/BlockchainCommons/Learning-Bitcoin-from-the-Command-Line/tree/master
 - Cryptography-Toolkit https://guggero.github.io/cryptography-toolkit/#!/
   - Hierarchical Deterministic Wallet (BIP32/38/39/44/49/84) https://guggero.github.io/cryptography-toolkit/#!/hd-wallet
 - Ian Coleman https://iancoleman.io/
+
 
 ## Todos:
 - [x] add Dockerfile and docker-compose.yml with Doichain Node and ElectrumX

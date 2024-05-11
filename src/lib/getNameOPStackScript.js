@@ -47,6 +47,7 @@ export const getNameOPStackScript = (nameId, nameValue, recipientAddress, networ
         const decoded = address.fromBase58Check(recipientAddress, network);
         op_address = decoded.hash.toString('hex');
     } catch (error) {
+        // op_address = new Uint8Array([])
         throw new Error(ERRORS.INVALID_ADDRESS + error.message);
     }
 

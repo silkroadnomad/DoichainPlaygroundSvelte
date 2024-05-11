@@ -25,6 +25,7 @@
 	import Home from './+page.svelte'
 	import Transactions from './transactions.svelte'
 	import NameOps from './nameOpUtxos.svelte'
+	import NameCheck from './nameCheck.svelte'
 	import { expoIn } from 'svelte/easing';
 	import QRCodeModal from '$lib/components/QRCodeModal.svelte';
 	import { connectElectrum } from '$lib/connectElectrum.js';
@@ -40,7 +41,8 @@
 		'/': Home,
 		'': Home,
 		'/transactions': Transactions,
-		'/nameOpUtxos': NameOps
+		'/nameOpUtxos': NameOps,
+		'/nameCheck': NameCheck
 	}
 	$: view = routes[$hash]
 </script>
@@ -78,6 +80,7 @@
 				<HeaderPanelLink href={ `#/` }>Mnemonics, Keys & Addresses</HeaderPanelLink>
 				<HeaderPanelLink href={ `#/transactions` }>Transactions</HeaderPanelLink>
 				<HeaderPanelLink href={ `#/nameOpUtxos` }>Name Ops</HeaderPanelLink>
+				<HeaderPanelLink href={ `#/nameCheck` }>Name Check</HeaderPanelLink>
 
 <!--				<HeaderPanelDivider>OrbitDB</HeaderPanelDivider>-->
 <!--				<HeaderPanelLink  href={ `#/orbitdb/custom-access-controller` }>orbit-db custom access controller</HeaderPanelLink>-->

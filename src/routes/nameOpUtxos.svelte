@@ -1,8 +1,6 @@
 <script>
     import { onMount,onDestroy } from 'svelte';
-    import { ElectrumxClient } from '$lib/electrumx-client.js';
     import { electrumClient, electrumServers, network } from './store.js';
-    // import { sign } from '$lib/signTransactionModal.js';
     import {
         Button,
         DataTable, Pagination,
@@ -29,24 +27,14 @@
     let page = 1
     let active = true
 
-    onMount(async () => {
-        if(!$electrumClient || $electrumClient.getStatus()===0)await connectElectrum();
-        await scanBlockchain();
-    });
-
-    async function connectElectrum() {
-        const networkNodes = electrumServers.filter(n => n.network === $network.name);
-        const randomServer = networkNodes[Math.floor(Math.random() * networkNodes.length)];
-        $electrumClient = new ElectrumxClient(randomServer.host, randomServer.port, randomServer.protocol);
-        await $electrumClient.connect("electrum-client-js", "1.4.2");
-    }
+    onMount(()=>{
+        scanBlockchain()
+    })
 
     async function scanBlockchain(maxRecords) {
         currentHeight = await $electrumClient.request('blockchain.headers.subscribe');
-        console.log("currentHeight",currentHeight)
         let lowerHightBy = 0
         for (let height = (currentHeight.height-lowerHightBy); height > 0; height--) {
-            console.log("height",height)
             newHeight = height
             counter=0
             try {

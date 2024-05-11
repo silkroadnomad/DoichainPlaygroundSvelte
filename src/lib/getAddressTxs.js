@@ -21,7 +21,6 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
     let electrumUTXOs = []
     if (navigator.onLine) {
         console.log("opening db", DB_NAME)
-        // const db = await openDB(DB_NAME,"history")
         try {
             electrumUTXOs = await _electrumClient.request('blockchain.scripthash.listunspent', [reversedHash]);
             console.log("electrumUTXOs", electrumUTXOs)
