@@ -124,7 +124,7 @@
 
                 const wif = root.derive(internal).derive(index).toWIF()
                 const address = payments.p2wpkh({
-                    pubkey: node.derive(internal).derive(index).publicKey,
+                    pubKey: node.derive(internal).derive(index).publicKey,
                     network: $network
                 }).address;
 
@@ -158,7 +158,7 @@
 
                 const wif = root.derive(internal).derive(index).toWIF()
                 const address = payments.p2pkh({
-                    pubkey,
+                    pubkey: pubkey,
                     network: $network
                 }).address;
 

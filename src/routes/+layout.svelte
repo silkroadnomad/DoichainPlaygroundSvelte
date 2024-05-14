@@ -25,7 +25,9 @@
 	import Home from './+page.svelte'
 	import Transactions from './transactions.svelte'
 	import NameOps from './nameOpUtxos.svelte'
-	import NameCheck from './nameCheck.svelte'
+	// import NameCheck from './nameCheck.svelte'
+	import MultiSig from './multiSig.svelte'
+
 	import { expoIn } from 'svelte/easing';
 	import QRCodeModal from '$lib/components/QRCodeModal.svelte';
 	import { connectElectrum } from '$lib/connectElectrum.js';
@@ -42,7 +44,8 @@
 		'': Home,
 		'/transactions': Transactions,
 		'/nameOpUtxos': NameOps,
-		'/nameCheck': NameCheck
+		// '/nameCheck': NameCheck,
+		'/multiSig': MultiSig
 	}
 	$: view = routes[$hash]
 </script>
@@ -79,7 +82,9 @@
 				<HeaderPanelDivider>Doichain</HeaderPanelDivider>
 				<HeaderPanelLink href={ `#/` }>Mnemonics, Keys & Addresses</HeaderPanelLink>
 				<HeaderPanelLink href={ `#/transactions` }>Transactions</HeaderPanelLink>
+				<HeaderPanelLink href={ `#/multiSig` }>MultiSig</HeaderPanelLink>
 				<HeaderPanelLink href={ `#/nameOpUtxos` }>Name Ops</HeaderPanelLink>
+
 <!--				<HeaderPanelLink href={ `#/nameCheck` }>Name Check</HeaderPanelLink>-->
 
 <!--				<HeaderPanelDivider>OrbitDB</HeaderPanelDivider>-->

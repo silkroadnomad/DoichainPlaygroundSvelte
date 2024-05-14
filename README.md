@@ -61,7 +61,11 @@ With the Doichain Playground you can:
     - [x] generating Electrumx self signed server certificates on startup (for secure websocket in local development)
     - [x] adding a network dropdown (Doichain Mainnet / Doichain RegTest) to +layout.svelte
     - [x] connecting to RegTest Electrumx (Remark: doesn't work with Chrome - using self signed certificate! Use Firefox or add exception)
-    - [ ] add nginx, letsencrypt and enable wss for Electrumx for production use
+    - [ ] add nginx, letsencrypt and enable wss for Electrumx for production use (testnet and mainnet)
+      - [ ] install mainnet Electrumx on lower power numbers then 10000 (some hotels block higher port numbers e.g. 50002, 50004)
+      - [ ] enable Electrumx peer-to-peer modus / setup seed nodes 
+- [x] upgrade DoichainD to v0.27.0
+  - [ ] test p2pool mining 
 - [x] generate mnemonic
 - [x] create xpriv and xpub from mnemonic 
 - [x] generate new (legacy) p2pkh from a derivation path 
@@ -86,7 +90,7 @@ With the Doichain Playground you can:
       - [x] find address in previous tx
     - [ ] double check addresses (received & sent)
     - [x] two txids appear twice (change txs) in txs, keep only one but accumulate values
-  - [ ] display nameId, nameValue, address
+  - [x] display nameId, nameValue, address
 - [x] display wallet balance 
   - [x] of a single address
   - [ ] of a xpub and it's derivations bip32, bip44, bip49,.. 
@@ -101,12 +105,12 @@ With the Doichain Playground you can:
   - [x] calculate transaction fee by pre-signing the transaction 
   - [x] change address
     - [x] send change back to same address
-    - [ ] generate change address from a derivation path 
+    - [ ] generate change addresses from a derivation path 
   - [x] enter fee (and substract from utxos amount to be sent)
   - [x] sign transaction by wif (currently derived from mnemonic and wallet screen)
   - [x] sign transaction by seed phrase (from mnemonic dropdown)
-  - [ ] sign PSBT by scanning qr-code with DoiWallet (BlueWallet)
-  - [ ] sign PSBT file / qr code in Electrum-DOI 
+  - [x] sign PSBT by scanning qr-code with DoiWallet (BlueWallet)
+  - [x] sign PSBT file / qr code in Electrum-DOI 
   - [ ] sign by hardware wallet (and check PSBT)
     - [ ] Ledger https://developers.ledger.com/docs/connectivity/ledgerJS/integration-walkthrough/web-application/web-hid-usb
     - [ ] BitBox https://bitbox.swiss/blog/bitbox02-javascript-api/
@@ -135,6 +139,13 @@ With the Doichain Playground you can:
   - [x] generate sha256 hash and greate pe/{sha256} hash with it.
 - [x] show min-relay fee in signing modal
 - [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery)  
+- [ ] create multisig-wallets
+  - [ ] store MultiSig config (name, description, redeem code and public keys, wallet labels, publickeys in qr-code
+  - [ ] download Multisig config as file
+  - [ ] scan MultiSig config 
+  - [ ] scan a publickey
+    - [ ] show error if publicKey is invalid 
+  - [ ] scan mnemonic / try different BIPs (32/44/49/84), show balance, latetest derivation and new address / publickey for multisig
 - [ ] spend from a multisig address
 - [ ] automate spending from a multisig address
 - [ ] research and test DoiWallet and Electrum-DOI seed phrases and keys
@@ -151,9 +162,9 @@ With the Doichain Playground you can:
   
 ## Nice 2 have:
 - [x] add Scanner https://github.com/peerpiper/qrcode-scanner-svelte
-- [ ] mnemonic: expandable rows shows privkey, wif, pubkey of address
+- [ ] mnemonic: expandable rows shows privkey, wif, pubKey of address
 - [ ] mnemonic/transactions: use OrbitDB to store wallets, history
-- [ ] electrumx connection: retry up to 10 times, recover connection when changing network (e.g. switching wifi / vp network)
+- [ ] Electrumx connection: retry up to 10 times, recover connection when changing network (e.g. switching wifi / vp network)
 - [ ] transactions: amounts should toggle between DOI/schwartz (and store value in localhost default DOI)
 - [ ] transaction signing: auto-select enough utxo's from the datatable depending on the amount to send
 - [ ] transactions: indexDB cache for transaction history and its txs 
