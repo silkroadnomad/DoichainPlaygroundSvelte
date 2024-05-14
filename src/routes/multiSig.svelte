@@ -2,13 +2,10 @@
 	import "carbon-components-svelte/css/all.css";
 	import {
 		Button,
-		TextArea,
 		Grid,
 		Row,
 		Column,
-		TextInput,
-		ToastNotification,
-		SelectItem, Select, DataTable
+		TextInput
 	} from 'carbon-components-svelte';
 	import {
 		scanOpen,
@@ -16,14 +13,14 @@
 		qrCodeData,
 		network,
 		electrumClient,
-		scanData,
-		currentAddressP2pkh,
-		currentWif
+		scanData
 	} from './store.js';
-	import { QrCode } from 'carbon-icons-svelte';
+	import { QrCode, Scan } from 'carbon-icons-svelte';
 	import { payments } from 'bitcoinjs-lib';
 
 	let multiSigConfig = localStorage.getItem('multiSigConfig')?JSON.parse(localStorage.getItem('multiSigConfig')):undefined
+	// $: multiSigConfig = $scanData?JSON.parse($scanData):undefined
+	$: console.log("multiSigConfig",multiSigConfig)
 	let walletName = multiSigConfig?.walletName
 	let walletAmounts =  multiSigConfig?.pubKeyInputs.length || 3;
 	let m = multiSigConfig?.m || 2;
@@ -63,12 +60,11 @@
 					redeem = redeemObj?.output?.toString('hex')
 					console.log("redeem",redeem)
 					multiSigAddress = payments.p2sh({ redeem: redeemObj }).address
-
 				}
 				catch(e) {}
 			}
 	}
-
+	$: console.log($scanData)
 </script>
 
 <h1>Create New MultiSig Wallet</h1>
@@ -79,6 +75,9 @@
 	<Row>
 		<Column><TextInput type="number" labelText="Amount Wallets" min={1} max={16} bind:value={walletAmounts} /></Column>
 		<Column><TextInput type="number" labelText="Required Signers" min={1} max={walletAmounts} bind:value={m} /></Column>
+		<Column>
+			<Button size="small" on:click={ () => {$scanOpen=true}}><Scan size={16}/></Button>
+		</Column>
 		<Column>
 			{#if allKeysValid}
 				<Button size="small" on:click={

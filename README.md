@@ -139,10 +139,10 @@ With the Doichain Playground you can:
   - [x] generate sha256 hash and greate pe/{sha256} hash with it.
 - [x] show min-relay fee in signing modal
 - [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery)  
-- [ ] create multisig-wallets
-  - [ ] store MultiSig config (name, description, redeem code and public keys, wallet labels, publickeys in qr-code
-  - [ ] download Multisig config as file
-  - [ ] scan MultiSig config 
+- [x] create multisig wallet
+  - [x] store multisig config (name, description, redeem code and public keys, wallet labels, publickeys in qr-code
+  - [x] scan multisig config from qr code
+  - [ ] download multisig config as file
   - [ ] scan a publickey
     - [ ] show error if publicKey is invalid 
   - [ ] scan mnemonic / try different BIPs (32/44/49/84), show balance, latetest derivation and new address / publickey for multisig
