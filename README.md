@@ -134,7 +134,10 @@ With the Doichain Playground you can:
   - [x] add file upload to utxo selction toolbar 
   - [x] generate sha256 hash and greate pe/{sha256} hash with it.
 - [x] show min-relay fee in signing modal
-- [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery)  
+- [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery) 
+- [ ] create a command line tool to register / show names from command line (and generate a PSBT-QR-Code there to pay in DoiWallet)
+  - https://www.npmjs.com/package/namecointool
+  - https://www.npmjs.com/package/qrcode-terminal
 - [ ] spend from a multisig address
 - [ ] automate spending from a multisig address
 - [ ] research and test DoiWallet and Electrum-DOI seed phrases and keys

@@ -1,12 +1,13 @@
 <script>
 	import { Button, Column, Grid, Row, TextInput } from 'carbon-components-svelte';
 	import { address, crypto, script } from 'bitcoinjs-lib';
-	import { getNameOPStackScript } from '$lib/getNameOPStackScript.js';
+
 	import {
 		electrumClient,
 		network
 	} from './store.js';
-
+	
+let HASHX_LEN = 11
 let nameToCheck = 'hello'
 let valueToCheck =new Uint8Array([]) // 'world' //new Uint8Array([]) //'world'
 let holderAddress = 'N8YtTBMRqMq9E45VMT9KVbfwt5X5oLD4vt'
@@ -14,64 +15,178 @@ let holderAddress = 'N8YtTBMRqMq9E45VMT9KVbfwt5X5oLD4vt'
 function computeScriptHash(scriptBuffer) {
 	let hash = crypto.sha256(scriptBuffer);
 	return Buffer.from(hash.reverse()).toString("hex");
-
-	// const sha256 = crypto.createHash('sha256').update(scriptBuffer).digest();
-	// return Buffer.from(sha256).reverse().toString('hex');  // Reverse the hash for little-endian format
 }
 
-const checkName = async () => {
+function pushData(data) {
+	let buffer = [];
+	const len = data.length;
 
-	// const scriptHash = nameIdentifierToScripthash(nameToCheck)
-	// sh = name_identifier_to_scripthash(identifier_bytes)
-	const op_name = Buffer.from(nameToCheck).toString('hex');
-	const op_value = Buffer.from(valueToCheck).toString('hex')
-	let op_address;
-	try {
-		const decoded = address.fromBase58Check(holderAddress, $network);
-		op_address = decoded.hash.toString('hex');
-	} catch (error) {
-		op_address = new Uint8Array([])
-		//throw new Error(ERRORS.INVALID_ADDRESS + error.message);
+	if (len < 0x4c) { // for data length less than 76 bytes
+		buffer.push(len);
+	} else if (len <= 0xff) { // for data length less than 256 bytes
+		buffer.push(0x4c, len);
+	} else if (len <= 0xffff) { // for data length less than 65536 bytes
+		buffer.push(0x4d, len & 0xff, len >>> 8);
+	} else {
+		buffer.push(0x4e, len & 0xff, (len >>> 8) & 0xff, (len >>> 16) & 0xff, len >>> 24);
 	}
 
-	const opCodesStackScript = script.fromASM(
-		`OP_10
-     ${op_name}
-     ${op_value}
-     OP_2DROP
-     OP_DROP
-		 OP_RETURN
-     `.trim().replace(/\s+/g, ' '))
-	console.log("opCodesSTack",opCodesStackScript)
-	// const opCodesStackScript = script.fromASM(
-	// 	`OP_10
-  //    ${op_name}
-  //    ${op_value}
-  //    OP_2DROP
-  //    OP_DROP
-	// 	 OP_DUP
-	// 	 OP_HASH160
-  //    ${op_address}
-  //    OP_EQUALVERIFY
-  //    OP_CHECKSIG
-  //    `.trim().replace(/\s+/g, ' '))
+	buffer = buffer.concat(Array.from(data));
+	return buffer;
+}
 
-	const scriptHash = computeScriptHash(opCodesStackScript)
- 	// const script = getNameOPStackScript(nameToCheck,'world',holderAddress,$network)
+function pushData2(data) {
+	const len = data.length;
+	if (len < opcodes.OP_PUSHDATA1) {
+		return new Uint8Array([len, ...data]);
+	} else if (len <= 0xff) {
+		return new Uint8Array([opcodes.OP_PUSHDATA1, len, ...data]);
+	} else if (len <= 0xffff) {
+		const nLow = len & 0xff;
+		const nHigh = (len >> 8) & 0xff;
+		return new Uint8Array([opcodes.OP_PUSHDATA2, nLow, nHigh, ...data]);
+	} else {
+		const nLow = len & 0xff;
+		const nMidLow = (len >> 8) & 0xff;
+		const nMidHigh = (len >> 16) & 0xff;
+		const nHigh = (len >> 24) & 0xff;
+		return new Uint8Array([opcodes.OP_PUSHDATA4, nLow, nMidLow, nMidHigh, nHigh, ...data]);
+	}
+}
 
-	// let script = address.toOutputScript(holderAddress, $network);
-	// let hash = crypto.sha256(script);
-	// let reversedHash = Buffer.from(hash.reverse()).toString("hex");
-	console.log("scriptHash",scriptHash)
-	const txs = await $electrumClient.request('blockchain.scripthash.get_history', [scriptHash]);
-	console.log("txs", txs)
+	function hashXFromScript(script,slicehash) {
+		let hash = crypto.sha256(Buffer.from(script, 'hex'))
+		if(!slicehash)
+			return hash
+		else return hash.slice(0, HASHX_LEN);
+	}
 
+	// function scriptToScripthash(script) {
+	// 	let hash = crypto.sha256(Buffer.from(script, 'hex'));
+	// 	return Buffer.from(hash.reverse()).toString('hex');
+	// }
+	// function createScript() {
+	// 	const op_name = Buffer.from(nameToCheck).toString('hex');
+	// 	console.log("op_name",op_name)
+	// 	const op_value = Buffer.from(new Uint8Array([]) ).toString('hex');
+	// 	console.log("op_value",op_value)
+	// 	let res = [];
+	// 	res.push(opcodes.OP_3); // Example opcode, replace with actual if needed
+	// 	res.push(op_name); // Push name data onto the script
+	// 	res.push(op_value); // Push value data onto the script
+	// 	res.push(opcodes.OP_2DROP); // OP_2DROP
+	// 	res.push(opcodes.OP_DROP); // OP_DROP
+	// 	res.push(opcodes.OP_RETURN); // OP_RETURN
+	// 	return res
+	// }
+
+
+	function createScript0() {
+		let res = [];
+		res.push('OP_3');
+		res.push(pushData(nameToCheck))
+		res.push(pushData(new Uint8Array([])))
+		res.push('OP_2DROP');
+		res.push('OP_DROP');
+		res.push('OP_RETURN');
+		return res
+	}
+
+	function createScript1() {
+		let res = [];
+		res.push('OP_3');
+		res.push(nameToCheck)
+		res.push(new Uint8Array([]))
+		res.push('OP_2DROP');
+		res.push('OP_DROP');
+		res.push('OP_RETURN');
+		return res
+	}
+
+	function createScript2() {
+		let res = [];
+		res.push(opcodes.OP_3);
+		res.push(pushData(nameToCheck))
+		res.push(pushData(new Uint8Array([])))
+		res.push(opcodes.OP_2DROP);
+		res.push(opcodes.OP_DROP);
+		res.push(opcodes.OP_RETURN);
+		return res
+	}
+	function createScript3() {
+		let res = '';
+		res += '53';
+		res += pushData(nameToCheck);
+		res += pushData(new Uint8Array([]));
+		res += '6d';
+		res += '75';
+		res += '6a';
+
+		return res;
+	}
+
+	function createScript4(){
+		const op_name = Buffer.from(nameToCheck).toString('hex');
+		const op_value = Buffer.from(new Uint8Array([]) ).toString('hex');
+
+		const opCodesStackScript = script.fromASM(
+			`
+			OP_3
+		  ${op_name}
+		  ${op_value}
+		  OP_2DROP
+		  OP_DROP
+			OP_RETURN
+		   `.trim().replace(/\s+/g, ' '))
+		return opCodesStackScript
+	}
+
+	const checkName = async () => {
+
+		const script0 = createScript0()
+		const script1 = createScript1()
+		const script2 = createScript2()
+		const script3 = createScript3()
+		const script4 = createScript4()
+
+		const scriptHash0 = hashXFromScript(script0)
+		const scriptHash1 = hashXFromScript(script1)
+		const scriptHash2 = hashXFromScript(script2)
+		const scriptHash3 = hashXFromScript(script3)
+		const scriptHash4 = hashXFromScript(script4)
+
+		let reversedHash0 = Buffer.from(scriptHash0.reverse()).toString("hex");
+		let reversedHash1 = Buffer.from(scriptHash1.reverse()).toString("hex");
+		let reversedHash2 = Buffer.from(scriptHash2.reverse()).toString("hex");
+		let reversedHash3 = Buffer.from(scriptHash3.reverse()).toString("hex");
+		let reversedHash4 = Buffer.from(scriptHash4.reverse()).toString("hex");
+
+		console.log("reversedHash0", reversedHash0)
+		const txs0 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash0]);
+		console.log("txs0", txs0)
+
+		console.log("reversedHash1", reversedHash1)
+		const txs1 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash1]);
+		console.log("txs1", txs1)
+
+		console.log("reversedHash2", reversedHash2)
+		const txs2 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash2]);
+		console.log("txs2", txs2)
+
+		console.log("reversedHash3", reversedHash3)
+		const txs3 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash3]);
+		console.log("txs3", txs3)
+
+		console.log("reversedHash4", reversedHash4)
+		const txs4 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash4]);
+		console.log("txs4", txs4)
 }
 
 	function nameIdentifierToScripthash(identifier) {
 
 		const op_name = Buffer.from(identifier).toString('hex');
 		const op_value = Buffer.from( new Uint8Array([])).toString('hex');
+
 		let asm_ = 			`OP_10
        ${op_name}
        ${op_value}
@@ -79,23 +194,17 @@ const checkName = async () => {
        OP_DROP
        `.trim().replace(/\s+/g, ' ')
 
-		// let asm = "OP_10\n" +
-		// 	"68656c6c6f\n" +
-		// 	"776f726c64\n" +
-		// 	"OP_2DROP\n" +
-		// 	"OP_DROP\nOP_DUP\nOP_HASH160\n8359edeb2dcbec1c9117500de7bfdbf5f14e4215\nOP_EQUALVERIFY\nOP_CHECKSIG\n".trim().replace(/\s+/g, ' ')
-
 		console.log("asm",asm_)
 		let _script = script.fromASM(asm_)
 		console.log("_script",_script)
 		return scriptToScripthash(_script)
 	}
 
-	function scriptToScripthash(script) {
-		let hash = crypto.sha256(script);
-		let reversedHash = Buffer.from(hash.reverse()).toString("hex");
-		return reversedHash;
-	}
+	// function scriptToScripthash(script) {
+	// 	let hash = crypto.sha256(script);
+	// 	let reversedHash = Buffer.from(hash.reverse()).toString("hex");
+	// 	return reversedHash;
+	// }
 
 	const opcodes = {
 // push value
