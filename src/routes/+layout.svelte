@@ -80,7 +80,7 @@
 				<HeaderPanelLink href={ `#/` }>Mnemonics, Keys & Addresses</HeaderPanelLink>
 				<HeaderPanelLink href={ `#/transactions` }>Transactions</HeaderPanelLink>
 				<HeaderPanelLink href={ `#/nameOpUtxos` }>Name Ops</HeaderPanelLink>
-				<HeaderPanelLink href={ `#/nameCheck` }>Name Check</HeaderPanelLink>
+<!--				<HeaderPanelLink href={ `#/nameCheck` }>Name Check</HeaderPanelLink>-->
 
 <!--				<HeaderPanelDivider>OrbitDB</HeaderPanelDivider>-->
 <!--				<HeaderPanelLink  href={ `#/orbitdb/custom-access-controller` }>orbit-db custom access controller</HeaderPanelLink>-->
