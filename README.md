@@ -148,7 +148,7 @@ With the Doichain Playground you can:
   - [x] store multisig config (name, description, redeem code and public keys, wallet labels, publickeys in qr-code
     - [x] use bbqr - https://www.npmjs.com/package/bbqr
     - [x] scan multisig config from qr code
-      - [ ] scan bbqr - since normal qr codes can't take all the data
+      - [x] scan bbqr - since normal qr codes can't take all the data
     - [ ] store config inside ipfs using ipns? 
       - [ ] test is local ipfs content accessible to other browsers?
       - [ ] can Helia browser nodes connect via peer-to-peer public ipfs-network?

@@ -20,13 +20,15 @@
 	import { getBalance } from '$lib/getBalance.js';
 
 	let multiSigConfig = localStorage.getItem('multiSigConfig')?JSON.parse(localStorage.getItem('multiSigConfig')):undefined
-	// $: multiSigConfig = $scanData?JSON.parse($scanData):undefined
-	$: console.log("multiSigConfig",multiSigConfig)
-	let walletName = multiSigConfig?.walletName
-	let walletAmounts =  multiSigConfig?.pubKeyInputs.length || 3;
-	let m = multiSigConfig?.m || 2;
+	$: if($scanData) multiSigConfig = $scanData
+	$: console.log("scanData",$scanData)
+
+	console.log("multiSigConfig",multiSigConfig)
+	$:walletName = multiSigConfig?.walletName
+	$:walletAmounts =  multiSigConfig?.pubKeyInputs.length || 3;
+	$:m = multiSigConfig?.m || 2;
 	console.log("multiSigConfig?.pubKeyInputs",multiSigConfig?.pubKeyInputs)
-	let pubKeyInputs = multiSigConfig?.pubKeyInputs || Array.from({ length: walletAmounts }, (_, i) => ({
+	$:pubKeyInputs = multiSigConfig?.pubKeyInputs || Array.from({ length: walletAmounts }, (_, i) => ({
 		i:i,
 		label: `Wallet No ${i}`,
 		pubKey: ''
