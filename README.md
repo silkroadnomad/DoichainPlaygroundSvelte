@@ -144,6 +144,9 @@ With the Doichain Playground you can:
     - [ ] use bbqr - https://www.npmjs.com/package/bbqr
   - [x] scan multisig config from qr code
     - [ ] scan bbqr
+  - [ ] store config inside ipfs using ipns? 
+    - [ ] test is local ipfs content accessible to other browsers?
+    - [ ] can Helia browser nodes connect via peer-to-peer public ipfs-network?  
   - [ ] show balance of multisig address 
   - [ ] show last transactions of multisig address
   - [ ] DoiWallet (aka BlueWallet) can scan a multisig PSBT and produce a signed hex to scan a bbqr? 
