@@ -140,22 +140,27 @@ With the Doichain Playground you can:
 - [x] show min-relay fee in signing modal
 - [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery)  
 - [x] create multisig wallet
+  - [x] support legacy wallets based on pubkeys 
+  - [ ] support segwit and bip44 (like BlueWallet)
+  - [ ] support Electrum wallets (legacy / segwit)
   - [x] store multisig config (name, description, redeem code and public keys, wallet labels, publickeys in qr-code
     - [ ] use bbqr - https://www.npmjs.com/package/bbqr
-  - [x] scan multisig config from qr code
-    - [ ] scan bbqr
-  - [ ] store config inside ipfs using ipns? 
-    - [ ] test is local ipfs content accessible to other browsers?
-    - [ ] can Helia browser nodes connect via peer-to-peer public ipfs-network?  
-  - [ ] show balance of multisig address 
-  - [ ] show last transactions of multisig address
-  - [ ] DoiWallet (aka BlueWallet) can scan a multisig PSBT and produce a signed hex to scan a bbqr? 
-    - [ ] https://github.com/BlueWallet/BlueWallet/issues/6557
-  - [ ] repeat last transaction from multisig address
-  - [ ] download multisig config as file
-  - [ ] scan a publickey 
-    - [ ] show error if publicKey is invalid 
-  - [ ] scan mnemonic / try different BIPs (32/44/49/84), show balance, latetest derivation and new address / publickey for multisig
+    - [x] scan multisig config from qr code
+      - [ ] scan bbqr - since normal qr codes can't take all the data
+    - [ ] store config inside ipfs using ipns? 
+      - [ ] test is local ipfs content accessible to other browsers?
+      - [ ] can Helia browser nodes connect via peer-to-peer public ipfs-network?
+    - [ ] share xpubs via libp2p nodes only, when using same url-name (url-name as pubsub topic)
+      - [ ] show connected nodes (amount / names?)
+    - [ ] show balance of multisig address 
+    - [ ] show last transactions of multisig address
+    - [ ] DoiWallet (aka BlueWallet) can scan a multisig PSBT and produce a signed hex to scan a bbqr? 
+      - [ ] https://github.com/BlueWallet/BlueWallet/issues/6557
+    - [ ] repeat last transaction from multisig address
+    - [ ] download multisig config as file
+    - [ ] scan a publickey 
+      - [ ] show error if publicKey is invalid 
+    - [ ] scan mnemonic / try different BIPs (32/44/49/84), show balance, latetest derivation and new address / publickey for multisig
 - [ ] spend from a multisig address
 - [ ] automate spending from a multisig address
 - [ ] research and test DoiWallet and Electrum-DOI seed phrases and keys
