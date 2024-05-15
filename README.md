@@ -141,9 +141,16 @@ With the Doichain Playground you can:
 - [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery)  
 - [x] create multisig wallet
   - [x] store multisig config (name, description, redeem code and public keys, wallet labels, publickeys in qr-code
+    - [ ] use bbqr - https://www.npmjs.com/package/bbqr
   - [x] scan multisig config from qr code
+    - [ ] scan bbqr
+  - [ ] show balance of multisig address 
+  - [ ] show last transactions of multisig address
+  - [ ] DoiWallet (aka BlueWallet) can scan a multisig PSBT and produce a signed hex to scan a bbqr? 
+    - [ ] https://github.com/BlueWallet/BlueWallet/issues/6557
+  - [ ] repeat last transaction from multisig address
   - [ ] download multisig config as file
-  - [ ] scan a publickey
+  - [ ] scan a publickey 
     - [ ] show error if publicKey is invalid 
   - [ ] scan mnemonic / try different BIPs (32/44/49/84), show balance, latetest derivation and new address / publickey for multisig
 - [ ] spend from a multisig address
