@@ -146,7 +146,7 @@ With the Doichain Playground you can:
   - [ ] support Electrum wallets (legacy / segwit)
   - [x] show balance of multisig address 
   - [x] store multisig config (name, description, redeem code and public keys, wallet labels, publickeys in qr-code
-    - [ ] use bbqr - https://www.npmjs.com/package/bbqr
+    - [x] use bbqr - https://www.npmjs.com/package/bbqr
     - [x] scan multisig config from qr code
       - [ ] scan bbqr - since normal qr codes can't take all the data
     - [ ] store config inside ipfs using ipns? 

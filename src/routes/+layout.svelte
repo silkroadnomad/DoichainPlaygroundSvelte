@@ -29,7 +29,7 @@
 	import MultiSig from './multiSig.svelte'
 
 	import { expoIn } from 'svelte/easing';
-	import QRCodeModal from '$lib/components/QRCodeModal.svelte';
+	import BBQRCodeModal from '$lib/components/BBQRCodeModal.svelte';
 	import { connectElectrum } from '$lib/connectElectrum.js';
 	import ScanModal from '$lib/components/ScanModal.svelte';
 
@@ -51,8 +51,8 @@
 </script>
 
 <Theme bind:theme persist persistKey="__carbon-theme" />
-<QRCodeModal bind:qrCodeOpen={ $qrCodeOpen } bind:qrCodeData={ $qrCodeData } />
->
+<BBQRCodeModal bind:qrCodeOpen={ $qrCodeOpen } bind:qrCodeData={ $qrCodeData } />
+
 {#if $scanOpen}
 	<ScanModal bind:scanOpen={ $scanOpen } bind:scanData={ $scanData } />
 {/if}

@@ -39,7 +39,7 @@
     let recipientAddress = $currentAddressP2pkh || doiAddress
     let doiAmount = 0
     let balance = { confirmed:0 ,unconfirmed:0 }
-    let pageSize = 10;
+    let pageSize = 100 //[10,20,50,100];
     let page = 1
 
     let filteredRowIds = [];
@@ -75,6 +75,8 @@
 
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
     $: doiAddress?localStorage.setItem('doiAddress', doiAddress):null
+
+    $: console.log("txs",$txs)
 </script>
 
 <h2>Transactions</h2>
