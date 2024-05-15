@@ -17,6 +17,7 @@
 	} from './store.js';
 	import { QrCode, Scan } from 'carbon-icons-svelte';
 	import { payments } from 'bitcoinjs-lib';
+	import { getBalance } from '$lib/getBalance.js';
 
 	let multiSigConfig = localStorage.getItem('multiSigConfig')?JSON.parse(localStorage.getItem('multiSigConfig')):undefined
 	// $: multiSigConfig = $scanData?JSON.parse($scanData):undefined
@@ -34,6 +35,7 @@
 	let allKeysValid 	= false
 	let redeem;
 	let multiSigAddress
+	let balance
 
 	$: { //this logic extends and reduces the amount wallet rows when ever the walletAmount changes.
 		if (walletAmounts > pubKeyInputs.length) {
@@ -53,18 +55,20 @@
 	$: {
 			const pubKeysArray = pubKeyInputs.map(input => input.pubKey);
 			if(allKeysValid){
-				console.log("allKeysValid",allKeysValid)
 				try {
 					const pubkeys = pubKeysArray.map(hex => Buffer.from(hex, 'hex'));
 					const redeemObj = payments.p2ms({ m, pubkeys, network: $network })
 					redeem = redeemObj?.output?.toString('hex')
-					console.log("redeem",redeem)
 					multiSigAddress = payments.p2sh({ redeem: redeemObj }).address
 				}
 				catch(e) {}
 			}
 	}
-	$: console.log($scanData)
+
+	$: getBalance(multiSigAddress, $electrumClient, $network).then(b => {
+		balance = b
+	})
+
 </script>
 
 <h1>Create New MultiSig Wallet</h1>
@@ -111,6 +115,8 @@
 		<Column> <TextInput labelText="Redeem Code" bind:value={redeem} /></Column>
 	</Row>
 	<Row>
-		<Column> <TextInput labelText="MultiSig Address" bind:value={multiSigAddress} /></Column>
+		<Column><TextInput labelText="MultiSig Address" bind:value={multiSigAddress} /></Column>
+		<Column><h5>Balance (confirmed): {balance?.confirmed || 0 }</h5></Column>
+		<Column><h5>Balance (unconfirmed): {balance?.unconfirmed || 0}</h5></Column>
 	</Row>
 </Grid>

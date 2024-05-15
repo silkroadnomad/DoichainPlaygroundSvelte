@@ -142,7 +142,9 @@ With the Doichain Playground you can:
 - [x] create multisig wallet
   - [x] support legacy wallets based on pubkeys 
   - [ ] support segwit and bip44 (like BlueWallet)
+    - [ ] use xpub instead of normal pubkey
   - [ ] support Electrum wallets (legacy / segwit)
+  - [x] show balance of multisig address 
   - [x] store multisig config (name, description, redeem code and public keys, wallet labels, publickeys in qr-code
     - [ ] use bbqr - https://www.npmjs.com/package/bbqr
     - [x] scan multisig config from qr code
@@ -152,7 +154,6 @@ With the Doichain Playground you can:
       - [ ] can Helia browser nodes connect via peer-to-peer public ipfs-network?
     - [ ] share xpubs via libp2p nodes only, when using same url-name (url-name as pubsub topic)
       - [ ] show connected nodes (amount / names?)
-    - [ ] show balance of multisig address 
     - [ ] show last transactions of multisig address
     - [ ] DoiWallet (aka BlueWallet) can scan a multisig PSBT and produce a signed hex to scan a bbqr? 
       - [ ] https://github.com/BlueWallet/BlueWallet/issues/6557
