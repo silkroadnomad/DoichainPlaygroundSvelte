@@ -18,11 +18,10 @@
             parts.push(result);
             scanTimeout = setTimeout(() => {
                 if (parts.length === 1 || foundParts === parts.length) {
-                    console.log("parts",parts)
                     const reassembled = joinQRs(parts)
-                    console.log(reassembled.fileType); // true
-                    console.log(reassembled.encoding); // true
-                    const decoder = new TextDecoder('utf-8'); // Assuming UTF-8 encoding
+                    console.log(reassembled.fileType);
+                    console.log(reassembled.encoding);
+                    const decoder = new TextDecoder('utf-8');
                     const decodedString = decoder.decode(new Uint8Array(reassembled.raw));
                     console.log(JSON.parse(decodedString));
 

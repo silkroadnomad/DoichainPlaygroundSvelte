@@ -140,7 +140,8 @@ With the Doichain Playground you can:
 - [x] show min-relay fee in signing modal
 - [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery)  
 - [x] create multisig wallet
-  - [x] support legacy wallets based on pubkeys 
+  - [x] support legacy wallets based on pub keys
+  - [ ] store multisig configs in localstorage / index db / immortaldb with a name / create new / empty
   - [ ] support segwit and bip44 (like BlueWallet)
     - [ ] use xpub instead of normal pubkey
   - [ ] support Electrum wallets (legacy / segwit)
@@ -149,7 +150,7 @@ With the Doichain Playground you can:
     - [x] use bbqr - https://www.npmjs.com/package/bbqr
     - [x] scan multisig config from qr code
       - [x] scan bbqr - since normal qr codes can't take all the data
-    - [ ] store config inside ipfs using ipns? 
+    - [ ] store config inside ipfs using ipns? (encrypted?)
       - [ ] test is local ipfs content accessible to other browsers?
       - [ ] can Helia browser nodes connect via peer-to-peer public ipfs-network?
     - [ ] share xpubs via libp2p nodes only, when using same url-name (url-name as pubsub topic)
