@@ -180,6 +180,11 @@ function pushData2(data) {
 		console.log("reversedHash4", reversedHash4)
 		const txs4 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash4]);
 		console.log("txs4", txs4)
+
+		const reversedHash5 = '7998aa47625f11094797e96910b8812d1d4b14f8b010e47d918730c58ccf3914'
+		console.log("reversedHash5", reversedHash5)
+		const txs5 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash5]);
+		console.log("txs5", txs5)
 }
 
 	function nameIdentifierToScripthash(identifier) {
