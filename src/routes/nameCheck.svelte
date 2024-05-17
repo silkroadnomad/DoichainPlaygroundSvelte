@@ -2,10 +2,7 @@
 	import { Button, Column, Grid, Row, TextInput } from 'carbon-components-svelte';
 	import { address, crypto, script } from 'bitcoinjs-lib';
 
-	import {
-		electrumClient,
-		network
-	} from './store.js';
+	import { electrumClient } from './store.js';
 	
 let HASHX_LEN = 11
 let nameToCheck = 'hello'
@@ -155,6 +152,8 @@ function pushData2(data) {
 		const scriptHash3 = hashXFromScript(script3)
 		const scriptHash4 = hashXFromScript(script4)
 
+		// const scriptHash5 = hashXFromScript(script5)
+
 		let reversedHash0 = Buffer.from(scriptHash0.reverse()).toString("hex");
 		let reversedHash1 = Buffer.from(scriptHash1.reverse()).toString("hex");
 		let reversedHash2 = Buffer.from(scriptHash2.reverse()).toString("hex");
@@ -180,6 +179,28 @@ function pushData2(data) {
 		console.log("reversedHash4", reversedHash4)
 		const txs4 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash4]);
 		console.log("txs4", txs4)
+
+		let identifer = new TextEncoder();
+		identifer.encode(nameToCheck);
+
+		// const identifer = Buffer.from(nameToCheck).toString('hex');
+		const identifierBytes = Buffer.from(identifer) //.toString('hex');
+		console.log("identifierBytes",identifierBytes)
+		// const name_op = {"op": OP_NAME_UPDATE, "name": identifier, "value": bytes([])}
+		// script = name_op_to_script(name_op)
+		const op_value = Buffer.from(new Uint8Array([])).toString('hex');
+		let script = '53'    //                             # OP_NAME_UPDATE
+		script += identifierBytes //push_script(bh2u(name_op["name"]))
+		script += op_value//push_script(bh2u(name_op["value"]))
+		script += '6d'     //                           # OP_2DROP
+		script += '75'
+		script += '6a' //# OP_RETURN
+		const bufferString = Buffer.from(script, 'hex');
+		console.log("bufferString",bufferString.toString('hex'))
+		const hashString = crypto.sha256(script)
+		console.log("hashString",hashString)
+		let reversedHash = Buffer.from(hashString.reverse()).toString("hex");
+		console.log("reversedHash",reversedHash)
 
 		const reversedHash5 = '7998aa47625f11094797e96910b8812d1d4b14f8b010e47d918730c58ccf3914'
 		console.log("reversedHash5", reversedHash5)
