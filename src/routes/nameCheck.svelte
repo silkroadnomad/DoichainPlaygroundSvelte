@@ -1,6 +1,9 @@
 <script>
 	import { Button, Column, Grid, Row, TextInput } from 'carbon-components-svelte';
 	import { address, crypto, script } from 'bitcoinjs-lib';
+//	import  CryptoJS from 'crypto-js';
+	import conv from 'binstring'
+	//var conv = require('binstring');
 
 	import { electrumClient } from './store.js';
 	
@@ -28,7 +31,8 @@ function pushData(data) {
 		buffer.push(0x4e, len & 0xff, (len >>> 8) & 0xff, (len >>> 16) & 0xff, len >>> 24);
 	}
 
-	buffer = buffer.concat(Array.from(data));
+	// buffer = buffer.concat(Array.from(data));
+	buffer = Buffer.from(buffer).toString('hex').concat(Buffer.from(data).toString('hex'));
 	return buffer;
 }
 
@@ -123,8 +127,10 @@ function pushData2(data) {
 	}
 
 	function createScript4(){
-		const op_name = Buffer.from(nameToCheck).toString('hex');
-		const op_value = Buffer.from(new Uint8Array([]) ).toString('hex');
+		// const op_name = Buffer.from(nameToCheck).toString('hex');
+		// const op_value = Buffer.from(new Uint8Array([]) ).toString('hex');
+		const op_name = conv(nameToCheck, {in: 'binary', out: 'hex'})
+		let op_value = conv(new Uint8Array([]), {in: 'binary', out: 'hex'})
 
 		const opCodesStackScript = script.fromASM(
 			`
@@ -180,44 +186,84 @@ function pushData2(data) {
 		const txs4 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash4]);
 		console.log("txs4", txs4)
 
-		let identifer = new TextEncoder();
-		identifer.encode(nameToCheck);
+		const op_name = conv(nameToCheck, {in: 'binary', out: 'hex'})
+		let op_value = conv(new Uint8Array([]), {in: 'binary', out: 'hex'})
 
-		// const identifer = Buffer.from(nameToCheck).toString('hex');
-		const identifierBytes = Buffer.from(identifer) //.toString('hex');
+		console.log("op_name",op_name)
+		const textEncoder = new TextEncoder();
+		const uint8Array = textEncoder.encode(nameToCheck);
+
+		const identifer = Buffer.from(nameToCheck).toString('hex');
+		console.log("identifer",identifer)
+		const identifierBytes = textEncoder.encode(op_name);
 		console.log("identifierBytes",identifierBytes)
+		console.log("Buffer.from(identifierBytes).toString('hex')",identifer)
 		// const name_op = {"op": OP_NAME_UPDATE, "name": identifier, "value": bytes([])}
 		// script = name_op_to_script(name_op)
-		const op_value = Buffer.from(new Uint8Array([])).toString('hex');
-		let script = '53'    //                             # OP_NAME_UPDATE
-		script += identifierBytes //push_script(bh2u(name_op["name"]))
-		script += op_value//push_script(bh2u(name_op["value"]))
-		script += '6d'     //                           # OP_2DROP
-		script += '75'
-		script += '6a' //# OP_RETURN
-		const bufferString = Buffer.from(script, 'hex');
-		console.log("bufferString",bufferString.toString('hex'))
-		const hashString = crypto.sha256(script)
-		console.log("hashString",hashString)
-		let reversedHash = Buffer.from(hashString.reverse()).toString("hex");
-		console.log("reversedHash",reversedHash)
 
-		const reversedHash5 = '7998aa47625f11094797e96910b8812d1d4b14f8b010e47d918730c58ccf3914'
-		console.log("reversedHash5", reversedHash5)
-		const txs5 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash5]);
+		let script = '53'    //                             # OP_NAME_UPDATE
+		script = script += pushData(nameToCheck) //Buffer.from(identifierBytes).toString('hex')//push_script(bh2u(name_op["name"]))
+		script = script += pushData(new Uint8Array([]))//push_script(bh2u(name_op["value"]))
+		script = script += '6d'     //                           # OP_2DROP
+		script = script += '75'
+		script = script += '6a' //# OP_RETURN
+
+		let script5 = [
+			'53',
+			pushData(nameToCheck),
+			pushData(new Uint8Array([])),
+			'OP_2DROP',
+			'OP_DROP',
+			'OP_RETURN'
+		].join(' ')
+
+		//const bufferString = Buffer.from(script, 'hex');
+		console.log("0_script",script)
+		console.log("pushData(nameToCheck)",pushData(nameToCheck))
+		console.log("pushData(new Uint8Array([]))",pushData(new Uint8Array([])))
+		console.log("0_script",script.toString('hex'))
+		// script = Buffer.from('530568656c6c6f006d756a', 'hex');
+		script = Buffer.from(script.toString('hex'), 'hex');
+		console.log("0_script",script.toString('hex'))
+		console.log("script5",script5.toString('hex'))
+		console.log("python_script",script.toString('hex'))
+		// const hashAlt = CryptoJS.sha256(CryptoJS.enc.Hex.parse(script)).toString();
+		const hash = crypto.sha256(script)
+		console.log("python sha256",hash.toString('hex'))
+		const hash5 = crypto.sha256(script5)
+
+		let reversedHash = hash.reverse() //).toString("hex");
+		let reversedHash5 = hash5.reverse() //).toString("hex");
+		console.log("reversedHash python string", reversedHash.toString('hex'))
+		console.log("reversedHash5",reversedHash5.toString('hex'))
+		const reversedHash6 = '7998aa47625f11094797e96910b8812d1d4b14f8b010e47d918730c58ccf3914'
+		console.log("reversedHash6",reversedHash6)
+		const reversedHash7 = nameIdentifierToScripthash('hello')
+		console.log("reversedHash7",reversedHash7)
+		const txs5 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash5.toString('hex')]);
 		console.log("txs5", txs5)
+		const txs6 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash6]);
+		console.log("txs6", txs6)
+		const txs7 = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash.toString('hex')]);
+		console.log("txs7", txs7)
+
+
 }
 
 	function nameIdentifierToScripthash(identifier) {
 
-		const op_name = Buffer.from(identifier).toString('hex');
-		const op_value = Buffer.from( new Uint8Array([])).toString('hex');
+		// const op_name = Buffer.from(identifier).toString('hex');
+		// const op_value = Buffer.from( new Uint8Array([])).toString('hex');
+
+		const op_name = conv(identifier, {in: 'binary', out: 'hex'})
+		let op_value = conv(new Uint8Array([]), {in: 'binary', out: 'hex'})
 
 		let asm_ = 			`OP_10
        ${op_name}
        ${op_value}
        OP_2DROP
        OP_DROP
+			 OP_RETURN
        `.trim().replace(/\s+/g, ' ')
 
 		console.log("asm",asm_)
@@ -226,11 +272,11 @@ function pushData2(data) {
 		return scriptToScripthash(_script)
 	}
 
-	// function scriptToScripthash(script) {
-	// 	let hash = crypto.sha256(script);
-	// 	let reversedHash = Buffer.from(hash.reverse()).toString("hex");
-	// 	return reversedHash;
-	// }
+	function scriptToScripthash(script) {
+		let hash = crypto.sha256(script);
+		let reversedHash = hash.reverse().toString("hex");
+		return reversedHash;
+	}
 
 	const opcodes = {
 // push value
