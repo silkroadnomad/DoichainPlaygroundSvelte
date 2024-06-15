@@ -75,8 +75,6 @@
 
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
     $: doiAddress?localStorage.setItem('doiAddress', doiAddress):null
-
-    $: console.log("txs",$txs)
 </script>
 
 <h2>Transactions</h2>

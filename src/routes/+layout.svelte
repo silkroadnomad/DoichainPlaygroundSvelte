@@ -25,7 +25,7 @@
 	import Home from './+page.svelte'
 	import Transactions from './transactions.svelte'
 	import NameOps from './nameOpUtxos.svelte'
-	// import NameCheck from './nameCheck.svelte'
+	import NameCheck from './nameCheck.svelte'
 	import MultiSig from './multiSig.svelte'
 
 	import { expoIn } from 'svelte/easing';
@@ -44,7 +44,7 @@
 		'': Home,
 		'/transactions': Transactions,
 		'/nameOpUtxos': NameOps,
-		// '/nameCheck': NameCheck,
+		'/nameCheck': NameCheck,
 		'/multiSig': MultiSig
 	}
 	$: view = routes[$hash]
@@ -84,8 +84,7 @@
 				<HeaderPanelLink href={ `#/transactions` }>Transactions</HeaderPanelLink>
 				<HeaderPanelLink href={ `#/multiSig` }>MultiSig</HeaderPanelLink>
 				<HeaderPanelLink href={ `#/nameOpUtxos` }>Name Ops</HeaderPanelLink>
-
-<!--				<HeaderPanelLink href={ `#/nameCheck` }>Name Check</HeaderPanelLink>-->
+				<HeaderPanelLink href={ `#/nameCheck` }>Name Check</HeaderPanelLink>
 
 <!--				<HeaderPanelDivider>OrbitDB</HeaderPanelDivider>-->
 <!--				<HeaderPanelLink  href={ `#/orbitdb/custom-access-controller` }>orbit-db custom access controller</HeaderPanelLink>-->
