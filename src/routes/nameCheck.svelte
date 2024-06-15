@@ -63,11 +63,12 @@
                 <ul>
                     {#each results as tx}
 											<p>Name found in Doichain TX
+												<li>wallet address: {tx.address}</li>
 												<li>txid: {tx.txid}</li>
 												<li>time: {tx.formattedBlocktime}</li>
 												<li>nameId: {tx.nameId}</li>
 												<li>nameValue: {tx.nameValue}</li>
-												<li>DOI amount:{tx.value}</li>
+												<li>DOI amount: {tx.value}</li>
 											</p>
 											<p>&nbsp;</p>
                     {/each}
