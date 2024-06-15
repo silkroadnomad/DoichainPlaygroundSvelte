@@ -16,4 +16,5 @@ export NET=regtest
 export SSL_CERTFILE=/home/electrumx/certs/server.crt
 export SSL_KEYFILE=/home/electrumx/certs/server.key
 export ALLOW_ROOT=non-empty
+export LOG_LEVEL=debug
 ./electrumx_server

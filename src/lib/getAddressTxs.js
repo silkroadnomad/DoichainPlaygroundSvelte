@@ -85,8 +85,11 @@ export const getAddressTxs = async (_doiAddress, _historyStore, _electrumClient,
 
             const asm = vout.scriptPubKey.asm
             const asmParts = asm.split(" ")
-
-            if (asmParts[0] !== 'OP_10' && asmParts[0] !== 'OP_NAME_DOI') {
+            console.log("asmParts",asmParts)
+            if ((asmParts[0] !== 'OP_10' && asmParts[0] !== 'OP_NAME_DOI') &&
+              (asmParts[0] !== 'OP_2' && asmParts[0] !== 'OP_NAME_FIRSTUPDATE') &&
+              (asmParts[0] !== 'OP_3' && asmParts[0] !== 'OP_NAME_UPDATE'))
+            {
                 _tx.address = vout.scriptPubKey?.addresses ? vout.scriptPubKey?.addresses[0] : _doiAddress
             } else {
                 const chunks = vout.scriptPubKey.asm.split(" ")

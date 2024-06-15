@@ -123,7 +123,7 @@ With the Doichain Playground you can:
   - [ ] segwit name_op transactions (untested)
   - [x] index name_op transactions 
   - [x] show name op transactions in transaction list 
-  - [ ] create name_show call [How is that done in electrum-nmc](https://github.com/namecoin/electrum-nmc/blob/b0f3af4a8ef64211fb27c21c6985352ecc8b9fdc/electrum_nmc/electrum/commands.py#L1447)
+  - [x] create name_show call [How is that done in electrum-nmc](https://github.com/namecoin/electrum-nmc/blob/b0f3af4a8ef64211fb27c21c6985352ecc8b9fdc/electrum_nmc/electrum/commands.py#L1447)
   - [ ] name_first, name_update transaction
   - [x] scan blockchain for name ops identify & categories
     - [ ] namespaces (e.g. did/ id/ d/, doi/, nfc/, libp2p/, jpg/, png/, s/)
@@ -138,7 +138,10 @@ With the Doichain Playground you can:
   - [x] add file upload to utxo selction toolbar 
   - [x] generate sha256 hash and greate pe/{sha256} hash with it.
 - [x] show min-relay fee in signing modal
-- [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery)  
+- [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery)
+- [ ] create a command line tool to register / show names from command line (and generate a PSBT-QR-Code there to pay in DoiWallet)
+  - https://www.npmjs.com/package/namecointool
+  - https://www.npmjs.com/package/qrcode-terminal
 - [x] create multisig wallet
   - [x] support legacy wallets based on pub keys
   - [ ] store multisig configs in localstorage / index db / immortaldb with a name / create new / empty
