@@ -1,32 +1,50 @@
 version: "3"
 services:
-  regtest:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: "doichain/core"
-    container_name: regtest
+  namecoin:
+    build: ./docker/namecoin
+    image: "silkroadnomad/namecoin-coin"
+    container_name: namecoin-regtest
     environment:
       - REGTEST=true
       - RPC_ALLOW_IP=0.0.0.0/0
       - RPC_PASSWORD=adminpw
     ports:
-      - "8338:8338"
-      - "8339:8339"
-      - "18332:18332"
+      - "8334:8334"
     stdin_open: true
     volumes:
-      - .:/.doichain/
+      - ./.namecoin/:/.namecoin/
     tty: true
     privileged: true
     networks:
       static:
-        ipv4_address: 172.22.0.5
+        ipv4_address: 172.22.0.4
+#  doichain:
+#    build: ./docker/doichain
+##      context: .
+##      dockerfile: docker/Dockerfile
+#    image: "silkroadnomad/core"
+#    container_name: regtest
+#    environment:
+#      - REGTEST=true
+#      - RPC_ALLOW_IP=0.0.0.0/0
+#      - RPC_PASSWORD=adminpw
+#    ports:
+#      - "8338:8338"
+#      - "8339:8339"
+#      - "18332:18332"
+#    stdin_open: true
+#    volumes:
+#      - .:/.doichain/
+#    tty: true
+#    privileged: true
+#    networks:
+#      static:
+#        ipv4_address: 172.22.0.5
 
   electrumx-doi:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/doichain/Dockerfile
     working_dir: /home/electrumx
     image: "stallingerl/electrumx-doi"
     hostname: electrumx-doi

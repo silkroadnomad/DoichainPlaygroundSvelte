@@ -69,7 +69,7 @@
 												<li>nameValue: {tx.nameValue}</li>
 												<li>DOI amount:{tx.value}</li>
 											</p>
-
+											<p>&nbsp;</p>
                     {/each}
                 </ul>
             {:else}
