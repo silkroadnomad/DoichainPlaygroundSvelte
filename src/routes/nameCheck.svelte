@@ -54,7 +54,7 @@
 	{#if result && result.length > 0}
 	    <ul>
 	        {#each result as e}
-						Name found in Doichain TX{e.tx_hash}
+						Name found in Doichain TX: {e.tx_hash}
 	        {/each}
 	    </ul>
 	{:else}
