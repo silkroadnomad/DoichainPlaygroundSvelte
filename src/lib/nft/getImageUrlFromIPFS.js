@@ -7,7 +7,8 @@ export const getImageUrlFromIPFS = async (helia,tokenURI) => {
 	}
 	console.log("loading image from cid",cid)
 	const fs = unixfs(helia)
-	console.log("test",await fs.cat(cid))
+	const nftImage = await fs.cat(cid)
+	console.log("test",nftImage)
 	const chunks = []
 	for await (const chunk of fs.cat(cid)) {
 		chunks.push(chunk)
