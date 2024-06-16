@@ -1,10 +1,12 @@
 <script>
 	import { Button, Column, Grid, Row, TextInput } from 'carbon-components-svelte';
 	import { crypto } from 'bitcoinjs-lib';
-	import { electrumClient } from './store.js';
+	import { electrumClient, helia } from './store.js';
 	import { processTransactionDetails } from '../lib/processTransactionDetail.js'
+	import { getMetadataFromIPFS } from '$lib/nft/getMetadataFromIPFS.js';
+	import { getImageUrlFromIPFS } from '$lib/nft/getImageUrlFromIPFS.js';
 
-	let nameToCheck = 'hello'
+	let nameToCheck = 'PeaceDove-CC'
     let results = []; 
 
 	function pushData(data) {
@@ -26,7 +28,6 @@
 	}
 
 	const checkName = async () => {
-		
 		let script = '53' + pushData(nameToCheck) + pushData(new Uint8Array([])) + '6d' + '75' + '6a';
 		let hash = crypto.sha256(Buffer.from(script, 'hex'));
 		let reversedHash = Buffer.from(hash.reverse()).toString("hex");
@@ -37,7 +38,14 @@
 						results = [...results, ...detailResults.nameOpUtxos];
         }
 	}
+
 	$:console.log("results", results);
+
+	const readMetaData = async (tokenUri) => {
+		console.log("now reading metadata",tokenUri)
+		return await getMetadataFromIPFS($helia,tokenUri)
+	}
+
 </script>
 
 <h1>Doichain Name Check</h1>
@@ -70,6 +78,26 @@
 												<li>nameValue: {tx.nameValue}</li>
 												<li>DOI amount: {tx.value}</li>
 											</p>
+											<p>&nbsp;</p>
+											{#await readMetaData(tx.nameValue)}
+												<p>loading for nft data...</p>
+											{:then nft}
+
+												<p>NFT: {nft.name}</p>
+												<p>Description: {nft.description}</p>
+
+												{#await getImageUrlFromIPFS($helia,nft.image)}
+													<p>loading for img...</p>
+												{:then img}
+													{#if img}
+														<img src={img} alt={nft.name} />
+													{/if}
+												{:catch error}
+
+												{/await}
+											{:catch error}
+
+											{/await}
 											<p>&nbsp;</p>
                     {/each}
                 </ul>

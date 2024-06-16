@@ -7,7 +7,6 @@
         Pagination,
         Row,
         TextInput,
-        ToastNotification,
         Toolbar, ToolbarBatchActions,
         ToolbarContent,
         ToolbarSearch

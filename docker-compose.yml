@@ -1,20 +1,21 @@
 version: "3"
 services:
   namecoin:
-    build: ./docker/namecoin
-    image: "silkroadnomad/namecoin-coin"
+    #build: ./docker/namecoin
+    image: "inspiraluna/namecoin-core:latest"
     container_name: namecoin-regtest
-    environment:
-      - REGTEST=true
-      - RPC_ALLOW_IP=0.0.0.0/0
-      - RPC_PASSWORD=adminpw
+#    environment:
+#      - REGTEST=true
+#      - RPC_ALLOW_IP=0.0.0.0/0
+#      - RPC_PASSWORD=adminpw
     ports:
       - "8334:8334"
     stdin_open: true
     volumes:
-      - ./.namecoin/:/.namecoin/
+      - ./.namecoin/:/home/namecoin/.namecoin/
     tty: true
     privileged: true
+    command: "/bin/bash"
     networks:
       static:
         ipv4_address: 172.22.0.4

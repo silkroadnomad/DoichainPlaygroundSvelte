@@ -30,6 +30,7 @@ export const networks = [
 	{ id: 'bitcoin-mainnet', text: 'Bitcoin-Mainnet', value: BITCOIN_MAINNET }
 ];
 
+export const helia = writable()
 export const scanOpen = writable(false)
 export const scanData = writable()
 export const qrCodeOpen = writable(false)

@@ -101,8 +101,6 @@
             });
         });
         utxos = parsedUtxos;
-        console.log("parsedUtxos", parsedUtxos);
-            console.log("utxoSum",utxoSum)
         return (parsedUtxos,utxoSum)
     }
 
@@ -114,7 +112,7 @@
 
         const psbt = new bitcoin.Psbt({ network: $network });
         let totalInputAmount = 0;
-
+        console.log("utxos",utxos)
         utxos.forEach(utxo => {
             //TODO https://bitcoin.stackexchange.com/questions/116128/how-do-i-determine-whether-an-input-or-output-is-segwit-revisited
             const valueInSatoshis = Math.round(utxo.value * 100000000);
@@ -123,7 +121,7 @@
                     if (isSegWit) {
             //             // This is a SegWit UTXO
                         psbt.addInput({
-                            hash: utxo.hash,
+                            hash: utxo.txid,
                             index: utxo.n,
                             witnessUtxo: {
                                 script: Buffer.from(scriptPubKeyHex, 'hex'),
@@ -131,7 +129,7 @@
                             }
                         });
                     } else {     // This is a non-SegWit UTXO
-                        console.log("utxo.hex",utxo.hex)
+                        console.log("utxo.hex",utxo)
                         psbt.addInput({
                             hash: utxo.hash,
                             index: utxo.n,
@@ -143,9 +141,7 @@
 
         let totalOutputAmount = 0;
         if(!nameId){
-
             console.log(`recipientAddress coin output ${doiAmount}`,recipientAddress)
-
             psbt.addOutput({
                 address: recipientAddress,
                 value: doiAmount,
@@ -160,7 +156,6 @@
                 script: opCodesStackScript,
                 value: storageFee //not the doiAmount here!
             })
-
             totalOutputAmount += storageFee;
         }
         console.log(`changeAddress ${changeAddress} gets`,(changeAmount))
@@ -180,13 +175,14 @@
         //     psbt.signInput(index, keyPair);
         // });
         psbtBaseText = psbt.toBase64();
-
+        console.log("keyPair",keyPair)
         psbt.signAllInputs(keyPair)
             // psbt.validateSignaturesOfInput(0, validator); //TODO https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/test/integration/transactions.spec.ts
         psbt.finalizeAllInputs();
 
         return psbt.extractTransaction()
     }
+    $:console.log("currentWif",$currentWif)
 </script>
 
 <!--
@@ -206,8 +202,6 @@ Opens a confirmation modal that should sign a transaction and send it to Electru
         console.log("ex",ex)
         dispatch('result', false);
     }
-
-
 
 }}>
     <ModalHeader label="Sign transaction" title={heading} />
