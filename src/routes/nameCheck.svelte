@@ -1,12 +1,15 @@
 <script>
 	import { Button, Column, Grid, Row, TextInput } from 'carbon-components-svelte';
 	import { crypto } from 'bitcoinjs-lib';
-	import { electrumClient, helia } from './store.js';
+	import { connectedServer, electrumClient, helia } from './store.js';
 	import { processTransactionDetails } from '../lib/processTransactionDetail.js'
 	import { getMetadataFromIPFS } from '$lib/nft/getMetadataFromIPFS.js';
 	import { getImageUrlFromIPFS } from '$lib/nft/getImageUrlFromIPFS.js';
+	import { path } from './router.js';
 
-	let nameToCheck = 'PeaceDove-CC'
+	let nameToCheck = $path.substring($path.lastIndexOf("/")+1)!=='nameCheck'?$path.substring($path.lastIndexOf("/")+1):''
+	if(!nameToCheck) nameToCheck='PeaceDove-CC'
+	// let nameToCheck = 'PeaceDove-CC'
     let results = []; 
 
 	function pushData(data) {
@@ -38,7 +41,7 @@
 						results = [...results, ...detailResults.nameOpUtxos];
         }
 	}
-
+	$:($connectedServer && nameToCheck)?checkName():null
 	$:console.log("results", results);
 
 	const readMetaData = async (tokenUri) => {
