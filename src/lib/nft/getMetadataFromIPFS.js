@@ -20,6 +20,5 @@ export async function getMetadataFromIPFS(helia, tokenURI) {
 			stream: true
 		})
 	}
-	console.log("text",text)
 	return JSON.parse(text);
 }
