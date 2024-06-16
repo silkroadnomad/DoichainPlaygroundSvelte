@@ -90,7 +90,7 @@
 												<p>Description: {nft.description}</p>
 
 												{#await getImageUrlFromIPFS($helia,nft.image)}
-													<p>loading for img...</p>
+													<p>loading for img... (can take some seconds)</p>
 												{:then img}
 													{#if img}
 														<img src={img} alt={nft.name} />
