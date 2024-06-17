@@ -14,9 +14,11 @@
         ToastNotification,
         SelectItem, Select, DataTable
     } from 'carbon-components-svelte';
+
     import { generateMnemonic } from 'bip39';
     import { payments } from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
+
     import {
         scanOpen,
         qrCodeOpen,
@@ -27,6 +29,7 @@
         currentAddressP2pkh,
         currentWif
     } from './store.js';
+
     import { generateKeys } from '$lib/generateKeys.js'
     import { decryptMnemonic } from '$lib/decryptMnemonic.js';
     import { DB_NAME, openDB, readData, addData, deleteData } from '$lib/indexedDBUtil.js';
