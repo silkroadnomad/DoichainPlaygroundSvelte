@@ -9,7 +9,6 @@
 		SkipToContent,
 		Theme, Row, Dropdown
 	} from 'carbon-components-svelte';
-
 	import { createHelia } from 'helia'
 	import LogoGithub from "carbon-icons-svelte/lib/LogoGithub.svelte";
 	import {
@@ -37,8 +36,6 @@
 	import ScanModal from '$lib/components/ScanModal.svelte';
 	import { onMount } from 'svelte';
 
-
-
 	let isOpen
 	let sideNavOpen
 	let theme = "g90";// "white" | "g10" | "g80" | "g90" | "g100"
@@ -58,7 +55,6 @@
 	onMount(async () => {
 
 		$helia = await createHelia()
-		console.log("$helia.libp2p",$helia.libp2p)
 		$helia.libp2p.addEventListener('connection:open',  () => {
 			console.log("connection open",$connectedPeers)
 			connectedPeers.update(n => n + 1);

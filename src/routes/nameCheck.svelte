@@ -2,15 +2,15 @@
 	import { Button, Column, Grid, Row, TextInput } from 'carbon-components-svelte';
 	import { crypto } from 'bitcoinjs-lib';
 	import { connectedServer, electrumClient, helia } from './store.js';
-	import { processTransactionDetails } from '../lib/processTransactionDetail.js'
+	import { getNameOpUTXOsOfTxHash } from '$lib/getNameOpUTXOsOfTxHash.js'
 	import { getMetadataFromIPFS } from '$lib/nft/getMetadataFromIPFS.js';
 	import { getImageUrlFromIPFS } from '$lib/nft/getImageUrlFromIPFS.js';
 	import { path } from './router.js';
 
 	let nameToCheck = $path.substring($path.lastIndexOf("/")+1)!=='nameCheck'?$path.substring($path.lastIndexOf("/")+1):''
 	if(!nameToCheck) nameToCheck='PeaceDove-CC'
-	// let nameToCheck = 'PeaceDove-CC'
-    let results = []; 
+
+	let results = [];
 
 	function pushData(data) {
 		let buffer = [];
@@ -37,7 +37,7 @@
 		results = []
 		const result = await $electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
         for (const item of result) {
-            const detailResults = await processTransactionDetails($electrumClient,item.tx_hash);
+            const detailResults = await getNameOpUTXOsOfTxHash($electrumClient,item.tx_hash);
 						results = [...results, ...detailResults.nameOpUtxos];
         }
 	}
