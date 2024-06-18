@@ -17,7 +17,7 @@ export async function getNameOpUTXOsOfTxHash(electrumClient, tx) {
 
 		const asm = vout.scriptPubKey.asm;
 		const asmParts = asm.split(" ");
-		if (asmParts[0] === 'OP_10' && asmParts[0] === 'OP_NAME_DOI') {
+		if (asmParts[0] === 'OP_10' || asmParts[0] === 'OP_NAME_DOI') {
 
 			let _tx = {};
 			_tx.nameId = vout.scriptPubKey.nameOp.name;

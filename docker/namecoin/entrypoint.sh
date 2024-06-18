@@ -1,6 +1,7 @@
- #!/bin/bash
+#!/bin/bash
+set -euo pipefail
 NAMECOIN_CONF_FILE=/home/namecoin/.namecoin/namecoin.conf
-if [ ! -f "NAMECOIN_CONF_FILE" ]; then
+if [ ! -f "$NAMECOIN_CONF_FILE" ]; then
 echo "NAMECOIN_CONF_FILE not found - generating new!"
 echo "
 regtest=0
@@ -13,9 +14,7 @@ rpcpassword=adminpw
 rpcbind=0.0.0.0
 rpcallowip=0.0.0.0/0
 txindex=1
-fallbackfee=0.0002
 namehistory=1
-rpcworkqueue=100
 
 [test]
 rpcport=8334
@@ -27,6 +26,7 @@ wallet=1
 rpcport=8334
 rpcbind=0.0.0.0
 rpcallowip=0.0.0.0/0
-wallet=1" > NAMECOIN_CONF_FILE
-echo "NAMECOIN_CONF_FILE"
+wallet=1" > $NAMECOIN_CONF_FILE
+echo "$NAMECOIN_CONF_FILE"
 fi
+exec "$@"

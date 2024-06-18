@@ -139,6 +139,8 @@ With the Doichain Playground you can:
   - [x] generate sha256 hash and greate pe/{sha256} hash with it.
 - [x] show min-relay fee in signing modal
 - [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery)
+  - [ ] add nameId/nameValue for a first seed node
+  - [ ] create script to read multiaddr by nameId 
 - [ ] create a command line tool to register / show names from command line (and generate a PSBT-QR-Code there to pay in DoiWallet)
   - https://www.npmjs.com/package/namecointool
   - https://www.npmjs.com/package/qrcode-terminal
