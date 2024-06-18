@@ -31,6 +31,7 @@ export const networks = [
 ];
 
 export const helia = writable()
+export const connectedPeers = writable(0);
 export const scanOpen = writable(false)
 export const scanData = writable()
 export const qrCodeOpen = writable(false)

@@ -14,6 +14,7 @@
 	import LogoGithub from "carbon-icons-svelte/lib/LogoGithub.svelte";
 	import {
 		helia,
+		connectedPeers,
 		network,
 		networks,
 		qrCodeOpen,
@@ -34,15 +35,15 @@
 	import BBQRCodeModal from '$lib/components/BBQRCodeModal.svelte';
 	import { connectElectrum } from '$lib/connectElectrum.js';
 	import ScanModal from '$lib/components/ScanModal.svelte';
+	import { onMount } from 'svelte';
 
-	createHelia().then(_helia => $helia = _helia)
+
 
 	let isOpen
 	let sideNavOpen
 	let theme = "g90";// "white" | "g10" | "g80" | "g90" | "g100"
 	$:localStorage.setItem('network',JSON.stringify($network)	)
 	$:$network?connectElectrum($network):null
-
 
 	const routes = {
 		'/': Home,
@@ -53,6 +54,22 @@
 		'/multiSig': MultiSig
 	}
 	$: view = routes[$hash]
+
+	onMount(async () => {
+
+		$helia = await createHelia()
+		console.log("$helia.libp2p",$helia.libp2p)
+		$helia.libp2p.addEventListener('connection:open',  () => {
+			console.log("connection open",$connectedPeers)
+			connectedPeers.update(n => n + 1);
+		});
+
+		$helia.libp2p.addEventListener('connection:close', () => {
+			console.log("connection open",$connectedPeers)
+			connectedPeers.update(n => n - 1);
+		});
+	})
+
 </script>
 
 <Theme bind:theme persist persistKey="__carbon-theme" />
@@ -66,7 +83,11 @@
 	<div class="right-aligned">
 		<div on:click={ () => document.location.href='https://github.com/silkroadnomad/DoichainPlaygroundSvelte'}>
 			<LogoGithub/></div>
+		<div class="peers">
+			Peers: {$connectedPeers}
+		</div>
 		<div>
+
 			<Dropdown
 				size="sm"
 				label="Select Network"	
@@ -81,6 +102,7 @@
 	<svelte:fragment slot="skip-to-content">
 		<SkipToContent />
 	</svelte:fragment>
+
 	<HeaderUtilities>
 		<HeaderAction bind:isOpen transition={{ duration: 600, delay: 50, easing: expoIn }}>
 			<HeaderPanelLinks>

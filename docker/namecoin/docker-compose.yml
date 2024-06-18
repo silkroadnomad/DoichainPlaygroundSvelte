@@ -3,11 +3,7 @@ services:
   namecoin:
     #build: ./docker/namecoin
     image: "inspiraluna/namecoin-core:latest"
-    container_name: namecoin-regtest
-#    environment:
-#      - REGTEST=true
-#      - RPC_ALLOW_IP=0.0.0.0/0
-#      - RPC_PASSWORD=adminpw
+    container_name: namecoin
     ports:
       - "8334:8334"
     stdin_open: true
@@ -42,7 +38,7 @@ services:
 #      static:
 #        ipv4_address: 172.22.0.5
 
-  electrumx-doi:
+  electrumx-nmc:
     build:
       context: .
       dockerfile: docker/doichain/Dockerfile
@@ -50,9 +46,9 @@ services:
     image: "stallingerl/electrumx-doi"
     hostname: electrumx-doi
     volumes:
-      - ./docker/startServer.sh:/home/electrumx/startServer.sh
-    command: bash -c " ./startServer.sh"
-    container_name: electrumx-doi
+      - ./docker/namecoin/startElectrumNMC.sh:/home/electrumx/startElectrumNMC.sh
+    command: bash -c " ./startElectrumNMC.sh"
+    container_name: electrumx-nmc
     ports:
       - "50001:50001"
       - "50002:50002"
