@@ -74,6 +74,16 @@
 
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
     $: doiAddress?localStorage.setItem('doiAddress', doiAddress):null
+
+    const getTransactions = async () => {
+        localStorage.setItem('doiAddress',doiAddress)
+        $txs=[]
+        $namesCount=0
+        $inputCount=0
+        $outputCount=0
+        balance = await getBalance(doiAddress, $electrumClient, $network);
+        await getAddressTxs(doiAddress,$history,$electrumClient,$network);
+    }
 </script>
 
 <h2>Transactions</h2>
@@ -119,18 +129,13 @@
               labelText="Enter Doichain address and hit enter to display txs"
               bind:value={ doiAddress }
               on:keydown={ async (event) => {
-                  if (event.key === 'Enter') {
-                      localStorage.setItem('doiAddress',doiAddress)
-                    $txs=[]
-                    $namesCount=0
-                    $inputCount=0
-                    $outputCount=0
-                    balance = await getBalance(doiAddress, $electrumClient, $network);
-                    await getAddressTxs(doiAddress,$history,$electrumClient,$network);
-                  }
+                  if (event.key === 'Enter') await getTransactions()
                 }
               }
         /></Column>
+        <Column>
+            <Button size="small" on:click={async ()=> await getTransactions()}>List TXS</Button>
+        </Column>
     </Row>
 </Grid>
 <DataTable
@@ -189,8 +194,6 @@
                     <FileUploaderDropContainer
                       labelText="Drag and drop a file here or click to upload"
                       validateFiles={(files) => {
-
-                      console.log("files",files)
 
                       if (files && files.length > 0) {
                             const file = files[0]; // Assuming you're handling the first file

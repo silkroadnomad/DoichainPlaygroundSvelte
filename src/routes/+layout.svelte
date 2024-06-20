@@ -80,7 +80,7 @@
 		<div on:click={ () => document.location.href='https://github.com/silkroadnomad/DoichainPlaygroundSvelte'}>
 			<LogoGithub/></div>
 		<div class="peers">
-			Peers: {$connectedPeers}
+			IPFS Peers: {$connectedPeers}
 		</div>
 		<div>
 
