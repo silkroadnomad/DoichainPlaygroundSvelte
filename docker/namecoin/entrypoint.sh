@@ -11,6 +11,7 @@ server=1
 wallet=1
 rpcuser=admin
 rpcpassword=adminpw
+rpcport=8334
 rpcbind=0.0.0.0
 rpcallowip=0.0.0.0/0
 txindex=1

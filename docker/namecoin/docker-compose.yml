@@ -5,6 +5,7 @@ services:
     container_name: namecoin
     ports:
       - "8334:8334"
+      - "8336:8336"
     stdin_open: true
     volumes:
       - ./.namecoin/:/home/namecoin/.namecoin/
@@ -13,13 +14,15 @@ services:
     privileged: true
     entrypoint: ["/entrypoint.sh"]
     command: "/usr/local/bin/namecoind"
-    networks:
-      static:
-        ipv4_address: 172.22.0.4
+#    networks:
+#      static:
+#        ipv4_address: 172.22.0.4
 
   electrumx-nmc:
     build:
       dockerfile: ./Dockerfile
+    depends_on:
+        - namecoin
     working_dir: /home/electrumx
     image: "stallingerl/electrumx-doi"
     hostname: electrumx-nmc
@@ -34,14 +37,14 @@ services:
     stdin_open: true
     tty: true
     privileged: true
-    networks:
-      static:
-        ipv4_address: 172.22.0.6
+#    networks:
+#      static:
+#        ipv4_address: 172.22.0.6
 
-networks:
-  static:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.22.0.0/16
-          gateway: 172.22.0.1
+#networks:
+#  static:
+#    driver: bridge
+#    ipam:
+#      config:
+#        - subnet: 172.22.0.0/16
+#          gateway: 172.22.0.1

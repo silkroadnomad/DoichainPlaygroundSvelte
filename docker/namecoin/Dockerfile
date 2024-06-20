@@ -43,5 +43,5 @@ RUN mkdir .namecoin && \
 RUN sudo apt-get purge -y dos2unix && \
 	sudo rm -rf /var/lib/apt/lists/*
 ENTRYPOINT  ["./entrypoint.sh"]
-EXPOSE 8334
+EXPOSE 8334 8336
 CMD ["/usr/local/bin/namecoind"]
