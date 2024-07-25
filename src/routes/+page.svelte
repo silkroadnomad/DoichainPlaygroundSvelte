@@ -59,18 +59,18 @@
     let addresses = [];
 
     function generateAddresses() {
+
         addresses = []
         /*
          * Electrum Mnemonic Tools https://www.npmjs.com/package/electrum-mnemonic
          * Electrum Legacy https://github.com/BlueWallet/BlueWallet/blob/6aa4c25cd1cb91a5f7576243e8d2f2d6a1cbce95/class/wallets/hd-legacy-electrum-seed-p2pkh-wallet.ts
          */
         if(selectedDerivationStandard==='electrum-legacy'){
-            console.log("generating ",selectedDerivationStandard)
-            const PREFIX = mn.PREFIXES.standard;
-            if(!mn.validateMnemonic(mnemonic,  mn.PREFIXES.standard))
+
+            if(!mn.validateMnemonic(mnemonic, mn.PREFIXES.standard))
                 throw new Error("Mnemonic invalid")
 
-            const args = { prefix: PREFIX}; //,   passphrase: '', skipCheck: true
+            const args = { prefix: mn.PREFIXES.standard};
             if (password) args.password = password;
             root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
             xpriv = root.toBase58();
@@ -151,7 +151,6 @@
 
         if(selectedDerivationStandard==='bip32'){
             const xpubNode = bip32.fromBase58(xpub);
-
             const internal = 0 // or 1 for internal addresses (change addresses)
 
             for (let index = 0; index <= 10; index++) {
@@ -312,7 +311,15 @@
             </Select>
             <TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} />
             <Button size="small"  on:click={async () => {
-                mnemonic = generateMnemonic()
+               console.log("generating mnemonic ",selectedDerivationStandard)
+                if(selectedDerivationStandard === 'bip32'){
+                      mnemonic = generateMnemonic()
+                }
+                else {
+                    const PREFIX = (selectedDerivationStandard.indexOf('legacy')!==-1)?mn.PREFIXES.standard:mn.PREFIXES.segwit;
+                    mnemonic = mn.generateMnemonic({ prefix: PREFIX })
+                }
+                console.log("new mnemonic",mnemonic)
             }}>Generate Mnemonic</Button>
             <Button size="small" on:click={ storeMnemonic }>Save</Button>
             <Button size="small" on:click={ deleteMnemonic } class="delete-button">Delete</Button>
