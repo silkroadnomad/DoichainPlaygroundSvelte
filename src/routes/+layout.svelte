@@ -9,7 +9,9 @@
 		SkipToContent,
 		Theme, Row, Dropdown
 	} from 'carbon-components-svelte';
+
 	import { createHelia } from 'helia'
+
 	import LogoGithub from "carbon-icons-svelte/lib/LogoGithub.svelte";
 	import {
 		helia,
@@ -23,6 +25,7 @@
 		scanOpen,
 		scanData
 	} from './store.js';
+
 	import { hash } from './router.js'
 	import Home from './+page.svelte'
 	import Transactions from './transactions.svelte'
@@ -39,6 +42,7 @@
 	let isOpen
 	let sideNavOpen
 	let theme = "g90";// "white" | "g10" | "g80" | "g90" | "g100"
+
 	$:localStorage.setItem('network',JSON.stringify($network)	)
 	$:$network?connectElectrum($network):null
 
@@ -50,18 +54,19 @@
 		'/nameCheck': NameCheck,
 		'/multiSig': MultiSig
 	}
+
 	$: view = routes[$hash]
 
 	onMount(async () => {
 
 		$helia = await createHelia()
 		$helia.libp2p.addEventListener('connection:open',  () => {
-			console.log("connection open",$connectedPeers)
+			// console.log("connection open",$connectedPeers)
 			connectedPeers.update(n => n + 1);
 		});
 
 		$helia.libp2p.addEventListener('connection:close', () => {
-			console.log("connection open",$connectedPeers)
+			// console.log("connection open",$connectedPeers)
 			connectedPeers.update(n => n - 1);
 		});
 	})
@@ -83,7 +88,6 @@
 			IPFS Peers: {$connectedPeers}
 		</div>
 		<div>
-
 			<Dropdown
 				size="sm"
 				label="Select Network"	
