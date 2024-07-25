@@ -131,14 +131,14 @@ With the Doichain Playground you can:
   - [x] scan backwards and display name_ops and collect namespaces
   - [ ] scan transactions of current mempoool
   - [ ] store found scan results in a orbitdb writable by all 
-- [ ] create Doichain-NFT (NFC non-fungible-coin) example
+- [x] create Doichain-NFT (NFC non-fungible-coin) example
   - [ ] scan blockchain backwards from now if nft/ found 
-  - [ ] display media (png, jpg, etc.)
+  - [x] display media (png, jpg, etc.)
 - [x] create a proof-of-existence example
   - [x] add file upload to utxo selction toolbar 
   - [x] generate sha256 hash and greate pe/{sha256} hash with it.
 - [x] show min-relay fee in signing modal
-- [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pubsub peer discovery)
+- [ ] create libp2p seed node peer discovery (as an alternative for bootstrap and pub sub peer discovery)
   - [ ] add nameId/nameValue for a first seed node
   - [ ] create script to read multiaddr by nameId 
 - [ ] create a command line tool to register / show names from command line (and generate a PSBT-QR-Code there to pay in DoiWallet)
@@ -167,7 +167,7 @@ With the Doichain Playground you can:
     - [ ] download multisig config as file
     - [ ] scan a publickey 
       - [ ] show error if publicKey is invalid 
-    - [ ] scan mnemonic / try different BIPs (32/44/49/84), show balance, latetest derivation and new address / publickey for multisig
+    - [ ] scan mnemonic / try different BIPs (32/44/49/84), show balance, latest derivation and new address / publickey for multisig
 - [ ] spend from a multisig address
 - [ ] automate spending from a multisig address
 - [ ] research and test DoiWallet and Electrum-DOI seed phrases and keys
@@ -186,7 +186,7 @@ With the Doichain Playground you can:
 - [x] add Scanner https://github.com/peerpiper/qrcode-scanner-svelte
 - [ ] mnemonic: expandable rows shows privkey, wif, pubKey of address
 - [ ] mnemonic/transactions: use OrbitDB to store wallets, history
-- [ ] Electrumx connection: retry up to 10 times, recover connection when changing network (e.g. switching wifi / vp network)
+- [x] Electrumx connection: retry up to 10 times, recover connection when changing network (e.g. switching wifi / vp network)
 - [ ] transactions: amounts should toggle between DOI/schwartz (and store value in localhost default DOI)
 - [ ] transaction signing: auto-select enough utxo's from the datatable depending on the amount to send
 - [ ] transactions: indexDB cache for transaction history and its txs 

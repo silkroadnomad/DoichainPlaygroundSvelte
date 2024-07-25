@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 
 import { DOICHAIN, DOICHAIN_REGTEST } from '$lib/doichain.js';
+
 const BITCOIN_MAINNET = {
 		name: 'bitcoin-mainnet',
     messagePrefix: '\x18Bitcoin Signed Message:\n',

@@ -44,10 +44,18 @@ export const getNameOPStackScript = (nameId, nameValue, recipientAddress, networ
 
     let op_address;
     try {
-        const decoded = address.fromBase58Check(recipientAddress, network);
+        let decoded;
+        try {
+            decoded = address.fromBase58Check(recipientAddress);
+        } catch (legacyError) {
+            try {
+                decoded = address.fromBech32(recipientAddress);
+            } catch (segwitError) {
+                throw new Error(ERRORS.INVALID_ADDRESS + legacyError.message + " or " + segwitError.message);
+            }
+        }
         op_address = decoded.hash.toString('hex');
     } catch (error) {
-        // op_address = new Uint8Array([])
         throw new Error(ERRORS.INVALID_ADDRESS + error.message);
     }
 
