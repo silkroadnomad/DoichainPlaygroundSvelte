@@ -46,7 +46,7 @@
 
     let changeAddress = senderAddress 
     let transactionFee = selectedRowIds.length * 180 + 3 * 34*500
-    let schwartzPerByte = 210 //TODO why is that so high? shoulld be 50x lower
+    let schwartzPerByte = 210 //TODO why is that so high? should be 50x lower
     let storageFee = NETWORK_FEE.satoshis  //or 88100 - a roughly estimated transaction fee
     let byteLength = 0
     // if(nameId) transactionFee += storageFee
@@ -116,27 +116,27 @@
         utxos.forEach(utxo => {
             //TODO https://bitcoin.stackexchange.com/questions/116128/how-do-i-determine-whether-an-input-or-output-is-segwit-revisited
             const valueInSatoshis = Math.round(utxo.value * 100000000);
-                const scriptPubKeyHex = utxo.scriptPubKey.hex
-                const isSegWit = scriptPubKeyHex?.startsWith('0014') || scriptPubKeyHex?.startsWith('0020');
-                    if (isSegWit) {
-            //             // This is a SegWit UTXO
-                        psbt.addInput({
-                            hash: utxo.txid,
-                            index: utxo.n,
-                            witnessUtxo: {
-                                script: Buffer.from(scriptPubKeyHex, 'hex'),
-                                value: valueInSatoshis,
-                            }
-                        });
-                    } else {     // This is a non-SegWit UTXO
-                        console.log("utxo.hex",utxo)
-                        psbt.addInput({
-                            hash: utxo.hash,
-                            index: utxo.n,
-                            nonWitnessUtxo: Buffer.from(utxo.hex, 'hex')
-                        });
+            const scriptPubKeyHex = utxo.scriptPubKey.hex
+            const isSegWit = scriptPubKeyHex?.startsWith('0014') || scriptPubKeyHex?.startsWith('0020');
+            if (isSegWit) {
+                //             // This is a SegWit UTXO
+                psbt.addInput({
+                    hash: utxo.txid,
+                    index: utxo.n,
+                    witnessUtxo: {
+                        script: Buffer.from(scriptPubKeyHex, 'hex'),
+                        value: valueInSatoshis,
                     }
-                    totalInputAmount += valueInSatoshis;
+                });
+            } else {     // This is a non-SegWit UTXO
+                console.log("utxo.hex",utxo)
+                psbt.addInput({
+                    hash: utxo.hash,
+                    index: utxo.n,
+                    nonWitnessUtxo: Buffer.from(utxo.hex, 'hex')
+                });
+            }
+            totalInputAmount += valueInSatoshis;
         })
 
         let totalOutputAmount = 0;

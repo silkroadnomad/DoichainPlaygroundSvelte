@@ -1,8 +1,7 @@
 <script>
-    import { createEventDispatcher, onMount } from 'svelte';
+    import { createEventDispatcher } from 'svelte';
     import { Column, Modal, Grid, Row } from 'carbon-components-svelte';
-
-    import { detectFileType, joinQRs, renderQRImage, splitQRs } from 'bbqr';
+    import { detectFileType, renderQRImage, splitQRs } from 'bbqr';
 
     /**
      *     T for transaction
@@ -11,7 +10,6 @@
      *     U for all other text files.
      *     B for all other binary files.
      */
-
     const dispatch = createEventDispatcher();
 
     export let qrCodeData
