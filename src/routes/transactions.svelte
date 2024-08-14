@@ -22,7 +22,7 @@
         inputCount,
         connectedServer,
         outputCount, namesCount,
-        currentAddressP2pkh
+        currentAddress
     } from './store.js';
 
 	  import { path } from './router.js'
@@ -34,8 +34,8 @@
 
     let nameId = ""
     let nameValue = ""
-    let doiAddress = $currentAddressP2pkh || $path.substring($path.lastIndexOf("/")+1)!=='transactions'?$path.substring($path.lastIndexOf("/")+1):localStorage.getItem('doiAddress') || ''
-    let recipientAddress = $currentAddressP2pkh || doiAddress
+    let doiAddress = $currentAddress || $path.substring($path.lastIndexOf("/")+1)!=='transactions'?$path.substring($path.lastIndexOf("/")+1):localStorage.getItem('doiAddress') || ''
+    let recipientAddress = $currentAddress || doiAddress
     let doiAmount = 0
     let balance = { confirmed:0 ,unconfirmed:0 }
     let pageSize = 100 //[10,20,50,100];
@@ -68,7 +68,7 @@
     });
 
     onMount(async () => {
-        doiAddress = $currentAddressP2pkh || localStorage.getItem('doiAddress') || '';
+        doiAddress = $currentAddress || localStorage.getItem('doiAddress') || '';
         if(doiAddress) await getAddressTxs(doiAddress, $history, $electrumClient, $network)
     });
 

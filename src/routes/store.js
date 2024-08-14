@@ -51,6 +51,6 @@ export const inputCount = writable(0);
 export const outputCount = writable(0);
 export const namesCount = writable(0);
 export const currentWif = writable('');
-export const currentAddressP2pkh = writable('');
+export const currentAddress = writable('');
 
 

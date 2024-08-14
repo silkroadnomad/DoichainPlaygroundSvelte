@@ -26,7 +26,7 @@
         network,
         electrumClient,
         scanData,
-        currentAddressP2pkh,
+        currentAddress,
         currentWif
     } from './store.js';
 
@@ -53,7 +53,8 @@
     let derivationStandards = [
         {id:'electrum-legacy', name:'Electrum-Legacy', path:'m'},
         {id:'electrum-segwit', name:'Electrum-Segwit', path:'m/0'},
-        {id:'bip32', name:'BIP32', path:'m/0/0/0'}
+        {id:'bip32', name:'BIP32', path:'m/0/0/0'},
+        {id:'bip84', name:'BIP84', path:'m/84/0/0/0'}
     ]
     let selectedDerivationStandard = localStorage.getItem("selectedDerivationStandard") || 0
     let addresses = [];
@@ -90,7 +91,7 @@
                 }).address;
 
                 if(index===0){
-                    $currentAddressP2pkh=address
+                    $currentAddress=address
                     $currentWif=wif
                 }
 
@@ -132,7 +133,7 @@
                 }).address;
 
                 if(index===0){
-                    $currentAddressP2pkh=address
+                    $currentAddress=address
                     $currentWif=wif
                 }
 
@@ -149,7 +150,7 @@
             }
         }
 
-        if(selectedDerivationStandard==='bip32'){
+        if(selectedDerivationStandard==='bip32'){ //legacy bip32
             const xpubNode = bip32.fromBase58(xpub);
             const internal = 0 // or 1 for internal addresses (change addresses)
 
@@ -165,7 +166,7 @@
                 }).address;
 
                 if(index===0){
-                    $currentAddressP2pkh=address
+                    $currentAddress=address
                     $currentWif=wif
                 }
 
@@ -173,6 +174,37 @@
                     id: index,
                     index,
                     path:`m/0/${internal}/${index}`,
+                    address: address,
+                    balance: address,
+                    publicKey:pubkey.toString('hex'),
+                    privateKey:privateKey.toString('hex'),
+                    wif }
+                addresses = [...addresses, addr];
+            }
+        }
+        console.log("generating address for selectedDerivationStandard",selectedDerivationStandard)
+        if(selectedDerivationStandard==='bip84'){ //legacy bip32
+
+            const xpubNode = bip32.fromBase58(xpub);
+            const internal = 0 // or 1 for internal addresses (change addresses)
+
+            for (let index = 0; index <= 10; index++) {
+
+                const pubkey = xpubNode.derive(0).derive(internal).derive(index).publicKey
+                const privateKey = root.derive(0).derive(internal).derive(index).privateKey
+                const wif = root.derive(internal).derive(index).toWIF()
+                const { address } = payments.p2wpkh({ pubkey: pubkey, network: $network })
+                console.log("address"+index,address)
+
+                if(index===0){
+                    $currentAddress=address
+                    $currentWif=wif
+                }
+
+                const addr = {
+                    id: index,
+                    index,
+                    path:`m/84/0/${internal}/${index}`,
                     address: address,
                     balance: address,
                     publicKey:pubkey.toString('hex'),

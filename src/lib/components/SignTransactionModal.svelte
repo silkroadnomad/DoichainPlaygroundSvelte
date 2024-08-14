@@ -11,7 +11,7 @@
         network,
         electrumBlockchainRelayfee,
         currentWif,
-        currentAddressP2pkh
+        currentAddress
     } from '../../routes/store.js';
     import * as bitcoin from 'bitcoinjs-lib';
     import * as ecc from 'tiny-secp256k1';
@@ -27,8 +27,8 @@
     export let heading = 'Simple Coin Transaction ';
     export let PrimaryButtonText = 'Sign transaction'
     export let CancelOperationButtonText = 'Cancel'
-    export let senderAddress = $currentAddressP2pkh
-    export let recipientAddress = $currentAddressP2pkh
+    export let senderAddress = $currentAddress
+    export let recipientAddress = $currentAddress
     export let nameId
     export let nameValue
 
