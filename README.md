@@ -120,7 +120,7 @@ With the Doichain Playground you can:
   - [x] add storage fee to transaction fee calculation
   - [x] add nameId and nameValue to signing modal
   - [x] legacy name_op transactions
-  - [ ] segwit name_op transactions (untested)
+  - [x] segwit name_op transactions (untested)
   - [x] index name_op transactions 
   - [x] show name op transactions in transaction list 
   - [x] create name_show call [How is that done in electrum-nmc](https://github.com/namecoin/electrum-nmc/blob/b0f3af4a8ef64211fb27c21c6985352ecc8b9fdc/electrum_nmc/electrum/commands.py#L1447)

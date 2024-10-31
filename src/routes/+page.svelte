@@ -194,8 +194,6 @@
                 const privateKey = root.derive(0).derive(internal).derive(index).privateKey
                 const wif = root.derive(internal).derive(index).toWIF()
                 const { address } = payments.p2wpkh({ pubkey: pubkey, network: $network })
-                console.log("address"+index,address)
-
                 if(index===0){
                     $currentAddress=address
                     $currentWif=wif
