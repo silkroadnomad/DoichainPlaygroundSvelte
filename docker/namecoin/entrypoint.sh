@@ -9,22 +9,29 @@ testnet=0
 daemon=1
 server=1
 wallet=1
+listen=0
 rpcuser=admin
 rpcpassword=adminpw
-rpcport=8334
-rpcbind=0.0.0.0
-rpcallowip=0.0.0.0/0
 txindex=1
 namehistory=1
 
+[main]
+port=8334
+rpcport=8336
+rpcbind=0.0.0.0
+rpcallowip=0.0.0.0/0
+wallet=1
+
 [test]
-rpcport=8334
+port=18334
+rpcport=18336
 rpcbind=0.0.0.0
 rpcallowip=0.0.0.0/0
 wallet=1
 
 [regtest]
-rpcport=8334
+port=18334
+rpcport=18336
 rpcbind=0.0.0.0
 rpcallowip=0.0.0.0/0
 wallet=1" > $NAMECOIN_CONF_FILE
