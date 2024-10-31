@@ -1,0 +1,53 @@
+services:
+  regtest:
+    #build: .
+    image: "doichain/core:dc0.20.1.13"
+    container_name: regtest
+    ports:
+      - "18338:18338"
+      - "18339:18339"
+    stdin_open: true
+    volumes:
+      - ./.doichain/:/home/doichain/.doichain/
+      - ./entrypoint.sh:/home/doichain/scripts/entrypoint.sh
+      - ./doichain-start.sh:/home/doichain/scripts/doichain-start.sh
+    environment:
+      - RPC_ALLOW_IP=0.0.0.0/0
+      - RPC_PASSWORD=adminpw
+      - REGTEST=true
+    tty: true
+    privileged: true
+    entrypoint: "./scripts/entrypoint.sh"
+    command: "./scripts/start.sh"
+    networks:
+      - doichain_regtest-network
+
+  electrumx-doi:
+    container_name: electrumx-doi
+    hostname: electrumx-doi
+    image: "le-space/electrumx:dc1.2.1"
+    depends_on:
+      - regtest
+    volumes:
+      - ./db:/var/lib/electrumx
+      - ./startElectrumDOIRegTest.sh:/startElectrumDOIRegTest.sh
+    entrypoint: ["/startElectrumDOIRegTest.sh"]
+    command: "/bin/bash"
+    ports:
+      - "50001:50001"
+      - "50002:50002"
+      - "8443:8443"
+    stdin_open: true
+    tty: true
+    privileged: true
+    networks:
+      - doichain_regtest-network
+    environment:
+      - COIN=Doichain
+      - NET=mainnet
+      - DB_DIRECTORY=/var/lib/electrumx
+      - DAEMON_URL=http://admin:adminpw@regtest:18339
+
+networks:
+  doichain_regtest-network:
+    driver: bridge
