@@ -83,5 +83,24 @@ rpcallowip=0.0.0.0/0
 wallet=1
 port=${_NODE_PORT}" > $DOICHAIN_CONF_FILE
 fi
+echo "DOICHAIN_CONF_FILE: $DOICHAIN_CONF_FILE"
+if [ -f "$DOICHAIN_CONF_FILE" ]; then
+    echo "Config file exists and is a regular file"
+    ls -la "$DOICHAIN_CONF_FILE"
+else
+    echo "WARNING: Config file does not exist at $DOICHAIN_CONF_FILE"
+fi
+# Only create symlink for testnet and regtest
+if [ $REGTEST = true ]; then
+    RELATIVE_PATH="regtest/doichain.conf"
+    echo "Creating link to conf file with relative path: ${RELATIVE_PATH}"
+    rm -f "${DOICHAIN_BASE_DIR}/doichain.conf"
+    ln -s "${RELATIVE_PATH}" "${DOICHAIN_BASE_DIR}/doichain.conf"
+elif [ $TESTNET = true ]; then
+    RELATIVE_PATH="testnet/doichain.conf"
+    echo "Creating link to conf file with relative path: ${RELATIVE_PATH}"
+    rm -f "${DOICHAIN_BASE_DIR}/doichain.conf"
+    ln -s "${RELATIVE_PATH}" "${DOICHAIN_BASE_DIR}/doichain.conf"
+fi
 
 exec "$@"
