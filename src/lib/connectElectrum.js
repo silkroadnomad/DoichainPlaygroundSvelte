@@ -13,14 +13,37 @@ electrumClient.subscribe((value) => _electrumClient = value)
 let _network
 network.subscribe((value) => _network = value)
 
-export const connectElectrum = async (_network) => {
-	if(!_network) return
-	const networkNodes = electrumServers.filter(n=>n.network===_network.name)
-	const randomServer = networkNodes[Math.floor(Math.random() * networkNodes.length)];
-	_electrumClient = new ElectrumxClient(randomServer.host, randomServer.port, randomServer.protocol);
-	electrumClient.set(_electrumClient)
+const MAX_RETRIES = 25;
+const RETRY_DELAY = 5000;
 
-	await _electrumClient.connect("electrum-client-js", "1.4.2");
+export const connectElectrum = async (_network) => {
+	if (!_network) return;
+	
+	let retries = 0;
+	let randomServer;
+	
+	while (retries < MAX_RETRIES) {
+		const networkNodes = electrumServers.filter(n => n.network === _network.name);
+		randomServer = networkNodes[Math.floor(Math.random() * networkNodes.length)];
+		_electrumClient = new ElectrumxClient(randomServer.host, randomServer.port, randomServer.protocol);
+		
+		try {
+			electrumClient.set(_electrumClient);
+			await _electrumClient.connect("electrum-client-js", "1.4.2");
+			break;
+		} catch (error) {
+			console.error("Connection failed, retrying...", error);
+			retries++;
+			if (retries < MAX_RETRIES) {
+				electrumServerVersion.set(`retrying (${retries})`);
+				connectedServer.set(`retrying (${retries} - ${randomServer.host})`);
+				await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+			} else {
+				throw new Error("Max retries reached. Unable to connect to Electrum server.");
+			}
+		}
+	}
+
 	const _electrumServerVersion = await _electrumClient.request('server.version');
 	electrumServerVersion.set(_electrumServerVersion)
 	console.log("electrumServerVersion",_electrumServerVersion)
@@ -37,4 +60,17 @@ export const connectElectrum = async (_network) => {
 	const _electrumBlockchainRelayfee = await _electrumClient.request('blockchain.relayfee');
 	electrumBlockchainRelayfee.set(_electrumBlockchainRelayfee)
 	return _connectedServer
+}
+
+export function getConnectionStatus(server) {
+	if (!server || server === 'offline' || server.includes('retry')) {
+		return {
+			isConnected: false,
+			serverName: server || 'No server connected'
+		};
+	}
+	return {
+		isConnected: true,
+		serverName: server
+	};
 }
