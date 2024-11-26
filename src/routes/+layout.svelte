@@ -10,7 +10,11 @@
 		Theme, Row, Dropdown
 	} from 'carbon-components-svelte';
 
-	import { createHelia } from 'helia'
+	import { createHelia, libp2pDefaults } from 'helia'
+	import { createLibp2p } from 'libp2p';
+	import { webSockets } from '@libp2p/websockets';
+	import { circuitRelayTransport } from '@libp2p/circuit-relay-v2';
+	import { webRTC, webRTCDirect } from '@libp2p/webrtc';
 
 	import LogoGithub from "carbon-icons-svelte/lib/LogoGithub.svelte";
 	import {
@@ -58,15 +62,29 @@
 	$: view = routes[$hash]
 
 	onMount(async () => {
+		// Modify the default Libp2p configuration to exclude WebTransport
+		const libp2pConfig = {
+			...libp2pDefaults(),
+			transports: [
+				webRTC(),
+				webRTCDirect(),
+				webSockets(),
+				circuitRelayTransport({ discoverRelays: 1 })
+				// Exclude WebTransport by not including it here
+			],
+			// You can add or modify other configurations as needed
+		};
 
-		$helia = await createHelia()
-		$helia.libp2p.addEventListener('connection:open',  () => {
-			// console.log("connection open",$connectedPeers)
+		const libp2p = await createLibp2p(libp2pConfig);
+
+		// Create Helia with the custom Libp2p instance
+		$helia = await createHelia({ libp2p });
+
+		$helia.libp2p.addEventListener('connection:open', () => {
 			connectedPeers.update(n => n + 1);
 		});
 
 		$helia.libp2p.addEventListener('connection:close', () => {
-			// console.log("connection open",$connectedPeers)
 			connectedPeers.update(n => n - 1);
 		});
 	})
