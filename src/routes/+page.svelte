@@ -101,7 +101,7 @@
                     path:`m/${internal}/${index}`,
                     address: address,
                     balance: address,
-                    publicKey:publicKey.toString('hex'),
+                    publicKey: publicKey.toString('hex'),
                     privateKey:privateKey.toString('hex'),
                     wif }
 

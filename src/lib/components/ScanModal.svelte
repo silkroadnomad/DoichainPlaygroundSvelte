@@ -1,10 +1,11 @@
 <script>
-    import { createEventDispatcher } from "svelte";
+    import { createEventDispatcher, onDestroy } from "svelte";
     import { Column, Modal, Grid, Row } from 'carbon-components-svelte';
     import { Scanner } from '@peerpiper/qrcode-scanner-svelte'
     import { joinQRs } from 'bbqr';
 
     const dispatch = createEventDispatcher();
+    
     let result = "";
     let parts = []
     let foundParts = 0
@@ -12,6 +13,8 @@
     const scanTimeoutDuration = 1000;
     export let scanOpen
     export let scanData
+    let scanner;
+
     $: {
         if (result && parts.indexOf(result) === -1) {
             clearTimeout(scanTimeout);
@@ -39,21 +42,53 @@
             dispatch('close');
         }
     }
+
+    onDestroy(() => {
+        if (scanner) {
+            scanner = undefined;
+        }
+    });
+
+    const handleClose = () => {
+        console.log('ScanModal: handleClose called');
+        if (scanner) {
+            console.log('ScanModal: stopping scanner');
+            scanner = undefined;
+        }
+        console.log('ScanModal: setting scanOpen to false');
+        scanOpen = false;
+        console.log('ScanModal: dispatching close event');
+        dispatch('close');
+    };
 </script>
 
 <Modal bind:open={ scanOpen }
        modalHeading="Scanner"
        primaryButtonText="OK"
        secondaryButtonText="Close"
-       on:click:button--primary={ () => { scanOpen=false; scanData=result; dispatch('close') } }
-       on:click:button--secondary={ () => { scanOpen=false; scanData=undefined; dispatch('close') }  }
-       on:submit={ () => () => { scanOpen=false; scanData=result; dispatch('close') }}
-       on:close={ () => dispatch('close')}>
+       on:click:button--primary={ () => { 
+           console.log('ScanModal: Primary button clicked');
+           scanData = result;
+           handleClose();
+       }}
+       on:click:button--secondary={ () => { 
+           console.log('ScanModal: Secondary button clicked');
+           scanData = undefined;
+           handleClose();
+       }}
+       on:submit={ () => { 
+           scanData = result;
+           handleClose();
+       }}
+       on:close={ () => {
+           scanData = undefined;
+           handleClose();
+       }}>
     <Grid>
         <Row>
             <Column>
 
-                <Scanner bind:result>
+                <Scanner bind:this={scanner} bind:result>
                     <!-- Insert custom results component if you want to do something unique with the QR code data -->
                     <!-- override default by placing handler in here  -->
                     {#if result}
