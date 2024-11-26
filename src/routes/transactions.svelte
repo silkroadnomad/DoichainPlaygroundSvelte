@@ -1,59 +1,79 @@
 <script>
+    // Svelte imports
+    import { afterUpdate, onDestroy, onMount } from 'svelte';
     import { fade } from "svelte/transition";
+    
+    // Carbon components imports (alphabetically ordered)
     import {
         Button,
         Column,
-        DataTable, FileUploaderDropContainer, Grid,
+        DataTable,
+        FileUploaderDropContainer,
+        Grid,
         Pagination,
         Row,
         TextInput,
-        Toolbar, ToolbarBatchActions,
+        Toolbar,
+        ToolbarBatchActions,
         ToolbarContent,
         ToolbarSearch
     } from 'carbon-components-svelte';
+    import Scan from "carbon-icons-svelte/lib/Scan.svelte";
 
-    import {
-        electrumServerBanner,
-        electrumClient,
-        electrumBlockchainBlockHeadersSubscribe,
-        network,
-        history,
-        txs,
-        inputCount,
-        connectedServer,
-        outputCount, namesCount,
-        currentAddress
-    } from './store.js';
-
-	  import { path } from './router.js'
-    import { afterUpdate, onDestroy, onMount } from 'svelte';
-    import { sign} from '$lib/components/signTransactionModal.js'
-
+    // Local imports (alphabetically ordered)
     import { getAddressTxs } from '$lib/getAddressTxs.js';
     import { getBalance } from '$lib/getBalance.js';
+    import ScanModal from '$lib/components/ScanModal.svelte';
+    import { sign } from '$lib/components/signTransactionModal.js';
+    import { path } from './router.js';
+    import {
+        connectedServer,
+        currentAddress,
+        electrumBlockchainBlockHeadersSubscribe,
+        electrumClient,
+        electrumServerBanner,
+        history,
+        inputCount,
+        namesCount,
+        network,
+        outputCount,
+        txs,
+    } from './store.js';
 
-    let nameId = ""
-    let nameValue = ""
-    let doiAddress = $currentAddress || $path.substring($path.lastIndexOf("/")+1)!=='transactions'?$path.substring($path.lastIndexOf("/")+1):localStorage.getItem('doiAddress') || ''
-    let recipientAddress = $currentAddress || doiAddress
-    let doiAmount = 0
-    let balance = { confirmed:0 ,unconfirmed:0 }
-    let pageSize = 100 //[10,20,50,100];
-    let page = 1
+    // Variables (grouped by type)
+    // Addresses and amounts
+    let xPubOrDoiAddress = $currentAddress || $path.substring($path.lastIndexOf("/")+1)!=='transactions'?$path.substring($path.lastIndexOf("/")+1):localStorage.getItem('doiAddress') || '';
+    let recipientAddress = $currentAddress || xPubOrDoiAddress;
+    let doiAmount = 0;
+    let balance = { confirmed: 0, unconfirmed: 0 };
 
+    // Names
+    let nameId = "";
+    let nameValue = "";
+
+    // Table related
+    let page = 1;
+    let pageSize = 100;
     let filteredRowIds = [];
     let selectedRowIds = [];
+    let batchSelection = true;
+    let active = true;
 
-    let batchSelection = true
-    let active = true
+    // Notification related
+    let timeout;
+    let toastNotification;
 
-    let timeout
-    let toastNotification
+    // Scan related
+    let scanOpen = false;
+    let scanData;
+
+    // Reactive declarations (grouped by functionality)
     $: showNotification = timeout !== undefined;
-
-    $: doiAmount = Number(doiAmount)
+    $: doiAmount = Number(doiAmount);
     $: utxoSum = Array.isArray($txs) ? $txs.reduce((sum, utxo) => sum + (utxo.value * 100000000), 0) : 0;
     $: utxoSelected = Array.isArray($txs) ? $txs.filter(tx => selectedRowIds.includes(tx.id)).reduce((sum, utxo) => sum + (utxo.value*100000000), 0) : 0;
+    $: if (scanData) xPubOrDoiAddress = scanData;
+    $: xPubOrDoiAddress ? localStorage.setItem('xPubOrDoiAddress', xPubOrDoiAddress) : null;
 
     afterUpdate(() => {
         $txs.forEach(tx => {
@@ -68,21 +88,20 @@
     });
 
     onMount(async () => {
-        doiAddress = $currentAddress || localStorage.getItem('doiAddress') || '';
-        if(doiAddress) await getAddressTxs(doiAddress, $history, $electrumClient, $network)
+        xPubOrDoiAddress = $currentAddress || localStorage.getItem('xPubOrDoiAddress') || '';
+        if(xPubOrDoiAddress) await getAddressTxs(xPubOrDoiAddress, $history, $electrumClient, $network)
     });
 
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
-    $: doiAddress?localStorage.setItem('doiAddress', doiAddress):null
 
     const getTransactions = async () => {
-        localStorage.setItem('doiAddress',doiAddress)
+        localStorage.setItem('doiAddress',xPubOrDoiAddress)
         $txs=[]
         $namesCount=0
         $inputCount=0
         $outputCount=0
-        balance = await getBalance(doiAddress, $electrumClient, $network);
-        await getAddressTxs(doiAddress,$history,$electrumClient,$network);
+        balance = await getBalance(xPubOrDoiAddress, $electrumClient, $network);
+        await getAddressTxs(xPubOrDoiAddress,$history,$electrumClient,$network);
     }
 </script>
 
@@ -122,19 +141,34 @@
     <Row><Column>Names count:</Column><Column>{$namesCount}</Column><Column></Column><Column></Column></Row>
 </Grid>
 <Grid class="grid-spacing">
-    <Row>
-        <Column>
+    <Row style="align-items: flex-end;">
+        <Column style="display: flex; flex-direction: column; flex-grow: 1;">
             <TextInput
-              class="margin"
-              labelText="Enter Doichain address and hit enter to display txs"
-              bind:value={ doiAddress }
-              on:keydown={ async (event) => {
-                  if (event.key === 'Enter') await getTransactions()
-                }
-              }
-        /></Column>
-        <Column>
-            <Button size="small" on:click={async ()=> await getTransactions()}>List TXS</Button>
+                class="margin address-input"
+                labelText="Enter Doichain address and hit enter to display txs"
+                bind:value={xPubOrDoiAddress}
+                on:keydown={async (event) => {
+                    if (event.key === 'Enter') await getTransactions()
+                }}
+            />
+        </Column>
+        <Column style="display: flex; align-items: center; gap: 10px;">
+            <Button 
+                size="field" 
+                kind="ghost" 
+                iconDescription="Scan QR code"
+                class="scan-button"
+                on:click={() => scanOpen = true}
+            >
+                <Scan size={20}/>
+            </Button>
+            <Button 
+                size="field" 
+                kind="primary" 
+                on:click={async ()=> await getTransactions()}
+            >
+                List TXS
+            </Button>
         </Column>
     </Row>
 </Grid>
@@ -241,7 +275,7 @@
                 <Button disabled={selectedRowIds.length === 0} on:click={() => {
 
                      const result = sign({
-                         senderAddress: doiAddress,
+                         senderAddress: xPubOrDoiAddress,
                          recipientAddress,
                          doiAmount,
                          nameId,
@@ -289,6 +323,15 @@
         />
     </div>
 {/if}
+{#if scanOpen}
+    <ScanModal 
+        bind:scanOpen 
+        bind:scanData
+        on:close={() => {
+            if (scanData) getTransactions();
+        }}
+    />
+{/if}
 <style>
     :global(.datatable) {
         margin-top: 3rem;
@@ -298,5 +341,18 @@
     }
     :global(.grid-spacing) {
         margin-bottom: 20px; /* Adjust the space as needed */
+    }
+    :global(.address-input-container) {
+        display: flex;
+        align-items: flex-end;
+        gap: 1rem;
+    }
+
+    :global(.address-input) {
+        flex: 1;
+    }
+
+    :global(.scan-button) {
+        margin-bottom: 20px; /* Matches the margin class */
     }
 </style>

@@ -12,7 +12,7 @@
         Column,
         TextInput,
         ToastNotification,
-        SelectItem, Select, DataTable
+        SelectItem, Select, DataTable, Checkbox
     } from 'carbon-components-svelte';
 
     import { generateMnemonic } from 'bip39';
@@ -42,11 +42,13 @@
 
     let wallets = [];
     let mnemonic = '';
-    let selectedMnemonic = localStorage.getItem('selectedMnemonic') || 0
+    let selectedMnemonic = localStorage.getItem('selectedMnemonic') || 0;
     let password = 'mnemonic';
     let root;
     let xpriv = '';
     let xpub = '';
+    let numberOfAddresses = 20;
+    let pageSize = 20;
 
     let derivationPath = 'm/0/0/0';
 
@@ -58,59 +60,57 @@
     ]
     let selectedDerivationStandard = localStorage.getItem("selectedDerivationStandard") || 0
     let addresses = [];
+    let includeChangeAddresses = false;
 
     function generateAddresses() {
+        addresses = [];
+        const paths = includeChangeAddresses ? [0, 1] : [0]; // 0 for receiving, 1 for change
+        
+        if (selectedDerivationStandard === 'electrum-legacy') {
+            paths.forEach(internal => {
+                if(!mn.validateMnemonic(mnemonic, mn.PREFIXES.standard))
+                    throw new Error("Mnemonic invalid")
 
-        addresses = []
-        /*
-         * Electrum Mnemonic Tools https://www.npmjs.com/package/electrum-mnemonic
-         * Electrum Legacy https://github.com/BlueWallet/BlueWallet/blob/6aa4c25cd1cb91a5f7576243e8d2f2d6a1cbce95/class/wallets/hd-legacy-electrum-seed-p2pkh-wallet.ts
-         */
-        if(selectedDerivationStandard==='electrum-legacy'){
+                const args = { prefix: mn.PREFIXES.standard};
+                if (password) args.password = password;
+                root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
+                xpriv = root.toBase58();
+                xpub = root.neutered().toBase58();
 
-            if(!mn.validateMnemonic(mnemonic, mn.PREFIXES.standard))
-                throw new Error("Mnemonic invalid")
+                const node = bip32.fromBase58(xpub);
 
-            const args = { prefix: mn.PREFIXES.standard};
-            if (password) args.password = password;
-            root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
-            xpriv = root.toBase58();
-            xpub = root.neutered().toBase58();
+                for (let index = 0; index < numberOfAddresses; index++) {
+                    const publicKey = node.derive(internal).derive(index).publicKey
+                    const privateKey = root.derive(internal).derive(index).privateKey
 
-            const node = bip32.fromBase58(xpub);
-            const internal = 0 // or 1 for internal adddresses (change addresses)
+                    const wif = root.derive(internal).derive(index).toWIF()
+                    const address = payments.p2pkh({
+                        pubkey: node.derive(internal).derive(index).publicKey,
+                        network: $network
+                    }).address;
 
-            for (let index = 0; index <= 10; index++) {
-                const publicKey = node.derive(internal).derive(index).publicKey
-                const privateKey = root.derive(internal).derive(index).privateKey
+                    if(index===0){
+                        $currentAddress=address
+                        $currentWif=wif
+                    }
 
-                const wif = root.derive(internal).derive(index).toWIF()
-                const address = payments.p2pkh({
-                    pubkey: node.derive(internal).derive(index).publicKey,
-                    network: $network
-                }).address;
+                    const addr = {
+                        id: `${internal}_${index}`,
+                        index,
+                        path: `m/${internal}/${index}`,
+                        type: internal === 0 ? 'receiving' : 'change',
+                        address: address,
+                        balance: address,
+                        publicKey: publicKey.toString('hex'),
+                        privateKey:privateKey.toString('hex'),
+                        wif }
 
-                if(index===0){
-                    $currentAddress=address
-                    $currentWif=wif
+                    addresses = [...addresses, addr];
                 }
-
-                const addr = {
-                    id: index,
-                    index,
-                    path:`m/${internal}/${index}`,
-                    address: address,
-                    balance: address,
-                    publicKey: publicKey.toString('hex'),
-                    privateKey:privateKey.toString('hex'),
-                    wif }
-
-                addresses = [...addresses, addr];
-            }
+            });
         }
 
-        if(selectedDerivationStandard==='electrum-segwit'){
-
+        if (selectedDerivationStandard === 'electrum-segwit') {
             const derivationPath = "m/0'";
             const PREFIX = mn.PREFIXES.segwit;
             const args = { prefix: PREFIX};
@@ -122,7 +122,7 @@
             const node = bip32.fromBase58(xpub);
             const internal = 0 // or 1 for internal adddresses (change addresses)
 
-            for (let index = 0; index <= 10; index++) {
+            for (let index = 0; index < numberOfAddresses; index++) {
                 const publicKey = node.derive(internal).derive(index).publicKey
                 const privateKey = root.derive(internal).derive(index).privateKey
 
@@ -150,11 +150,11 @@
             }
         }
 
-        if(selectedDerivationStandard==='bip32'){ //legacy bip32
+        if (selectedDerivationStandard === 'bip32') {
             const xpubNode = bip32.fromBase58(xpub);
             const internal = 0 // or 1 for internal addresses (change addresses)
 
-            for (let index = 0; index <= 10; index++) {
+            for (let index = 0; index < numberOfAddresses; index++) {
 
                 const pubkey = xpubNode.derive(0).derive(internal).derive(index).publicKey
                 const privateKey = root.derive(0).derive(internal).derive(index).privateKey
@@ -183,12 +183,11 @@
             }
         }
         console.log("generating address for selectedDerivationStandard",selectedDerivationStandard)
-        if(selectedDerivationStandard==='bip84'){ //legacy bip32
-
+        if (selectedDerivationStandard === 'bip84') {
             const xpubNode = bip32.fromBase58(xpub);
             const internal = 0 // or 1 for internal addresses (change addresses)
 
-            for (let index = 0; index <= 10; index++) {
+            for (let index = 0; index < numberOfAddresses; index++) {
 
                 const pubkey = xpubNode.derive(0).derive(internal).derive(index).publicKey
                 const privateKey = root.derive(0).derive(internal).derive(index).privateKey
@@ -213,14 +212,14 @@
         }
     }
 
-    $: if (password) wallets = wallets //as password changes we need to rerender the wallets in order to decrypt the contents
     $: {
-        if (mnemonic && password!==undefined){
+        if (mnemonic) {
             try {
-                const keys = generateKeys(mnemonic,password,$network)
+                const keys = generateKeys(mnemonic, password, $network)
                 xpriv = keys.xpriv
-                xpub  = keys.xpub
+                xpub = keys.xpub
                 root = keys.root
+                generateAddresses()
             } catch(e){ console.error(e) }
         }
     }
@@ -381,9 +380,32 @@
         </Column>
     </Row>
 </Grid>
+<Grid>
+    <Row>
+        <Column>
+            <TextInput 
+                type="number" 
+                labelText="Number of Addresses" 
+                min="1" 
+                max="100"
+                bind:value={numberOfAddresses}
+            />
+        </Column>
+        <Column>
+            <Checkbox 
+                labelText="Include Change Addresses" 
+                bind:checked={includeChangeAddresses} 
+                on:change={() => generateAddresses()}
+            />
+        </Column>
+    </Row>
+</Grid>
+
 <DataTable
   class="datatable"
-  expandable
+  expandable    
+  pageSize={pageSize}
+  pageSizes={[10, 25, 50, 100, 200]}
   headers={[
             { key: "index", value: "Index"},
             { key: "path", value: "Path" },
@@ -402,12 +424,16 @@
 
 <svelte:fragment slot="cell" let:row let:cell>
     {#if cell.key === "balance"}
-        {#await getBalance(cell.value, _electrumClient, _network)}
-            <p>...waiting</p>
-        {:then number}
-            <p>{number.confirmed}/{number.unconfirmed}</p>
+        {#await getBalance(row.address, _electrumClient, _network)}
+            <span>loading...</span>
+        {:then balance}
+            {#if balance}
+                {balance.confirmed}/{balance.unconfirmed}
+            {:else}
+                0/0
+            {/if}
         {:catch error}
-            <p style="color: red">{error.message}</p>
+            <span style="color: red">error</span>
         {/await}
     {:else}
         {cell.value || ''}
