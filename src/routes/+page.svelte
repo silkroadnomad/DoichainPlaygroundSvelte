@@ -12,7 +12,12 @@
         Column,
         TextInput,
         ToastNotification,
-        SelectItem, Select, DataTable, Checkbox
+        SelectItem, Select, DataTable, Checkbox,
+        Toolbar,
+        ToolbarBatchActions,
+        ToolbarContent,
+        ToolbarSearch,
+        Pagination
     } from 'carbon-components-svelte';
 
     import { generateMnemonic } from 'bip39';
@@ -374,6 +379,12 @@
         unsubscribeEC()
         unsubscribeN()
     })
+
+    let filteredRowIds = [];
+    let selectedRowIds = [];
+    let batchSelection = true;
+    let active = true;
+    let page = 1;
 </script>
 
 <h1>Welcome to Doichain Developer Playground</h1>
@@ -467,45 +478,76 @@
 </Grid>
 
 <DataTable
+  sortable
+  expandable
   class="datatable"
-  expandable    
-  pageSize={pageSize}
-  pageSizes={[10, 25, 50, 100, 200]}
+  bind:batchSelection
+  bind:selectedRowIds
+  shouldFilterRows
+  {pageSize}
+  {page}
+  bind:filteredRowIds
   headers={[
-            { key: "index", value: "Index"},
-            { key: "path", value: "Path" },
-            { key: "address", value: "Address" },
-            { key: "balance", value: "Balance" },
-            // { key: "publicKey", value: "Public Key" },
-            // { key: "privateKey", value: "Private Key" },
-            // { key: "wif", value: "WIF" },
-        ]}
+    { key: "index", value: "Index" },
+    { key: "path", value: "Path" },
+    { key: "address", value: "Address" },
+    { key: "balance", value: "Balance (DOI)" }
+  ]}
   rows={addresses}
 >
+    <svelte:fragment slot="expanded-row" let:row>
+        <pre>{JSON.stringify(row, null, 2)}</pre>
+    </svelte:fragment>
 
-<svelte:fragment slot="expanded-row" let:row>
-    <pre>{JSON.stringify(row, null, 2)}</pre>
-</svelte:fragment>
+    <svelte:fragment slot="cell" let:row let:cell>
+        {#if cell.key === "balance"}
+            {#await getBalance(row.address, _electrumClient, _network)}
+                <span>loading...</span>
+            {:then balance}
+                {#if balance}
+                    <div style="text-align: right;">
+                        {(balance.confirmed / 100000000).toFixed(8)}/{(balance.unconfirmed / 100000000).toFixed(8)}
+                    </div>
+                {:else}
+                    <div style="text-align: right;">0.00000000/0.00000000</div>
+                {/if}
+            {:catch error}
+                <span style="color: red">error</span>
+            {/await}
+        {:else if cell.key === "index"}
+            <div style="text-align: right;">{cell.value}</div>
+        {:else}
+            {cell.value || ''}
+        {/if}
+    </svelte:fragment>
 
-<svelte:fragment slot="cell" let:row let:cell>
-    {#if cell.key === "balance"}
-        {#await getBalance(row.address, _electrumClient, _network)}
-            <span>loading...</span>
-        {:then balance}
-            {#if balance}
-                {balance.confirmed}/{balance.unconfirmed}
-            {:else}
-                0/0
-            {/if}
-        {:catch error}
-            <span style="color: red">error</span>
-        {/await}
-    {:else}
-        {cell.value || ''}
-    {/if}
-</svelte:fragment>
-
+    <Toolbar>
+        <ToolbarBatchActions
+            active={selectedRowIds.length > 0}
+            on:cancel={(e) => {
+                e.preventDefault();
+                selectedRowIds = [];
+                active = false;
+            }}
+        >
+            <!-- Add your batch actions here if needed -->
+        </ToolbarBatchActions>
+        <ToolbarContent>
+            <ToolbarSearch
+                persistent
+                shouldFilterRows
+                bind:filteredRowIds
+            />
+        </ToolbarContent>
+    </Toolbar>
 </DataTable>
+
+<Pagination
+    bind:pageSize
+    bind:page
+    totalItems={filteredRowIds.length}
+    pageSizes={[10, 25, 50, 100, 200]}
+/>
 
 {#if showNotification}
     <div transition:fade>

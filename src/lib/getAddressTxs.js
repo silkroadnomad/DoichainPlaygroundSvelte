@@ -13,60 +13,75 @@ namesCount.subscribe((v) => _namesCount = v);
 // You must wrap a tiny-secp256k1 compatible implementation
 const bip32 = BIP32Factory(ecc);
 
-export function deriveAddress(zpub, derivationPath, network, type) {
+export function deriveAddress(xpubOrZpub, derivationPath, network, type) {
     try {
-        if (!zpub.startsWith('zpub')) {
-            throw new Error('Only ZPUB is supported');
-        }
+        console.log(`\n Deriving address:`);
+        console.log(`├── Input Key: ${xpubOrZpub.slice(0, 20)}...`);
+        console.log(`├── Path: ${derivationPath}`);
+        console.log(`└── Type: ${type}`);
 
-        // Decode ZPUB and convert to Buffer
-        const decodedData = bs58.decode(zpub);
+        const decodedData = bs58.decode(xpubOrZpub);
         const data = Buffer.from(decodedData);
         
-        // Validate decoded data length
         if (data.length !== 82) {
-            throw new Error('Invalid ZPUB length');
+            throw new Error('Invalid extended public key length');
         }
 
-        // Extract and check version bytes
         const versionBytes = data.subarray(0, 4);
         const versionHex = versionBytes.toString('hex');
-        console.log('ZPUB version bytes:', versionHex);
+        console.log(`├── Version bytes: ${versionHex}`);
 
-        // Check ZPUB type
-        if (versionHex === '04b24746') {
-            console.log('Detected Doichain ZPUB');
-        } else if (versionHex === '04b24746') { // Bitcoin mainnet ZPUB
-            console.log('Detected Bitcoin ZPUB');
-        } else {
-            console.log('Unknown ZPUB type:', versionHex);
-            throw new Error('Unsupported ZPUB version');
+        let xpub = xpubOrZpub;
+        
+        // Handle ZPUB conversion to XPUB if needed
+        if (versionHex === '04b24746') { // ZPUB (Doichain/Bitcoin mainnet)
+            console.log(`├── Converting ZPUB to XPUB`);
+            // Convert ZPUB to XPUB by changing version bytes
+            const xpubVersionBytes = Buffer.from([0x04, 0x88, 0xb2, 0x1e]); // mainnet xpub
+            const xpubBuffer = Buffer.concat([
+                xpubVersionBytes,
+                data.subarray(4)
+            ]);
+            xpub = bs58.encode(xpubBuffer);
         }
 
-        // Create version bytes for XPUB (0x0488b21e for mainnet xpub)
-        const xpubVersionBytes = Buffer.from([0x04, 0x88, 0xb2, 0x1e]);
-        
-        // Concatenate version bytes with the rest of the data
-        const xpubBuffer = Buffer.concat([
-            xpubVersionBytes,
-            data.subarray(4)
-        ]);
-        
-        // Encode to XPUB
-        const xpub = bs58.encode(xpubBuffer);
-
-        // Create BIP32 node
+        // Create BIP32 node from XPUB
         const node = bip32.fromBase58(xpub, network);
         
-        // Derive child key
-        const child = node.derivePath(derivationPath);
+        // Parse the derivation path
+        const pathSegments = derivationPath
+            .replace('m/', '')
+            .split('/')
+            .filter(segment => segment !== '');
 
-        return payments.p2wpkh({ 
-            pubkey: child.publicKey, 
-            network 
-        }).address;
+        // Derive each segment individually
+        let child = node;
+        for (const segment of pathSegments) {
+            const index = parseInt(segment.replace("'", ""), 10);
+            if (isNaN(index)) {
+                throw new Error(`Invalid path segment: ${segment}`);
+            }
+            child = child.derive(index);
+        }
+
+        // Generate address based on type
+        if (type === 'p2wpkh' || type === 'segwit') {
+            const address = payments.p2wpkh({ 
+                pubkey: child.publicKey, 
+                network 
+            }).address;
+            console.log(`└── ✅ Generated segwit: ${address}`);
+            return address;
+        } else { // legacy p2pkh
+            const address = payments.p2pkh({ 
+                pubkey: child.publicKey, 
+                network 
+            }).address;
+            console.log(`└── ✅ Generated legacy: ${address}`);
+            return address;
+        }
     } catch (error) {
-        console.error('Error in deriveAddress:', error);
+        console.error(`└── ❌ Error in deriveAddress:`, error);
         throw error;
     }
 }
@@ -86,19 +101,21 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
 
     // Check if xpubOrDoiAddress is a valid Bitcoin address
     const isAddress = isValidBitcoinAddress(xpubOrDoiAddress, _network);
+    let electrumUTXOs = []; // Declare electrumUTXOs at the top level
 
     let index = 0;
     let gapLimit = 20;
     let transactionsFound = true;
     let allTxs = [];
     let ourTxs = [];
+    let derivedAddresses = [];
 
     const derivationPaths = {
-        'electrum-legacy': 'm/0/0',
-        'electrum-segwit': "m/0/0",
-        'bip32': 'm/0/0/0',
-        'bip84': 'm/84/0/0/0',
-        'bip44': 'm/44/0/0/0',
+        'electrum-legacy': 'm',
+        'electrum-segwit': "m/0'",
+        // 'bip32': 'm/0/0/0',
+        // 'bip84': 'm/84/0/0/0',
+        // 'bip44': 'm/44/0/0/0',
     };
 
     const addressTypes = {
@@ -118,10 +135,11 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
         const reversedHash = Buffer.from(hash.reverse()).toString("hex");
 
         try {
-            const electrumUTXOs = await _electrumClient.request('blockchain.scripthash.listunspent', [reversedHash]);
+            electrumUTXOs = await _electrumClient.request('blockchain.scripthash.listunspent', [reversedHash]);
             _historyStore = await _electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
         } catch (error) {
             console.error("Error fetching data from Electrum client", error);
+            electrumUTXOs = []; // Ensure it's an empty array if request fails
         }
 
         if (!Array.isArray(_historyStore)) {
@@ -139,118 +157,183 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
         // Derive addresses from xpub
         for (const [standard, derivationPathBase] of Object.entries(derivationPaths)) {
             const addressType = addressTypes[standard];
-            console.log(`Crawling standard: ${standard}, path: ${derivationPathBase}, type: ${addressType}`);
+            console.log(`\n Scanning standard: ${standard}`);
+            console.log(`├── Base Path: ${derivationPathBase}`);
+            console.log(`└── Address Type: ${addressType}`);
 
             index = 0;
             transactionsFound = true;
 
-            while (transactionsFound || index < gapLimit) {
-                const derivedAddresses = [];
-                for (let i = 0; i < batchSize && (transactionsFound || index < gapLimit); i++, index++) {
+            const MAX_ADDRESSES = 20; // Or whatever reasonable limit you want to set
+
+            while ((transactionsFound || index < gapLimit) && index < MAX_ADDRESSES) {
+                for (let i = 0; i < batchSize && (transactionsFound || index < gapLimit) && index < MAX_ADDRESSES; i++, index++) {
                     const derivationPath = `${derivationPathBase}/${index}`;
-                    const derivedAddress = deriveAddress(xpubOrDoiAddress, derivationPath, _network, addressType);
-                    console.log("derivedAddress", derivedAddress, "derivationPath", derivationPath);
-                    derivedAddresses.push(derivedAddress);
+                    console.log(`\n📍 Deriving address batch ${Math.floor(index/batchSize)}:`);
+                    console.log(`├── Path: ${derivationPath}`);
+                    console.log(`├── Index: ${index}`);
+                    
+                    try {
+                        const derivedAddress = deriveAddress(xpubOrDoiAddress, derivationPath, _network, addressType);
+                        console.log(`└── ✅ Generated: ${derivedAddress}`);
+                        derivedAddresses.push(derivedAddress);
+                    } catch (error) {
+                        console.error(`└── ❌ Error: ${error.message}`);
+                        continue;
+                    }
                 }
 
-                const scripts = derivedAddresses.map(addr => address.toOutputScript(addr, _network));
+                // After batch derivation, log the electrum requests
+                console.log(`\n🔄 Checking transactions for ${derivedAddresses.length} addresses`);
+                
+                const scripts = derivedAddresses.map(addr => {
+                    try {
+                        return address.toOutputScript(addr, _network);
+                    } catch (error) {
+                        console.error(`❌ Script creation failed for ${addr}: ${error.message}`);
+                        return null;
+                    }
+                }).filter(Boolean);
+
                 const hashes = scripts.map(script => {
                     const hash = crypto.sha256(script);
                     return Buffer.from(hash.reverse()).toString("hex");
                 });
 
-                let electrumUTXOs = [];
-                let _historyStore = [];
-
                 try {
-                    // Initialize arrays to collect UTXOs and history from each request
-                    electrumUTXOs = [];
-                    _historyStore = [];
-
-                    for (const hash of hashes) {
-                        // Request UTXOs for each hash
+                    // Initialize arrays to collect UTXOs and history
+                    let batchHistory = [];
+                    
+                    for (const [idx, hash] of hashes.entries()) {
+                        console.log(`\n🔎 Checking address ${derivedAddresses[idx]}`);
                         const utxos = await _electrumClient.request('blockchain.scripthash.listunspent', [hash]);
-                        electrumUTXOs.push(...utxos);
-
-                        // Request history for each hash
+                        electrumUTXOs.push(...utxos); // Accumulate UTXOs for all addresses
                         const history = await _electrumClient.request('blockchain.scripthash.get_history', [hash]);
-                        _historyStore.push(...history);
+                        if (history.length > 0) {
+                            console.log(`└── ✨ Found ${history.length} transactions`);
+                            batchHistory.push(...history);
+                        } else {
+                            console.log(`└── 📭 No transactions found`);
+                        }
+                    }
+
+                    if (batchHistory.length === 0) {
+                        console.log(`\n💤 No transactions in this batch, gap: ${gapLimit - index}`);
+                        transactionsFound = false;
+                    } else {
+                        console.log(`\n🎯 Found ${batchHistory.length} total transactions in this batch`);
+                        transactionsFound = true;
+                        // Add logging here to track transaction processing
+                        console.log(`\n📝 Processing transactions...`);
+                        batchHistory.forEach(tx => {
+                            tx.derivationStandard = standard;
+                            allTxs.push(tx);
+                            console.log(`├── Added tx: ${tx.tx_hash.slice(0, 8)}...`);
+                        });
                     }
                 } catch (error) {
-                    console.error("Error fetching data from Electrum client", error);
-                }
-
-                if (!Array.isArray(_historyStore)) {
-                    console.error("_historyStore is not an array", _historyStore);
-                    return [];
-                }
-
-                if (_historyStore.length === 0) {
-                    transactionsFound = false;
-                } else {
-                    transactionsFound = true;
-                    _historyStore.forEach(tx => {
-                        tx.derivationStandard = standard; // Mark the standard
-                        allTxs.push(tx);
-                    });
+                    console.error(`\n❌ Electrum request failed: ${error.message}`);
                 }
             }
         }
     }
 
-    // Process all transactions found
+    // Process all transactions
+    console.log(`Processing ${allTxs.length} transactions...`);
     for (const tx of allTxs) {
+        console.log(`\nProcessing transaction: ${tx.tx_hash}`);
         let decryptedTx = await _electrumClient.request('blockchain.transaction.get', [tx.tx_hash, 1]);
-        decryptedTx.formattedBlocktime = decryptedTx.blocktime ? moment.unix(decryptedTx.blocktime).format('YYYY-MM-DD HH:mm:ss') : 'mempool';
-        decryptedTx.value = 0;
+        decryptedTx.formattedBlocktime = decryptedTx.blocktime ? 
+            moment.unix(decryptedTx.blocktime).format('YYYY-MM-DD HH:mm:ss') : 'mempool';
         let inputTotal = 0;
         let outputTotal = 0;
+        let involvesDerivedAddress = false;
 
+        // Process inputs
+        console.log(`- Processing ${decryptedTx.vin.length} inputs...`);
         for (const [index, vin] of decryptedTx.vin.entries()) {
             if (!vin.coinbase) {
-                const prevTx = await _electrumClient.request('blockchain.transaction.get', [vin.txid, 1], true);
+                const prevTx = await _electrumClient.request('blockchain.transaction.get', [vin.txid, 1]);
                 const spentOutput = prevTx.vout[vin.vout];
-                if (!spentOutput.scriptPubKey.addresses || spentOutput.scriptPubKey.addresses.includes(_doiAddress)) {
-                    const _tx = { ...decryptedTx, id: `${decryptedTx.txid}_in_${index}`, value: -spentOutput.value, address: spentOutput.scriptPubKey?.addresses, fee: decryptedTx.fee };
+                const inputAddress = spentOutput.scriptPubKey?.addresses?.[0];
+                
+                console.log(`  Checking input address: ${inputAddress}`);
+                console.log(`  Derived addresses to check against:`, derivedAddresses);
+                console.log(`  Is address in derived addresses?`, derivedAddresses.includes(inputAddress));
+                
+                if (derivedAddresses.includes(inputAddress)) {
+                    console.log(`  ✓ Found matching input address: ${inputAddress}`);
+                    console.log(`  Creating transaction with:`);
+                    console.log(`    - ID: ${decryptedTx.txid}_in_${index}`);
+                    console.log(`    - Value: ${-spentOutput.value}`);
+                    involvesDerivedAddress = true;
+                    const _tx = {
+                        ...decryptedTx,
+                        id: `${decryptedTx.txid}_in_${index}`,
+                        value: -spentOutput.value,
+                        address: inputAddress,
+                        type: 'input'
+                    };
+                    console.log(`  Added transaction:`, _tx);
                     ourTxs.push(_tx);
+                } else {
+                    console.log(`  ✗ No match for input address: ${inputAddress}`);
                 }
                 inputTotal += spentOutput.value;
             }
             inputCount.set(_inputCount += 1);
         }
 
+        // Process outputs
+        console.log(`- Processing ${decryptedTx.vout.length} outputs...`);
         for (const [index, vout] of decryptedTx.vout.entries()) {
-            const _tx = { ...decryptedTx, id: `${decryptedTx.txid}_out_${index}`, fee: decryptedTx.fee, value: vout.value, n: vout.n };
-            const asmParts = vout.scriptPubKey.asm.split(" ");
-            if (!['OP_10', 'OP_NAME_DOI', 'OP_2', 'OP_NAME_FIRSTUPDATE', 'OP_3', 'OP_NAME_UPDATE'].includes(asmParts[0])) {
-                _tx.address = vout.scriptPubKey?.addresses ? vout.scriptPubKey?.addresses[0] : _doiAddress;
-            } else {
-                _tx.nameId = vout.scriptPubKey.nameOp.name;
-                _tx.nameValue = vout.scriptPubKey.nameOp.value;
-                _tx.address = vout.scriptPubKey?.addresses[0];
-                namesCount.set(_namesCount += 1);
-            }
-            outputTotal += vout.value;
+            const outputAddress = vout.scriptPubKey?.addresses?.[0];
+            
+            if (derivedAddresses.includes(outputAddress)) {
+                console.log(`  Found matching output address: ${outputAddress}`);
+                involvesDerivedAddress = true;
+                const _tx = {
+                    ...decryptedTx,
+                    id: `${decryptedTx.txid}_out_${index}`,
+                    value: vout.value,
+                    address: outputAddress,
+                    type: 'output',
+                    n: vout.n
+                };
 
-            if (derivedAddresses.includes(_tx.address)) {
-                const isUTXO = electrumUTXOs.some(utxo => utxo.tx_hash === _tx.txid && utxo.tx_pos === _tx.n);
+                // Check if this output is unspent
+                const isUTXO = electrumUTXOs.some(utxo => 
+                    utxo.tx_hash === _tx.txid && utxo.tx_pos === _tx.n
+                );
                 if (isUTXO) {
                     _tx.utxo = true;
                 }
+
+                // Handle name operations
+                const asmParts = vout.scriptPubKey.asm.split(" ");
+                if (['OP_10', 'OP_NAME_DOI', 'OP_2', 'OP_NAME_FIRSTUPDATE', 'OP_3', 'OP_NAME_UPDATE'].includes(asmParts[0])) {
+                    console.log(`  Found name operation: ${vout.scriptPubKey.nameOp.name}`);
+                    _tx.nameId = vout.scriptPubKey.nameOp.name;
+                    _tx.nameValue = vout.scriptPubKey.nameOp.value;
+                    namesCount.set(_namesCount += 1);
+                }
+
                 ourTxs.push(_tx);
                 outputCount.set(_outputCount += 1);
             }
+            outputTotal += vout.value;
         }
 
-        const fee = inputTotal - outputTotal;
-        ourTxs.forEach(__tx => {
-            if (__tx.txid.startsWith(decryptedTx.txid)) {
-                __tx.fee = fee;
-            }
-        });
-
-        ourTxs = ourTxs.sort((a, b) => b.blocktime - a.blocktime);
-        txs.set(ourTxs);
+        if (involvesDerivedAddress) {
+            const fee = inputTotal - outputTotal;
+            console.log(`- Transaction fee: ${fee}`);
+        }
     }
-    return allTxs;
+    console.log('\nTransaction processing complete!',ourTxs.length);
+
+    // Sort transactions by blocktime
+    ourTxs = ourTxs.sort((a, b) => b.blocktime - a.blocktime);
+    txs.set(ourTxs);
+
+    return ourTxs; // Return processed transactions instead of allTxs
 }

@@ -89,7 +89,7 @@
 
     onMount(async () => {
         xPubOrDoiAddress = $currentAddress || localStorage.getItem('xPubOrDoiAddress') || '';
-        if(xPubOrDoiAddress) await getAddressTxs(xPubOrDoiAddress, $history, $electrumClient, $network)
+        // if(xPubOrDoiAddress) await getAddressTxs(xPubOrDoiAddress, $history, $electrumClient, $network)
     });
 
     onDestroy( () => $electrumClient ? $electrumClient.close() : null);
@@ -100,7 +100,7 @@
         $namesCount=0
         $inputCount=0
         $outputCount=0
-        balance = await getBalance(xPubOrDoiAddress, $electrumClient, $network);
+        // balance = await getBalance(xPubOrDoiAddress, $electrumClient, $network);
         await getAddressTxs(xPubOrDoiAddress,$history,$electrumClient,$network);
     }
 </script>
@@ -186,14 +186,13 @@
             { key: "formattedBlocktime", value: "Time"},
             { key: "txid", value: "TxId" },
             { key: "n", value: "n" },
-          //  { key: "address", value: "Address" },
             { key: "nameId", value: "NameId" },
             { key: "nameValue", value: "NameValue" },
             { key: "fee", value: "Fee" },
             { key: "confirmations", value: "Confirmations" },
             { key: "value", value: "Amount (DOI)" }
         ]}
-        rows={$txs}
+        rows={[...(new Map($txs.map(tx => [tx.id, tx])).values())]}
         rowClassName={({row}) => row.utxo?'utxo':''}
     >
 
