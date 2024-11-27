@@ -30,6 +30,7 @@
         currentWif
     } from './store.js';
 
+    import bs58check from 'bs58check';
     import { generateKeys } from '$lib/generateKeys.js'
     import { decryptMnemonic } from '$lib/decryptMnemonic.js';
     import { DB_NAME, openDB, readData, addData, deleteData } from '$lib/indexedDBUtil.js';
@@ -38,6 +39,7 @@
     import * as mn from 'electrum-mnemonic';
     import { onDestroy, onMount } from 'svelte';
     import { getBalance } from '$lib/getBalance.js';
+	import { DOICHAIN } from "$lib/doichain.js";
     const bip32 = BIP32Factory(ecc);
 
     let wallets = [];
@@ -47,6 +49,7 @@
     let root;
     let xpriv = '';
     let xpub = '';
+    let zpub = '';
     let numberOfAddresses = 20;
     let pageSize = 20;
 
@@ -56,8 +59,23 @@
         {id:'electrum-legacy', name:'Electrum-Legacy', path:'m'},
         {id:'electrum-segwit', name:'Electrum-Segwit', path:'m/0'},
         {id:'bip32', name:'BIP32', path:'m/0/0/0'},
+        {id:'bip32-p2wpkh', name:'BIP32-P2WPKH', path:'m/0/0/0'},
         {id:'bip84', name:'BIP84', path:'m/84/0/0/0'}
     ]
+
+    function getZpub(node, network = DOICHAIN) {
+    let data = node.neutered().toBase58();
+    let decoded = bs58check.decode(data);
+    // Version bytes for zpub (mainnet)
+    // Use 0x045f6ef for testnet (vpub)
+    const versionBytes = network.name === DOICHAIN.name ? 
+        Buffer.from('04b24746', 'hex') : // zpub for mainnet
+        Buffer.from('045f6ef7', 'hex');   // vpub for testnet
+    decoded = Buffer.concat([versionBytes, decoded.slice(4)]);
+    
+    return bs58check.encode(decoded);
+    }
+
     let selectedDerivationStandard = localStorage.getItem("selectedDerivationStandard") || 0
     let addresses = [];
     let includeChangeAddresses = false;
@@ -76,7 +94,7 @@
                 root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
                 xpriv = root.toBase58();
                 xpub = root.neutered().toBase58();
-
+                zpub = getZpub(xpub, $network);
                 const node = bip32.fromBase58(xpub);
 
                 for (let index = 0; index < numberOfAddresses; index++) {
@@ -112,103 +130,147 @@
 
         if (selectedDerivationStandard === 'electrum-segwit') {
             const derivationPath = "m/0'";
-            const PREFIX = mn.PREFIXES.segwit;
-            const args = { prefix: PREFIX};
-            if (password) args.password = password;
-            root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
-            xpriv = root.toBase58();
-            xpub = root.derivePath(derivationPath).neutered().toBase58();
-
-            const node = bip32.fromBase58(xpub);
-            const internal = 0 // or 1 for internal adddresses (change addresses)
-
-            for (let index = 0; index < numberOfAddresses; index++) {
-                const publicKey = node.derive(internal).derive(index).publicKey
-                const privateKey = root.derive(internal).derive(index).privateKey
-
-                const wif = root.derive(internal).derive(index).toWIF()
-                const address = payments.p2wpkh({
-                    pubKey: node.derive(internal).derive(index).publicKey,
-                    network: $network
-                }).address;
-
-                if(index===0){
-                    $currentAddress=address
-                    $currentWif=wif
+            paths.forEach(internal => {
+                if(!mn.validateMnemonic(mnemonic, mn.PREFIXES.segwit)) {
+                    throw new Error("Invalid Segwit mnemonic")
                 }
 
-                const addr = {
-                    id: index,
-                    index,
-                    path:`m/${internal}/${index}`,
-                    address: address,
-                    balance: address,
-                    publicKey:publicKey.toString('hex'),
-                    privateKey:privateKey.toString('hex'),
-                    wif}
-                addresses = [...addresses, addr];
-            }
+                const PREFIX = mn.PREFIXES.segwit;
+                const args = { prefix: PREFIX };
+                if (password) args.password = password;
+                root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
+                xpriv = root.toBase58();
+                xpub = root.derivePath(derivationPath).neutered().toBase58();
+                zpub = getZpub(root.derivePath(derivationPath), $network);
+
+                const node = bip32.fromBase58(xpub);
+
+                for (let index = 0; index < numberOfAddresses; index++) {
+                    const publicKey = node.derive(internal).derive(index).publicKey
+                    const privateKey = root.derive(internal).derive(index).privateKey
+
+                    const wif = root.derive(internal).derive(index).toWIF()
+                    const address = payments.p2wpkh({
+                        pubkey: publicKey,
+                        network: $network
+                    }).address;
+
+                    if(index===0){
+                        $currentAddress=address
+                        $currentWif=wif
+                    }
+
+                    const addr = {
+                        id: `${internal}_${index}`,
+                        index,
+                        path: `m/0'/${internal}/${index}`,
+                        address: address,
+                        balance: address,
+                        publicKey:publicKey.toString('hex'),
+                        privateKey:privateKey.toString('hex'),
+                        wif}
+                    addresses = [...addresses, addr];
+                }
+            });
         }
 
         if (selectedDerivationStandard === 'bip32') {
-            const xpubNode = bip32.fromBase58(xpub);
-            const internal = 0 // or 1 for internal addresses (change addresses)
+            paths.forEach(internal => {
+                const xpubNode = bip32.fromBase58(xpub);
+                zpub = getZpub(xpubNode, $network);
 
-            for (let index = 0; index < numberOfAddresses; index++) {
+                for (let index = 0; index < numberOfAddresses; index++) {
+                    const pubkey = xpubNode.derive(0).derive(internal).derive(index).publicKey
+                    const privateKey = root.derive(0).derive(internal).derive(index).privateKey
 
-                const pubkey = xpubNode.derive(0).derive(internal).derive(index).publicKey
-                const privateKey = root.derive(0).derive(internal).derive(index).privateKey
+                    const wif = root.derive(internal).derive(index).toWIF()
+                    const address = payments.p2pkh({
+                        pubkey: pubkey,
+                        network: $network
+                    }).address;
 
-                const wif = root.derive(internal).derive(index).toWIF()
-                const address = payments.p2pkh({
-                    pubkey: pubkey,
-                    network: $network
-                }).address;
+                    if(index===0){
+                        $currentAddress=address
+                        $currentWif=wif
+                    }
 
-                if(index===0){
-                    $currentAddress=address
-                    $currentWif=wif
+                    const addr = {
+                        id: `${internal}_${index}`,
+                        index,
+                        path: `m/0/${internal}/${index}`,
+                        address: address,
+                        balance: address,
+                        publicKey:pubkey.toString('hex'),
+                        privateKey:privateKey.toString('hex'),
+                        wif }
+                    addresses = [...addresses, addr];
                 }
-
-                const addr = {
-                    id: index,
-                    index,
-                    path:`m/0/${internal}/${index}`,
-                    address: address,
-                    balance: address,
-                    publicKey:pubkey.toString('hex'),
-                    privateKey:privateKey.toString('hex'),
-                    wif }
-                addresses = [...addresses, addr];
-            }
+            });
         }
-        console.log("generating address for selectedDerivationStandard",selectedDerivationStandard)
-        if (selectedDerivationStandard === 'bip84') {
-            const xpubNode = bip32.fromBase58(xpub);
-            const internal = 0 // or 1 for internal addresses (change addresses)
 
-            for (let index = 0; index < numberOfAddresses; index++) {
+        if (selectedDerivationStandard === 'bip32-p2wpkh') {
+            paths.forEach(internal => {
+                const xpubNode = bip32.fromBase58(xpub);
+                zpub = getZpub(xpubNode, $network);
+                
+                for (let index = 0; index < numberOfAddresses; index++) {
+                    const path = `m/84'/0'/0'/${internal}/${index}`;
+                    const pubkey = root.derivePath(path).publicKey;
+                    const privateKey = root.derivePath(path).privateKey;
+                    const wif = root.derivePath(path).toWIF();
+                    
+                    const { address } = payments.p2wpkh({
+                        pubkey: pubkey,
+                        network: $network
+                    });
 
-                const pubkey = xpubNode.derive(0).derive(internal).derive(index).publicKey
-                const privateKey = root.derive(0).derive(internal).derive(index).privateKey
-                const wif = root.derive(internal).derive(index).toWIF()
-                const { address } = payments.p2wpkh({ pubkey: pubkey, network: $network })
-                if(index===0){
-                    $currentAddress=address
-                    $currentWif=wif
+                    if (index === 0) {
+                        $currentAddress = address;
+                        $currentWif = wif;
+                    }
+
+                    const addr = {
+                        id: `${internal}_${index}`,
+                        index,
+                        path: path,
+                        address: address,
+                        balance: address,
+                        publicKey: pubkey.toString('hex'),
+                        privateKey: privateKey.toString('hex'),
+                        wif
+                    };
+                    addresses = [...addresses, addr];
                 }
+            });
+        }
 
-                const addr = {
-                    id: index,
-                    index,
-                    path:`m/84/0/${internal}/${index}`,
-                    address: address,
-                    balance: address,
-                    publicKey:pubkey.toString('hex'),
-                    privateKey:privateKey.toString('hex'),
-                    wif }
-                addresses = [...addresses, addr];
-            }
+        if (selectedDerivationStandard === 'bip84') {
+            paths.forEach(internal => {
+                const xpubNode = bip32.fromBase58(xpub);
+                zpub = getZpub(xpubNode, $network);
+
+                for (let index = 0; index < numberOfAddresses; index++) {
+                    const pubkey = xpubNode.derive(0).derive(internal).derive(index).publicKey
+                    const privateKey = root.derive(0).derive(internal).derive(index).privateKey
+                    const wif = root.derive(internal).derive(index).toWIF()
+                    const { address } = payments.p2wpkh({ pubkey: pubkey, network: $network })
+                    if(index===0){
+                        $currentAddress=address
+                        $currentWif=wif
+                    }
+
+                    const addr = {
+                        id: `${internal}_${index}`,
+                        index,
+                        path: `m/84/0/${internal}/${index}`,
+                        address: address,
+                        balance: address,
+                        publicKey:pubkey.toString('hex'),
+                        privateKey:privateKey.toString('hex'),
+                        wif }
+                    addresses = [...addresses, addr];
+                }
+            });
         }
     }
 
@@ -329,11 +391,10 @@
     <Row>
         <Column>&nbsp;</Column>
         <Column>
-            <Select labelText="Select Wallet" bind:selected={ selectedMnemonic } on:change={(e) => {
-                  selectedDerivationStandard = wallets.find((w) => w.id.toString() === e.target.value)?.derivationStandard
-
-            }}>
-                <SelectItem value="0" text="Choose a wallet" />
+            <Select labelText="Select Wallet" bind:selected={ selectedMnemonic } on:change={ 
+            (e) => { selectedDerivationStandard = wallets.find((w) => w.id.toString() === e.target.value)?.derivationStandard}
+            }>
+            <SelectItem value="0" text="Choose a wallet" />
                 {#each wallets as wallet}
                     <SelectItem value={wallet.id.toString()} text={`${decryptMnemonic(wallet.mnemonic,password)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />
                 {/each}
@@ -367,6 +428,10 @@
     <Row>
         <Column><h2>xpub</h2></Column>
         <Column><TextInput labelText="xpub" bind:value={xpub} /></Column>
+    </Row>
+    <Row>
+        <Column><h2>zpub</h2></Column>
+        <Column><TextInput labelText="zpub" bind:value={zpub} /></Column>
     </Row>
     <Row>
         <Column><h2>3. Derivation Standard</h2></Column>

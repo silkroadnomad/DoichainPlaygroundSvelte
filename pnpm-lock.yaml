@@ -74,6 +74,9 @@ importers:
       bs58:
         specifier: ^6.0.0
         version: 6.0.0
+      bs58check:
+        specifier: ^4.0.0
+        version: 4.0.0
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
@@ -2014,6 +2017,9 @@ packages:
 
   bs58check@3.0.1:
     resolution: {integrity: sha512-hjuuJvoWEybo7Hn/0xOrczQKKEKD63WguEjlhLExYs2wUBcebDC1jDNK17eEAD2lYfw82d5ASC1d7K3SWszjaQ==}
+
+  bs58check@4.0.0:
+    resolution: {integrity: sha512-FsGDOnFg9aVI9erdriULkd/JjEWONV/lQE5aYziB5PoBsXRind56lh8doIZIc9X4HoxT5x4bLjMWN1/NB8Zp5g==}
 
   bser@2.1.1:
     resolution: {integrity: sha512-gQxTNE/GAfIIrmHLUE3oJyp5FO6HRBfhjnw4/wMmA63ZGDJnWBmgY/lyQBpnDUkGmAhbSe39tx2d/iTOAfglwQ==}
@@ -7523,6 +7529,11 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.6.1
       bs58: 5.0.0
+
+  bs58check@4.0.0:
+    dependencies:
+      '@noble/hashes': 1.6.1
+      bs58: 6.0.0
 
   bser@2.1.1:
     dependencies:
