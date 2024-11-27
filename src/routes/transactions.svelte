@@ -184,7 +184,7 @@
         bind:filteredRowIds
         headers={[
             { key: "formattedBlocktime", value: "Time"},
-            { key: "txid", value: "TxId" },
+            { key: "address", value: "Address" },
             { key: "n", value: "n" },
             { key: "nameId", value: "NameId" },
             { key: "nameValue", value: "NameValue" },

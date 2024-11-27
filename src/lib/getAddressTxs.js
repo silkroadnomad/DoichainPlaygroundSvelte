@@ -133,7 +133,7 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
         const script = address.toOutputScript(xpubOrDoiAddress, _network);
         const hash = crypto.sha256(script);
         const reversedHash = Buffer.from(hash.reverse()).toString("hex");
-
+        derivedAddresses.push(xpubOrDoiAddress);
         try {
             electrumUTXOs = await _electrumClient.request('blockchain.scripthash.listunspent', [reversedHash]);
             _historyStore = await _electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
