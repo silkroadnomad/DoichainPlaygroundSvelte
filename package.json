@@ -1,6 +1,7 @@
 {
   "name": "doichain-svelte-playground",
   "version": "0.0.3",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "vite dev",
@@ -56,6 +57,7 @@
     "@libp2p/websockets": "^9.0.13",
     "@multiformats/multiaddr": "^12.3.1",
     "@peerpiper/qrcode-scanner-svelte": "^1.0.7",
+    "@sveltejs/adapter-static": "^3.0.6",
     "bbqr": "^1.0.0",
     "binstring": "^0.2.1",
     "bip32": "^4.0.0",
