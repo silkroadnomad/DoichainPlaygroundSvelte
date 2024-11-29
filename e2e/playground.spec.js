@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test.describe('Wallet Generation Tests', () => {
     test('should generate a new mnemonic and test all wallet types', async ({ page }) => {
         // Navigate to the page
-        await page.goto('http://localhost:5173');
+        await page.goto('https://doichain-playground-svelte.vercel.app/');
 
         // Generate a new mnemonic
         await page.click('button:has-text("Generate Mnemonic")');
