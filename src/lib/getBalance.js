@@ -42,12 +42,6 @@ export const getBalance = async (_doiAddress, _electrumClient, _network, derivat
             } catch (error) {
                 console.error(`Error fetching balance for address ${derivedAddress}:`, error.message);
             }
-
-            // Check if there are transactions for this address
-            const history = await _electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
-            transactionsFound = history.length > 0;
-            console.log(`Address ${derivedAddress} has ${history.length} transactions`);
-
             index++;
         }
         console.log(`Finished scanning. Total balance: Confirmed=${totalBalance.confirmed}, Unconfirmed=${totalBalance.unconfirmed}`);

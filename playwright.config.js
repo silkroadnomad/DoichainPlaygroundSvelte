@@ -1,11 +1,34 @@
-/** @type {import('@playwright/test').PlaywrightTestConfig} */
-const config = {
-	webServer: {
-		command: 'npm run build && npm run preview',
-		port: 4173
-	},
-	testDir: 'tests',
-	testMatch: /(.+\.)?(test|spec)\.[jt]s/
-};
+import { defineConfig, devices } from '@playwright/test';
 
-export default config;
+export default defineConfig({
+  testDir: './e2e',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: 'html',
+  use: {
+    trace: 'on-first-retry',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+  ],
+  // Uncomment and configure the web server if needed
+  // webServer: {
+  //   command: 'npm run start',
+  //   url: 'http://127.0.0.1:3000',
+  //   reuseExistingServer: !process.env.CI,
+  // },
+});
+

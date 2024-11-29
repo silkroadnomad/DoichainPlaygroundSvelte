@@ -102,194 +102,83 @@
     function generateAddresses() {
         addresses = [];
         const paths = includeChangeAddresses ? [0, 1] : [0]; // 0 for receiving, 1 for change
-        
-        if (selectedDerivationStandard === 'electrum-legacy') {
-            paths.forEach(internal => {
-                if(!mn.validateMnemonic(mnemonic, mn.PREFIXES.standard))
-                    throw new Error("Mnemonic invalid")
 
-                const args = { prefix: mn.PREFIXES.standard};
-                if (password) args.password = password;
-                root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
-                xpriv = root.toBase58();
-                xpub = root.neutered().toBase58();
-                zpub = getZpub(root, $network);
-                const node = bip32.fromBase58(xpub);
+        const deriveAddresses = (node, internal, derivePathFn, addressFn) => {
+            for (let index = 0; index < numberOfAddresses; index++) {
+                const pubkey = derivePathFn(node, internal, index).publicKey;
+                const privateKey = derivePathFn(root, internal, index).privateKey;
+                const wif = derivePathFn(root, internal, index).toWIF();
+                const address = addressFn(pubkey);
 
-                for (let index = 0; index < numberOfAddresses; index++) {
-                    const publicKey = node.derive(internal).derive(index).publicKey
-                    const privateKey = root.derive(internal).derive(index).privateKey
-
-                    const wif = root.derive(internal).derive(index).toWIF()
-                    const address = payments.p2pkh({
-                        pubkey: node.derive(internal).derive(index).publicKey,
-                        network: $network
-                    }).address;
-
-                    if(index===0){
-                        $currentAddress=address
-                        $currentWif=wif
-                    }
-
-                    const addr = {
-                        id: `${internal}_${index}`,
-                        index,
-                        path: `m/${internal}/${index}`,
-                        type: internal === 0 ? 'receiving' : 'change',
-                        address: address,
-                        balance: address,
-                        publicKey: publicKey.toString('hex'),
-                        privateKey:privateKey.toString('hex'),
-                        wif }
-
-                    addresses = [...addresses, addr];
+                if (index === 0) {
+                    $currentAddress = address;
+                    $currentWif = wif;
                 }
-            });
+
+                const addr = {
+                    id: `${internal}_${index}`,
+                    index,
+                    path: `m/${internal}/${index}`,
+                    address: address,
+                    balance: address,
+                    publicKey: pubkey.toString('hex'),
+                    privateKey: privateKey.toString('hex'),
+                    wif
+                };
+                addresses = [...addresses, addr];
+            }
+        };
+
+        const derivePath = (node, internal, index) => node.derive(internal).derive(index);
+        const derivePathBip32P2wpkh = (node, internal, index) => node.derivePath(`m/84'/0'/0'/${internal}/${index}`);
+
+        const addressP2pkh = (pubkey) => payments.p2pkh({ pubkey, network: $network }).address;
+        const addressP2wpkh = (pubkey) => payments.p2wpkh({ pubkey, network: $network }).address;
+
+        const mnemonicValidation = (prefix) => {
+            if (!mn.validateMnemonic(mnemonic, prefix)) throw new Error("Invalid mnemonic");
+        };
+
+        if (selectedDerivationStandard === 'electrum-legacy') {
+            mnemonicValidation(mn.PREFIXES.standard);
+            const args = { prefix: mn.PREFIXES.standard };
+            if (password) args.password = password;
+            root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
+            xpriv = root.toBase58();
+            xpub = root.neutered().toBase58();
+            zpub = getZpub(root, $network);
+            const node = bip32.fromBase58(xpub);
+            paths.forEach(internal => deriveAddresses(node, internal, derivePath, addressP2pkh));
         }
 
         if (selectedDerivationStandard === 'electrum-segwit') {
-            const derivationPath = "m/0'";
-            paths.forEach(internal => {
-                if(!mn.validateMnemonic(mnemonic, mn.PREFIXES.segwit)) {
-                    throw new Error("Invalid Segwit mnemonic")
-                }
-
-                const PREFIX = mn.PREFIXES.segwit;
-                const args = { prefix: PREFIX };
-                if (password) args.password = password;
-                root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
-                xpriv = root.toBase58();
-                xpub = root.derivePath(derivationPath).neutered().toBase58();
-                zpub = getZpub(root.derivePath(derivationPath), $network);
-
-                const node = bip32.fromBase58(xpub);
-
-                for (let index = 0; index < numberOfAddresses; index++) {
-                    const publicKey = node.derive(internal).derive(index).publicKey
-                    const privateKey = root.derive(internal).derive(index).privateKey
-
-                    const wif = root.derive(internal).derive(index).toWIF()
-                    const address = payments.p2wpkh({
-                        pubkey: publicKey,
-                        network: $network
-                    }).address;
-
-                    if(index===0){
-                        $currentAddress=address
-                        $currentWif=wif
-                    }
-
-                    const addr = {
-                        id: `${internal}_${index}`,
-                        index,
-                        path: `m/0'/${internal}/${index}`,
-                        address: address,
-                        balance: address,
-                        publicKey:publicKey.toString('hex'),
-                        privateKey:privateKey.toString('hex'),
-                        wif}
-                    addresses = [...addresses, addr];
-                }
-            });
+            mnemonicValidation(mn.PREFIXES.segwit);
+            const args = { prefix: mn.PREFIXES.segwit };
+            if (password) args.password = password;
+            root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
+            xpriv = root.toBase58();
+            xpub = root.derivePath("m/0'").neutered().toBase58();
+            zpub = getZpub(root.derivePath("m/0'"), $network);
+            const node = bip32.fromBase58(xpub);
+            paths.forEach(internal => deriveAddresses(node, internal, derivePath, addressP2wpkh));
         }
 
         if (selectedDerivationStandard === 'bip32') {
-            paths.forEach(internal => {
-                const xpubNode = bip32.fromBase58(xpub);
-                zpub = getZpub(xpubNode, $network);
-
-                for (let index = 0; index < numberOfAddresses; index++) {
-                    const pubkey = xpubNode.derive(0).derive(internal).derive(index).publicKey
-                    const privateKey = root.derive(0).derive(internal).derive(index).privateKey
-
-                    const wif = root.derive(internal).derive(index).toWIF()
-                    const address = payments.p2pkh({
-                        pubkey: pubkey,
-                        network: $network
-                    }).address;
-
-                    if(index===0){
-                        $currentAddress=address
-                        $currentWif=wif
-                    }
-
-                    const addr = {
-                        id: `${internal}_${index}`,
-                        index,
-                        path: `m/0/${internal}/${index}`,
-                        address: address,
-                        balance: address,
-                        publicKey:pubkey.toString('hex'),
-                        privateKey:privateKey.toString('hex'),
-                        wif }
-                    addresses = [...addresses, addr];
-                }
-            });
+            const xpubNode = bip32.fromBase58(xpub);
+            zpub = getZpub(xpubNode, $network);
+            paths.forEach(internal => deriveAddresses(xpubNode, internal, derivePath, addressP2pkh));
         }
 
         if (selectedDerivationStandard === 'bip32-p2wpkh') {
-            paths.forEach(internal => {
-                const xpubNode = bip32.fromBase58(xpub);
-                zpub = getZpub(xpubNode, $network);
-                
-                for (let index = 0; index < numberOfAddresses; index++) {
-                    const path = `m/84'/0'/0'/${internal}/${index}`;
-                    const pubkey = root.derivePath(path).publicKey;
-                    const privateKey = root.derivePath(path).privateKey;
-                    const wif = root.derivePath(path).toWIF();
-                    
-                    const { address } = payments.p2wpkh({
-                        pubkey: pubkey,
-                        network: $network
-                    });
-
-                    if (index === 0) {
-                        $currentAddress = address;
-                        $currentWif = wif;
-                    }
-
-                    const addr = {
-                        id: `${internal}_${index}`,
-                        index,
-                        path: path,
-                        address: address,
-                        balance: address,
-                        publicKey: pubkey.toString('hex'),
-                        privateKey: privateKey.toString('hex'),
-                        wif
-                    };
-                    addresses = [...addresses, addr];
-                }
-            });
+            const xpubNode = bip32.fromBase58(xpub);
+            zpub = getZpub(xpubNode, $network);
+            paths.forEach(internal => deriveAddresses(root, internal, derivePathBip32P2wpkh, addressP2wpkh));
         }
 
         if (selectedDerivationStandard === 'bip84') {
-            paths.forEach(internal => {
-                const xpubNode = bip32.fromBase58(xpub);
-                zpub = getZpub(xpubNode, $network);
-
-                for (let index = 0; index < numberOfAddresses; index++) {
-                    const pubkey = xpubNode.derive(0).derive(internal).derive(index).publicKey
-                    const privateKey = root.derive(0).derive(internal).derive(index).privateKey
-                    const wif = root.derive(internal).derive(index).toWIF()
-                    const { address } = payments.p2wpkh({ pubkey: pubkey, network: $network })
-                    if(index===0){
-                        $currentAddress=address
-                        $currentWif=wif
-                    }
-
-                    const addr = {
-                        id: `${internal}_${index}`,
-                        index,
-                        path: `m/84/0/${internal}/${index}`,
-                        address: address,
-                        balance: address,
-                        publicKey:pubkey.toString('hex'),
-                        privateKey:privateKey.toString('hex'),
-                        wif }
-                    addresses = [...addresses, addr];
-                }
-            });
+            const xpubNode = bip32.fromBase58(xpub);
+            zpub = getZpub(xpubNode, $network);
+            paths.forEach(internal => deriveAddresses(xpubNode, internal, derivePath, addressP2wpkh));
         }
     }
 
@@ -399,6 +288,23 @@
     let batchSelection = true;
     let active = true;
     let page = 1;
+
+    let nextUnusedAddress = '';
+    let nextUnusedChangeAddress = '';
+
+    // Function to determine the next unused address
+    function findNextUnusedAddresses() {
+        // Logic to determine the next unused address
+        // This is a placeholder logic. You need to replace it with actual logic
+        // that checks against known transactions or UTXOs.
+        nextUnusedAddress = addresses.find(addr => !addr.used)?.address || 'No unused address found';
+        nextUnusedChangeAddress = addresses.find(addr => addr.type === 'change' && !addr.used)?.address || 'No unused change address found';
+    }
+
+    // Call this function whenever addresses are generated or updated
+    $: if (addresses.length) {
+        findNextUnusedAddresses();
+    }
 </script>
 
 <h1>Welcome to Doichain Developer Playground</h1>
@@ -457,6 +363,14 @@
     <Row>
         <Column><h2>zpub</h2></Column>
         <Column><TextInput labelText="zpub" bind:value={zpub} /></Column>
+    </Row>
+    <Row>
+        <Column><h2>Next Unused Address</h2></Column>
+        <Column><TextInput labelText="Next Unused Address" bind:value={nextUnusedAddress} readonly /></Column>
+    </Row>
+    <Row>
+        <Column><h2>Next Unused Change Address</h2></Column>
+        <Column><TextInput labelText="Next Unused Change Address" bind:value={nextUnusedChangeAddress} readonly /></Column>
     </Row>
     <Row>
         <Column><h2>3. Derivation Standard</h2></Column>
