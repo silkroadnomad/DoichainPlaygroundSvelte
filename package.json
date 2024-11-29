@@ -1,6 +1,6 @@
 {
   "name": "doichain-svelte-playground",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "license": "MIT",
   "private": true,
   "scripts": {
