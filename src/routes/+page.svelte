@@ -309,7 +309,9 @@
 
 <h1>Welcome to Doichain Developer Playground</h1>
 <h2>Key and Address Generation</h2>
-
+<svelte:head>
+	<title>{title} {__APP_VERSION__}</title>
+</svelte:head>
 <Grid>
     <Row>
         <Column><h2>1. Generate mnemonic for a new wallet</h2></Column>
