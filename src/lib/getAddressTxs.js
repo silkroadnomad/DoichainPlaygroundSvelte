@@ -45,8 +45,23 @@ export function deriveAddress(xpubOrZpub, derivationPath, network, type) {
             xpub = bs58.encode(xpubBuffer);
         }
 
-        // Create BIP32 node from XPUB
-        const node = bip32.fromBase58(xpub, network);
+        let node;
+        if (versionHex === '04b24746') { // ZPUB case
+            console.log(`├── Using native segwit network configuration`);
+            // Use appropriate network configuration for native segwit
+            const segwitNetwork = {
+                ...network,
+                bip32: {
+                    public: 0x04b24746,  // ZPUB version bytes
+                    private: 0x04b2430c  // ZPRV version bytes
+                }
+            };
+            node = bip32.fromBase58(xpubOrZpub, segwitNetwork);
+        } else {
+            // Regular XPUB case
+            console.log(`├── Using regular network configuration`);
+            node = bip32.fromBase58(xpub, network);
+        }
         
         // Parse the derivation path
         const pathSegments = derivationPath

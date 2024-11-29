@@ -69,16 +69,30 @@
     ]
 
     function getZpub(node, network = DOICHAIN) {
-    let data = node.neutered().toBase58();
-    let decoded = bs58check.decode(data);
-    // Version bytes for zpub (mainnet)
-    // Use 0x045f6ef for testnet (vpub)
-    const versionBytes = network.name === DOICHAIN.name ? 
-        Buffer.from('04b24746', 'hex') : // zpub for mainnet
-        Buffer.from('045f6ef7', 'hex');   // vpub for testnet
-    decoded = Buffer.concat([versionBytes, decoded.slice(4)]);
-    
-    return bs58check.encode(decoded);
+        
+        let data = '';
+
+        try {
+            data = node.neutered().toBase58();
+            console.log("Neutered node data:", data);
+        } catch (error) {
+            console.error("Error neutering node:", error);
+            try {
+                data = node.toBase58(); // Attempt without neutering
+                console.log("Non-neutered node data:", data);
+            } catch (innerError) {
+                console.error("Error with non-neutered node:", innerError);
+            }
+        }
+        let decoded = bs58check.decode(data);
+        // Version bytes for zpub (mainnet)
+        // Use 0x045f6ef for testnet (vpub)
+        const versionBytes = network.name === DOICHAIN.name ? 
+            Buffer.from('04b24746', 'hex') : // zpub for mainnet
+            Buffer.from('045f6ef7', 'hex');   // vpub for testnet
+        decoded = Buffer.concat([versionBytes, decoded.slice(4)]);
+        
+        return bs58check.encode(decoded);
     }
 
     let selectedDerivationStandard = localStorage.getItem("selectedDerivationStandard") || 0
@@ -99,7 +113,7 @@
                 root = bip32.fromSeed(mn.mnemonicToSeedSync(mnemonic, args));
                 xpriv = root.toBase58();
                 xpub = root.neutered().toBase58();
-                zpub = getZpub(xpub, $network);
+                zpub = getZpub(root, $network);
                 const node = bip32.fromBase58(xpub);
 
                 for (let index = 0; index < numberOfAddresses; index++) {
