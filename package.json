@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "ipfs-publish": "npm version patch && npm run build && ./ipfs-publish.sh",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
@@ -72,6 +73,7 @@
     "satoshi-bitcoin": "^1.0.5",
     "svelte-qrcode": "^1.0.0",
     "tiny-secp256k1": "^2.2.3",
+    "version": "^0.1.2",
     "websocket": "^1.0.34",
     "ws-electrumx-client": "^1.0.5"
   }
