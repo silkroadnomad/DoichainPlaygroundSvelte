@@ -46,7 +46,7 @@
     import { getBalance } from '$lib/getBalance.js';
 	import { DOICHAIN } from "$lib/doichain.js";
     const bip32 = BIP32Factory(ecc);
-    let title = "DDP "
+    let title = "DPS"
     let wallets = [];
     let mnemonic = '';
     let selectedMnemonic = localStorage.getItem('selectedMnemonic') || 0;
