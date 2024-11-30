@@ -2,8 +2,6 @@
     // Svelte imports
     import { afterUpdate, onDestroy, onMount } from 'svelte';
     import { fade } from "svelte/transition";
-    
-    // Carbon components imports (alphabetically ordered)
     import {
         Button,
         Column,
@@ -185,6 +183,7 @@
         headers={[
             { key: "formattedBlocktime", value: "Time"},
             { key: "address", value: "Address" },
+            { key: "derivationPath", value: "Derivation Path" },
             { key: "n", value: "n" },
             { key: "nameId", value: "NameId" },
             { key: "nameValue", value: "NameValue" },
@@ -209,6 +208,8 @@
             <div style="text-align: right;">{cell.value?.toFixed(8) || '0' }</div>
         {:else if cell.key === "n"}
             <div style="text-align: right;">{Number(cell.value || 0)}</div>
+        {:else if cell.key === "derivationPath"}
+            <div>{cell.value || 'N/A'}</div>
         {:else}
             {cell.value || ''}
         {/if}
