@@ -2,7 +2,7 @@ import { address, crypto, payments, networks } from 'bitcoinjs-lib';
 import * as ecc from 'tiny-secp256k1';
 import BIP32Factory from 'bip32';
 import moment from 'moment';
-import { txs, inputCount, outputCount, namesCount } from '../routes/store.js';
+import { txs, inputCount, outputCount, namesCount, logs } from '../routes/store.js';
 import bs58 from 'bs58';
 
 let _inputCount, _outputCount, _namesCount = 0;
@@ -14,13 +14,33 @@ namesCount.subscribe((v) => _namesCount = v);
 const bip32 = BIP32Factory(ecc);
 
 let addressDerivationPaths = new Map(); // Maps addresses to their derivation paths
+let addressBalances = new Map(); // Maps addresses to their balances
+
+// Add this logging utility function at the top level
+function log(message, type = 'info') {
+    const timestamp = new Date().toISOString();
+    const logEntry = {
+        timestamp,
+        message,
+        type // 'info', 'error', 'success'
+    };
+    
+    logs.update(currentLogs => {
+        const newLogs = [logEntry, ...currentLogs];
+        // Optionally limit the number of logs kept
+        return newLogs.slice(0, 1000); // Keep last 1000 logs
+    });
+    
+    // Still keep console.log for debugging
+    console.log(message);
+}
 
 export function deriveAddress(xpubOrZpub, derivationPath, network, type) {
     try {
-        console.log(`\n Deriving address:`);
-        console.log(`├── Input Key: ${xpubOrZpub.slice(0, 20)}...`);
-        console.log(`├── Path: ${derivationPath}`);
-        console.log(`└── Type: ${type}`);
+        log(`\n Deriving address:`);
+        log(`├── Input Key: ${xpubOrZpub.slice(0, 20)}...`);
+        log(`├── Path: ${derivationPath}`);
+        log(`└── Type: ${type}`);
 
         const decodedData = bs58.decode(xpubOrZpub);
         const data = Buffer.from(decodedData);
@@ -31,13 +51,13 @@ export function deriveAddress(xpubOrZpub, derivationPath, network, type) {
 
         const versionBytes = data.subarray(0, 4);
         const versionHex = versionBytes.toString('hex');
-        console.log(`├── Version bytes: ${versionHex}`);
+        log(`├── Version bytes: ${versionHex}`);
 
         let xpub = xpubOrZpub;
         
         // Handle ZPUB conversion to XPUB if needed
         if (versionHex === '04b24746') { // ZPUB (Doichain/Bitcoin mainnet)
-            console.log(`├── Converting ZPUB to XPUB`);
+            log(`├── Converting ZPUB to XPUB`);
             // Convert ZPUB to XPUB by changing version bytes
             const xpubVersionBytes = Buffer.from([0x04, 0x88, 0xb2, 0x1e]); // mainnet xpub
             const xpubBuffer = Buffer.concat([
@@ -49,7 +69,7 @@ export function deriveAddress(xpubOrZpub, derivationPath, network, type) {
 
         let node;
         if (versionHex === '04b24746') { // ZPUB case
-            console.log(`├── Using native segwit network configuration`);
+            log(`├── Using native segwit network configuration`);
             // Use appropriate network configuration for native segwit
             const segwitNetwork = {
                 ...network,
@@ -61,7 +81,7 @@ export function deriveAddress(xpubOrZpub, derivationPath, network, type) {
             node = bip32.fromBase58(xpubOrZpub, segwitNetwork);
         } else {
             // Regular XPUB case
-            console.log(`├── Using regular network configuration`);
+            log(`├── Using regular network configuration`);
             node = bip32.fromBase58(xpub, network);
         }
         
@@ -87,18 +107,18 @@ export function deriveAddress(xpubOrZpub, derivationPath, network, type) {
                 pubkey: child.publicKey, 
                 network 
             }).address;
-            console.log(`└── ✅ Generated segwit: ${address}`);
+            log(`└── ✅ Generated segwit: ${address}`);
             return address;
         } else { // legacy p2pkh
             const address = payments.p2pkh({ 
                 pubkey: child.publicKey, 
                 network 
             }).address;
-            console.log(`└── ✅ Generated legacy: ${address}`);
+            log(`└── ✅ Generated legacy: ${address}`);
             return address;
         }
     } catch (error) {
-        console.error(`└── ❌ Error in deriveAddress:`, error);
+        log(`└── ❌ Error in deriveAddress: ${error}`, 'error');
         throw error;
     }
 }
@@ -114,7 +134,11 @@ export function isValidBitcoinAddress(addressStr, network) {
 
 
 export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumClient, _network) => {
-    console.log("now getting transactions of ", xpubOrDoiAddress);
+    // Reset the txs store at the start
+    txs.set([]);
+    let ourTxs = [];
+
+    log(`Now getting transactions of ${xpubOrDoiAddress}`);
 
     // Check if xpubOrDoiAddress is a valid Bitcoin address
     const isAddress = isValidBitcoinAddress(xpubOrDoiAddress, _network);
@@ -124,7 +148,6 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
     let gapLimit = 20;
     let transactionsFound = true;
     let allTxs = [];
-    let ourTxs = [];
     let derivedAddresses = [];
 
 
@@ -155,13 +178,18 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
         try {
             electrumUTXOs = await _electrumClient.request('blockchain.scripthash.listunspent', [reversedHash]);
             _historyStore = await _electrumClient.request('blockchain.scripthash.get_history', [reversedHash]);
+            const balance = await _electrumClient.request('blockchain.scripthash.get_balance', [reversedHash]);
+            addressBalances.set(xpubOrDoiAddress, {
+                confirmed: balance.confirmed,
+                unconfirmed: balance.unconfirmed
+            });
         } catch (error) {
-            console.error("Error fetching data from Electrum client", error);
+            log("Error fetching data from Electrum client", error);
             electrumUTXOs = []; // Ensure it's an empty array if request fails
         }
 
         if (!Array.isArray(_historyStore)) {
-            console.error("_historyStore is not an array", _historyStore);
+            log("_historyStore is not an array", _historyStore);
             return [];
         }
 
@@ -175,11 +203,11 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
         // Derive addresses from xpub
         for (const [standard, derivationPathBases] of Object.entries(derivationPaths)) {
             const addressType = addressTypes[standard];
-            console.log(`\n Scanning standard: ${standard}`);
-            console.log(`└── Address Type: ${addressType}`);
+            log(`\n Scanning standard: ${standard}`);
+            log(`└── Address Type: ${addressType}`);
 
             for (const derivationPathBase of derivationPathBases) {
-                console.log(`├── Base Path: ${derivationPathBase}`);
+                log(`├── Base Path: ${derivationPathBase}`);
                 
                 index = 0;
                 transactionsFound = true;
@@ -189,13 +217,13 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
                 while ((transactionsFound || index < gapLimit) && index < MAX_ADDRESSES) {
                     for (let i = 0; i < batchSize && (transactionsFound || index < gapLimit) && index < MAX_ADDRESSES; i++, index++) {
                         const derivationPath = `${derivationPathBase}/${index}`;
-                        console.log(`\n📍 Deriving address batch ${Math.floor(index/batchSize)}:`);
-                        console.log(`├── Path: ${derivationPath}`);
-                        console.log(`├── Index: ${index}`);
+                        log(`\n📍 Deriving address batch ${Math.floor(index/batchSize)}:`);
+                        log(`├── Path: ${derivationPath}`);
+                        log(`├── Index: ${index}`);
                         
                         try {
                             const derivedAddress = deriveAddress(xpubOrDoiAddress, derivationPath, _network, addressType);
-                            console.log(`└── ✅ Generated: ${derivedAddress}`);
+                            log(`└── ✅ Generated: ${derivedAddress}`);
                             derivedAddresses.push(derivedAddress);
                             addressDerivationPaths.set(derivedAddress, {
                                 path: derivationPath,
@@ -203,19 +231,19 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
                                 type: addressType
                             });
                         } catch (error) {
-                            console.error(`└── ❌ Error: ${error.message}`);
+                            log(`└── ❌ Error: ${error.message}`);
                             continue;
                         }
                     }
 
                     // After batch derivation, log the electrum requests
-                    console.log(`\n🔄 Checking transactions for ${derivedAddresses.length} addresses`);
+                    log(`\n🔄 Checking transactions for ${derivedAddresses.length} addresses`);
                     
                     const scripts = derivedAddresses.map(addr => {
                         try {
                             return address.toOutputScript(addr, _network);
                         } catch (error) {
-                            console.error(`❌ Script creation failed for ${addr}: ${error.message}`);
+                            log(`❌ Script creation failed for ${addr}: ${error.message}`);
                             return null;
                         }
                     }).filter(Boolean);
@@ -230,34 +258,44 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
                         let batchHistory = [];
                         
                         for (const [idx, hash] of hashes.entries()) {
-                            console.log(`\n🔎 Checking address ${derivedAddresses[idx]}`);
+                            const currentAddress = derivedAddresses[idx];
+                            log(`\n🔎 Checking address ${currentAddress}`);
+                            
+                            // Get balance for this address
+                            const balance = await _electrumClient.request('blockchain.scripthash.get_balance', [hash]);
+                            addressBalances.set(currentAddress, {
+                                confirmed: balance.confirmed,
+                                unconfirmed: balance.unconfirmed
+                            });
+                            log(`└── 💰 Balance: ${balance.confirmed/100000000} BTC (confirmed)`);
+
                             const utxos = await _electrumClient.request('blockchain.scripthash.listunspent', [hash]);
                             electrumUTXOs.push(...utxos); // Accumulate UTXOs for all addresses
                             const history = await _electrumClient.request('blockchain.scripthash.get_history', [hash]);
                             if (history.length > 0) {
-                                console.log(`└── ✨ Found ${history.length} transactions`);
+                                log(`└── ✨ Found ${history.length} transactions`);
                                 batchHistory.push(...history);
                             } else {
-                                console.log(`└── 📭 No transactions found`);
+                                log(`└── 📭 No transactions found`);
                             }
                         }
 
                         if (batchHistory.length === 0) {
-                            console.log(`\n💤 No transactions in this batch, gap: ${gapLimit - index}`);
+                            log(`\n💤 No transactions in this batch, gap: ${gapLimit - index}`);
                             transactionsFound = false;
                         } else {
-                            console.log(`\n🎯 Found ${batchHistory.length} total transactions in this batch`);
+                            log(`\n🎯 Found ${batchHistory.length} total transactions in this batch`, 'success');
                             transactionsFound = true;
                             // Add logging here to track transaction processing
-                            console.log(`\n📝 Processing transactions...`);
+                            log(`\n📝 Processing transactions...`);
                             batchHistory.forEach(tx => {
                                 tx.derivationStandard = standard;
                                 allTxs.push(tx);
-                                console.log(`├── Added tx: ${tx.tx_hash.slice(0, 8)}...`);
+                                log(`├── Added tx: ${tx.tx_hash.slice(0, 8)}...`);
                             });
                         }
                     } catch (error) {
-                        console.error(`\n❌ Electrum request failed: ${error.message}`);
+                        log(`\n❌ Electrum request failed: ${error.message}`);
                     }
                 }
             }
@@ -265,9 +303,9 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
     }
 
     // Process all transactions
-    console.log(`Processing ${allTxs.length} transactions...`);
+    log(`Processing ${allTxs.length} transactions...`);
     for (const tx of allTxs) {
-        console.log(`\nProcessing transaction: ${tx.tx_hash}`);
+        log(`\nProcessing transaction: ${tx.tx_hash}`);
         let decryptedTx = await _electrumClient.request('blockchain.transaction.get', [tx.tx_hash, 1]);
         decryptedTx.formattedBlocktime = decryptedTx.blocktime ? 
             moment.unix(decryptedTx.blocktime).format('YYYY-MM-DD HH:mm:ss') : 'mempool';
@@ -276,22 +314,22 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
         let involvesDerivedAddress = false;
 
         // Process inputs
-        console.log(`- Processing ${decryptedTx.vin.length} inputs...`);
+        log(`- Processing ${decryptedTx.vin.length} inputs...`);
         for (const [index, vin] of decryptedTx.vin.entries()) {
             if (!vin.coinbase) {
                 const prevTx = await _electrumClient.request('blockchain.transaction.get', [vin.txid, 1]);
                 const spentOutput = prevTx.vout[vin.vout];
                 const inputAddress = spentOutput.scriptPubKey?.addresses?.[0];
                 
-                console.log(`  Checking input address: ${inputAddress}`);
-                console.log(`  Derived addresses to check against:`, derivedAddresses);
-                console.log(`  Is address in derived addresses?`, derivedAddresses.includes(inputAddress));
+                log(`  Checking input address: ${inputAddress}`);
+                log(`  Derived addresses to check against:`, derivedAddresses);
+                log(`  Is address in derived addresses?`, derivedAddresses.includes(inputAddress));
                 
                 if (derivedAddresses.includes(inputAddress)) {
-                    console.log(`  ✓ Found matching input address: ${inputAddress}`);
-                    console.log(`  Creating transaction with:`);
-                    console.log(`    - ID: ${decryptedTx.txid}_in_${index}`);
-                    console.log(`    - Value: ${-spentOutput.value}`);
+                    log(`  ✓ Found matching input address: ${inputAddress}`);
+                    log(`  Creating transaction with:`);
+                    log(`    - ID: ${decryptedTx.txid}_in_${index}`);
+                    log(`    - Value: ${-spentOutput.value}`);
                     involvesDerivedAddress = true;
                     const _tx = {
                         ...decryptedTx,
@@ -303,10 +341,10 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
                         derivationStandard: addressDerivationPaths.get(inputAddress)?.standard || 'unknown',
                         addressType: addressDerivationPaths.get(inputAddress)?.type || 'unknown'
                     };
-                    console.log(`  Added transaction:`, _tx);
+                    log(`  Added transaction:`, _tx);
                     ourTxs.push(_tx);
                 } else {
-                    console.log(`  ✗ No match for input address: ${inputAddress}`);
+                    log(`  ✗ No match for input address: ${inputAddress}`);
                 }
                 inputTotal += spentOutput.value;
             }
@@ -314,12 +352,12 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
         }
 
         // Process outputs
-        console.log(`- Processing ${decryptedTx.vout.length} outputs...`);
+        log(`- Processing ${decryptedTx.vout.length} outputs...`);
         for (const [index, vout] of decryptedTx.vout.entries()) {
             const outputAddress = vout.scriptPubKey?.addresses?.[0];
             
             if (derivedAddresses.includes(outputAddress)) {
-                console.log(`  Found matching output address: ${outputAddress}`);
+                log(`  Found matching output address: ${outputAddress}`);
                 involvesDerivedAddress = true;
                 const _tx = {
                     ...decryptedTx,
@@ -344,7 +382,7 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
                 // Handle name operations
                 const asmParts = vout.scriptPubKey.asm.split(" ");
                 if (['OP_10', 'OP_NAME_DOI', 'OP_2', 'OP_NAME_FIRSTUPDATE', 'OP_3', 'OP_NAME_UPDATE'].includes(asmParts[0])) {
-                    console.log(`  Found name operation: ${vout.scriptPubKey.nameOp.name}`);
+                    log(`  Found name operation: ${vout.scriptPubKey.nameOp.name}`);
                     _tx.nameId = vout.scriptPubKey.nameOp.name;
                     _tx.nameValue = vout.scriptPubKey.nameOp.value;
                     namesCount.set(_namesCount += 1);
@@ -358,14 +396,40 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
 
         if (involvesDerivedAddress) {
             const fee = inputTotal - outputTotal;
-            console.log(`- Transaction fee: ${fee}`);
+            log(`- Transaction fee: ${fee}`);
+            
+            // Sort and update the store with each new batch of transactions
+            ourTxs = ourTxs.sort((a, b) => b.blocktime - a.blocktime);
+            txs.set(ourTxs); // Update the store incrementally
         }
     }
-    console.log('\nTransaction processing complete!',ourTxs.length);
+    log('\nTransaction processing complete!',ourTxs.length);
 
-    // Sort transactions by blocktime
+    // Final sort and update (though might not be necessary since we're updating incrementally)
     ourTxs = ourTxs.sort((a, b) => b.blocktime - a.blocktime);
     txs.set(ourTxs);
 
-    return ourTxs; // Return processed transactions instead of allTxs
+    return ourTxs;
 }
+
+export function getTotalBalance() {
+    let total = {
+        confirmed: 0,
+        unconfirmed: 0
+    };
+
+    for (const balance of addressBalances.values()) {
+        total.confirmed += balance.confirmed;
+        total.unconfirmed += balance.unconfirmed;
+    }
+
+    return {
+        confirmed: total.confirmed,
+        unconfirmed: total.unconfirmed,
+        confirmedBTC: total.confirmed / 100000000,
+        unconfirmedBTC: total.unconfirmed / 100000000,
+        total: (total.confirmed + total.unconfirmed) / 100000000
+    };
+}
+
+export { addressBalances };

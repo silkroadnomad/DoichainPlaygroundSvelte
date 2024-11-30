@@ -47,10 +47,12 @@ export const electrumBlockchainRelayfee = writable();
 // export const electrumBlockchainBlockHeaders = writable();
 export const history = writable();
 export const txs = writable([]);
+export const balance = writable(0);
 export const inputCount = writable(0);
 export const outputCount = writable(0);
 export const namesCount = writable(0);
 export const currentWif = writable('');
 export const currentAddress = writable('');
+export const logs = writable([]);
 
 

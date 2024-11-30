@@ -19,8 +19,7 @@
     import Scan from "carbon-icons-svelte/lib/Scan.svelte";
 
     // Local imports (alphabetically ordered)
-    import { getAddressTxs } from '$lib/getAddressTxs.js';
-    import { getBalance } from '$lib/getBalance.js';
+    import { getAddressTxs, getTotalBalance } from '$lib/getAddressTxs.js';
     import ScanModal from '$lib/components/ScanModal.svelte';
     import { sign } from '$lib/components/signTransactionModal.js';
     import { path } from './router.js';
@@ -31,6 +30,7 @@
         electrumClient,
         electrumServerBanner,
         history,
+        logs,
         inputCount,
         namesCount,
         network,
@@ -44,7 +44,7 @@
     let recipientAddress = $currentAddress || xPubOrDoiAddress;
     let doiAmount = 0;
     let balance = { confirmed: 0, unconfirmed: 0 };
-
+    let showAsSchwartz = false;
     // Names
     let nameId = "";
     let nameValue = "";
@@ -68,8 +68,17 @@
     // Reactive declarations (grouped by functionality)
     $: showNotification = timeout !== undefined;
     $: doiAmount = Number(doiAmount);
-    $: utxoSum = Array.isArray($txs) ? $txs.reduce((sum, utxo) => sum + (utxo.value * 100000000), 0) : 0;
-    $: utxoSelected = Array.isArray($txs) ? $txs.filter(tx => selectedRowIds.includes(tx.id)).reduce((sum, utxo) => sum + (utxo.value*100000000), 0) : 0;
+    $: utxoSum = Array.isArray($txs) 
+        ? $txs.filter(tx => tx.utxo && tx.type === 'output').length
+        : 0;
+    $: utxoSelected = Array.isArray($txs) 
+        ? $txs.filter(tx => tx.utxo && selectedRowIds.includes(tx.id)).length
+        : 0;
+    $: {
+        if ($txs) {
+            balance = getTotalBalance();
+        }
+    }
     $: if (scanData) xPubOrDoiAddress = scanData;
     $: xPubOrDoiAddress ? localStorage.setItem('xPubOrDoiAddress', xPubOrDoiAddress) : null;
 
@@ -104,40 +113,74 @@
 </script>
 
 <h2>Transactions</h2>
-<Grid class="grid-spacing">
-    <Row>
-        <Column>{$electrumServerBanner || 'not connected'}</Column>
-    </Row>
-    <Row>
-        <Column>Connection URL:</Column>
-        <Column>{$connectedServer} </Column>
-        <Column></Column>
-        <Column></Column>
-    </Row>
-    <Row>
-        <Column>Tip:</Column>
-        <Column>{$electrumBlockchainBlockHeadersSubscribe?.height}</Column>
-        <Column></Column>
-        <Column></Column>
-    </Row>
-    <Row>
-        <Column>Balance (confirmed):</Column>
-        <Column>{balance?.confirmed} schwartz </Column>
-        <Column></Column>
-        <Column></Column>
-    </Row>
-    <Row>
-        <Column>Balance (unconfirmed):</Column>
-        <Column>{balance?.unconfirmed} schwartz </Column>
-        <Column></Column><Column></Column>
-    </Row>
-    <Row><Column>Utxos found:</Column><Column>{utxoSum} schwartz</Column><Column></Column><Column></Column></Row>
-    <Row><Column>Utxos selected:</Column><Column>{utxoSelected} schwartz</Column><Column></Column><Column></Column></Row>
-    <Row><Column>Transactions count:</Column><Column>{$txs.length}</Column><Column></Column><Column></Column></Row>
-    <Row><Column>Inputs count:</Column><Column>{$inputCount}</Column><Column></Column><Column></Column></Row>
-    <Row><Column>Output count:</Column><Column>{$outputCount}</Column><Column></Column><Column></Column></Row>
-    <Row><Column>Names count:</Column><Column>{$namesCount}</Column><Column></Column><Column></Column></Row>
-</Grid>
+
+<!-- Status information in two columns -->
+<div class="two-column-layout">
+    <div class="left-column">
+        <Grid class="grid-spacing">
+            <Row>
+                <Column>{$electrumServerBanner || 'not connected'}</Column>
+            </Row>
+            <Row>
+                <Column>Connection URL:</Column>
+                <Column>{$connectedServer}</Column>
+            </Row>
+            <Row>
+                <Column>Tip:</Column>
+                <Column>{$electrumBlockchainBlockHeadersSubscribe?.height}</Column>
+            </Row>
+            <Row>
+                <Column>
+                    <span on:click={() => showAsSchwartz = !showAsSchwartz} style="cursor: pointer;">
+                        Balance (confirmed):
+                    </span>
+                </Column>
+                <Column>
+                    <span on:click={() => showAsSchwartz = !showAsSchwartz} style="cursor: pointer;">
+                        {showAsSchwartz ? balance.confirmed : balance.confirmedBTC} {showAsSchwartz ? 'schwartz' : 'DOI'}
+                    </span>
+                </Column>
+            </Row>
+            <Row>
+                <Column>
+                    <span on:click={() => showAsSchwartz = !showAsSchwartz} style="cursor: pointer;">
+                        Balance (unconfirmed):
+                    </span>
+                </Column>
+                <Column>
+                    <span on:click={() => showAsSchwartz = !showAsSchwartz} style="cursor: pointer;">
+                        {showAsSchwartz ? balance.unconfirmed : balance.unconfirmedBTC} {showAsSchwartz ? 'schwartz' : 'DOI'}
+                    </span>
+                </Column>
+            </Row>
+            <Row>
+                <Column>Utxos found:</Column>
+                <Column>{utxoSum}</Column>
+            </Row>
+            <Row>
+                <Column>Utxos selected:</Column>
+                <Column>{utxoSelected}</Column>
+            </Row>
+            <Row><Column>Transactions count:</Column><Column>{$txs.length}</Column></Row>
+            <Row><Column>Inputs count:</Column><Column>{$inputCount}</Column></Row>
+            <Row><Column>Output count:</Column><Column>{$outputCount}</Column></Row>
+            <Row><Column>Names count:</Column><Column>{$namesCount}</Column></Row>
+        </Grid>
+    </div>
+    
+    <div class="right-column">
+        <h3>Logs</h3>
+        <div class="logs-container">
+            {#each $logs as log}
+                <div class="log-entry {log.type}">
+                    <span class="timestamp">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                    <span class="message">{log.message}</span>
+                </div>
+            {/each}
+        </div>
+    </div>
+</div>
+
 <Grid class="grid-spacing">
     <Row style="align-items: flex-end;">
         <Column style="display: flex; flex-direction: column; flex-grow: 1;">
@@ -354,5 +397,55 @@
 
     :global(.scan-button) {
         margin-bottom: 20px; /* Matches the margin class */
+    }   
+    
+    .timestamp {
+        color: #666;
+        margin-right: 8px;
+        font-size: 0.8rem;
+    }
+
+    .error { color: #ff5555; }
+    .success { color: #50fa7b; }
+    .info { color: #d4d4d4; }
+
+    h3 {
+        margin: 0 0 1rem 0;
+    }
+
+    .two-column-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin: 1rem;
+    }
+
+    .left-column {
+        min-width: 0; /* Prevents Grid from overflowing */
+    }
+
+    .right-column {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .logs-container {
+        flex-grow: 1;
+        height: calc(100vh - 200px); /* Adjust based on your needs */
+        overflow-y: auto;
+        font-family: monospace;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 1rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .log-entry {
+        padding: 2px 0;
+        white-space: pre-wrap;
+        border-bottom: 1px solid #333;
     }
 </style>
