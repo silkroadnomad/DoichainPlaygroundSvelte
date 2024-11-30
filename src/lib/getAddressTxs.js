@@ -1,138 +1,36 @@
+// Primary imports (core functionality)
 import { address, crypto, payments, networks } from 'bitcoinjs-lib';
 import * as ecc from 'tiny-secp256k1';
 import BIP32Factory from 'bip32';
-import moment from 'moment';
-import { txs, inputCount, outputCount, namesCount, logs } from '../routes/store.js';
-import bs58 from 'bs58';
 
+// Secondary imports (utilities)
+import moment from 'moment';
+import bs58 from 'bs58';
+import { txs, inputCount, outputCount, namesCount, logs } from '../routes/store.js';
+
+/** @type {BIP32} - Initialized BIP32 instance with secp256k1 support */
+const bip32 = BIP32Factory(ecc);
+
+/** @type {Map<string, {path: string, standard: string, type: string}>} - Maps addresses to their derivation paths */
+let addressDerivationPaths = new Map();
+
+/** @type {Map<string, {confirmed: number, unconfirmed: number}>} - Maps addresses to their balances */
+let addressBalances = new Map();
+
+// Secondary state management
 let _inputCount, _outputCount, _namesCount = 0;
 inputCount.subscribe((v) => _inputCount = v);
 outputCount.subscribe((v) => _outputCount = v);
 namesCount.subscribe((v) => _namesCount = v);
 
-// You must wrap a tiny-secp256k1 compatible implementation
-const bip32 = BIP32Factory(ecc);
-
-let addressDerivationPaths = new Map(); // Maps addresses to their derivation paths
-let addressBalances = new Map(); // Maps addresses to their balances
-
-// Add this logging utility function at the top level
-function log(message, type = 'info') {
-    const timestamp = new Date().toISOString();
-    const logEntry = {
-        timestamp,
-        message,
-        type // 'info', 'error', 'success'
-    };
-    
-    logs.update(currentLogs => {
-        const newLogs = [logEntry, ...currentLogs];
-        // Optionally limit the number of logs kept
-        return newLogs.slice(0, 1000); // Keep last 1000 logs
-    });
-    
-    // Still keep console.log for debugging
-    console.log(message);
-}
-
-export function deriveAddress(xpubOrZpub, derivationPath, network, type) {
-    try {
-        log(`\n Deriving address:`);
-        log(`├── Input Key: ${xpubOrZpub.slice(0, 20)}...`);
-        log(`├── Path: ${derivationPath}`);
-        log(`└── Type: ${type}`);
-
-        const decodedData = bs58.decode(xpubOrZpub);
-        const data = Buffer.from(decodedData);
-        
-        if (data.length !== 82) {
-            throw new Error('Invalid extended public key length');
-        }
-
-        const versionBytes = data.subarray(0, 4);
-        const versionHex = versionBytes.toString('hex');
-        log(`├── Version bytes: ${versionHex}`);
-
-        let xpub = xpubOrZpub;
-        
-        // Handle ZPUB conversion to XPUB if needed
-        if (versionHex === '04b24746') { // ZPUB (Doichain/Bitcoin mainnet)
-            log(`├── Converting ZPUB to XPUB`);
-            // Convert ZPUB to XPUB by changing version bytes
-            const xpubVersionBytes = Buffer.from([0x04, 0x88, 0xb2, 0x1e]); // mainnet xpub
-            const xpubBuffer = Buffer.concat([
-                xpubVersionBytes,
-                data.subarray(4)
-            ]);
-            xpub = bs58.encode(xpubBuffer);
-        }
-
-        let node;
-        if (versionHex === '04b24746') { // ZPUB case
-            log(`├── Using native segwit network configuration`);
-            // Use appropriate network configuration for native segwit
-            const segwitNetwork = {
-                ...network,
-                bip32: {
-                    public: 0x04b24746,  // ZPUB version bytes
-                    private: 0x04b2430c  // ZPRV version bytes
-                }
-            };
-            node = bip32.fromBase58(xpubOrZpub, segwitNetwork);
-        } else {
-            // Regular XPUB case
-            log(`├── Using regular network configuration`);
-            node = bip32.fromBase58(xpub, network);
-        }
-        
-        // Parse the derivation path
-        const pathSegments = derivationPath
-            .replace('m/', '')
-            .split('/')
-            .filter(segment => segment !== '');
-
-        // Derive each segment individually
-        let child = node;
-        for (const segment of pathSegments) {
-            const index = parseInt(segment.replace("'", ""), 10);
-            if (isNaN(index)) {
-                throw new Error(`Invalid path segment: ${segment}`);
-            }
-            child = child.derive(index);
-        }
-
-        // Generate address based on type
-        if (type === 'p2wpkh' || type === 'segwit') {
-            const address = payments.p2wpkh({ 
-                pubkey: child.publicKey, 
-                network 
-            }).address;
-            log(`└── ✅ Generated segwit: ${address}`);
-            return address;
-        } else { // legacy p2pkh
-            const address = payments.p2pkh({ 
-                pubkey: child.publicKey, 
-                network 
-            }).address;
-            log(`└── ✅ Generated legacy: ${address}`);
-            return address;
-        }
-    } catch (error) {
-        log(`└── ❌ Error in deriveAddress: ${error}`, 'error');
-        throw error;
-    }
-}
-
-export function isValidBitcoinAddress(addressStr, network) {
-    try {
-        address.toOutputScript(addressStr, network);
-        return true;
-    } catch (e) {
-        return false;
-    }
-}
-
-
+/**
+ * Fetches and processes transactions for a given xpub or DOI address
+ * @param {string} xpubOrDoiAddress - Extended public key or DOI address to process
+ * @param {Array} _historyStore - Transaction history store
+ * @param {Object} _electrumClient - Initialized Electrum client instance
+ * @param {Object} _network - Network configuration object
+ * @returns {Promise<Array>} Array of processed transactions
+ */
 export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumClient, _network) => {
     // Reset the txs store at the start
     txs.set([]);
@@ -150,7 +48,10 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
     let allTxs = [];
     let derivedAddresses = [];
 
-
+    /**
+     * @type {Object.<string, string[]>}
+     * @const
+     */
     const derivationPaths = {
         'electrum-legacy': ['m/0', 'm/1'],
         'electrum-segwit': ["m/0'", "m/1'"],
@@ -159,6 +60,10 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
         // 'bip44': ['m/44/0/0/0', 'm/44/0/0/1'],
     };
 
+    /**
+     * @type {Object.<string, string>}
+     * @const
+     */
     const addressTypes = {
         'electrum-legacy': 'p2pkh',
         'electrum-segwit': 'p2wpkh',
@@ -412,6 +317,113 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
     return ourTxs;
 }
 
+/**
+ * Derives a Bitcoin address from an extended public key
+ * @param {string} xpubOrZpub - Extended public key (xpub or zpub format)
+ * @param {string} derivationPath - BIP32 derivation path
+ * @param {Object} network - Network configuration object
+ * @param {('p2wpkh'|'p2pkh'|'segwit')} type - Address type to generate
+ * @returns {string} Derived Bitcoin address
+ * @throws {Error} If derivation fails or input is invalid
+ */
+export function deriveAddress(xpubOrZpub, derivationPath, network, type) {
+    try {
+        log(`\n Deriving address:`);
+        log(`├── Input Key: ${xpubOrZpub.slice(0, 20)}...`);
+        log(`├── Path: ${derivationPath}`);
+        log(`└── Type: ${type}`);
+
+        const decodedData = bs58.decode(xpubOrZpub);
+        const data = Buffer.from(decodedData);
+        
+        if (data.length !== 82) {
+            throw new Error('Invalid extended public key length');
+        }
+
+        const versionBytes = data.subarray(0, 4);
+        const versionHex = versionBytes.toString('hex');
+        log(`├── Version bytes: ${versionHex}`);
+
+        let xpub = xpubOrZpub;
+        
+        // Handle ZPUB conversion to XPUB if needed
+        if (versionHex === '04b24746') { // ZPUB (Doichain/Bitcoin mainnet)
+            log(`├── Converting ZPUB to XPUB`);
+            // Convert ZPUB to XPUB by changing version bytes
+            const xpubVersionBytes = Buffer.from([0x04, 0x88, 0xb2, 0x1e]); // mainnet xpub
+            const xpubBuffer = Buffer.concat([
+                xpubVersionBytes,
+                data.subarray(4)
+            ]);
+            xpub = bs58.encode(xpubBuffer);
+        }
+
+        let node;
+        if (versionHex === '04b24746') { // ZPUB case
+            log(`├── Using native segwit network configuration`);
+            // Use appropriate network configuration for native segwit
+            const segwitNetwork = {
+                ...network,
+                bip32: {
+                    public: 0x04b24746,  // ZPUB version bytes
+                    private: 0x04b2430c  // ZPRV version bytes
+                }
+            };
+            node = bip32.fromBase58(xpubOrZpub, segwitNetwork);
+        } else {
+            // Regular XPUB case
+            log(`├── Using regular network configuration`);
+            node = bip32.fromBase58(xpub, network);
+        }
+        
+        // Parse the derivation path
+        const pathSegments = derivationPath
+            .replace('m/', '')
+            .split('/')
+            .filter(segment => segment !== '');
+
+        // Derive each segment individually
+        let child = node;
+        for (const segment of pathSegments) {
+            const index = parseInt(segment.replace("'", ""), 10);
+            if (isNaN(index)) {
+                throw new Error(`Invalid path segment: ${segment}`);
+            }
+            child = child.derive(index);
+        }
+
+        // Generate address based on type
+        if (type === 'p2wpkh' || type === 'segwit') {
+            const address = payments.p2wpkh({ 
+                pubkey: child.publicKey, 
+                network 
+            }).address;
+            log(`└── ✅ Generated segwit: ${address}`);
+            return address;
+        } else { // legacy p2pkh
+            const address = payments.p2pkh({ 
+                pubkey: child.publicKey, 
+                network 
+            }).address;
+            log(`└── ✅ Generated legacy: ${address}`);
+            return address;
+        }
+    } catch (error) {
+        log(`└── ❌ Error in deriveAddress: ${error}`, 'error');
+        throw error;
+    }
+}
+
+/**
+ * Calculates total balance across all tracked addresses
+ * @returns {{
+ *   confirmed: number,
+ *   unconfirmed: number,
+ *   confirmedBTC: number,
+ *   unconfirmedBTC: number,
+ *   total: number
+ * }} Balance information in satoshis and BTC
+ */
 export function getTotalBalance() {
     let total = {
         confirmed: 0,
@@ -432,4 +444,44 @@ export function getTotalBalance() {
     };
 }
 
+/**
+ * Validates if a string is a valid Bitcoin address for the given network
+ * @param {string} addressStr - Address to validate
+ * @param {Object} network - Network configuration object
+ * @returns {boolean} True if address is valid
+ */
+export function isValidBitcoinAddress(addressStr, network) {
+    try {
+        address.toOutputScript(addressStr, network);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * Logs a message with timestamp and type
+ * @param {string} message - Message to log
+ * @param {('info'|'error'|'success')} [type='info'] - Type of log entry
+ * @private
+ */
+function log(message, type = 'info') {
+    const timestamp = new Date().toISOString();
+    const logEntry = {
+        timestamp,
+        message,
+        type // 'info', 'error', 'success'
+    };
+    
+    logs.update(currentLogs => {
+        const newLogs = [logEntry, ...currentLogs];
+        // Optionally limit the number of logs kept
+        return newLogs.slice(0, 1000); // Keep last 1000 logs
+    });
+    
+    // Still keep console.log for debugging
+    console.log(message);
+}
+
+// Exports
 export { addressBalances };
