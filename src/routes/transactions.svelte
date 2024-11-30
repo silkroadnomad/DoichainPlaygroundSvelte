@@ -112,11 +112,9 @@
     }
 </script>
 
-<h2>Transactions</h2>
-
-<!-- Status information in two columns -->
 <div class="two-column-layout">
     <div class="left-column">
+        <h2>Transactions</h2>
         <Grid class="grid-spacing">
             <Row>
                 <Column>{$electrumServerBanner || 'not connected'}</Column>
@@ -169,7 +167,7 @@
     </div>
     
     <div class="right-column">
-        <h3>Logs</h3>
+        <h2>Logs</h2>
         <div class="logs-container">
             {#each $logs as log}
                 <div class="log-entry {log.type}">
@@ -420,19 +418,20 @@
         margin: 1rem;
     }
 
-    .left-column {
-        min-width: 0; /* Prevents Grid from overflowing */
+    h2 {
+        margin: 0 0 1rem 0;
+        font-size: 1.5rem;
+        font-weight: 500;
+        line-height: 1.2;
     }
 
-    .right-column {
+    .left-column, .right-column {
         min-width: 0;
-        display: flex;
-        flex-direction: column;
     }
 
     .logs-container {
         flex-grow: 1;
-        height: 300px; /* Fixed default height */
+        height: 200px; /* Fixed default height */
         overflow-y: auto;
         font-family: monospace;
         background: #1e1e1e;
