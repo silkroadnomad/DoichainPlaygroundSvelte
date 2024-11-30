@@ -432,7 +432,7 @@
 
     .logs-container {
         flex-grow: 1;
-        height: calc(100vh - 200px); /* Adjust based on your needs */
+        height: 300px; /* Fixed default height */
         overflow-y: auto;
         font-family: monospace;
         background: #1e1e1e;
@@ -441,6 +441,17 @@
         border-radius: 4px;
         font-size: 0.9rem;
         line-height: 1.4;
+        transition: height 0.3s ease;
+        position: relative;
+        z-index: 10;
+    }
+
+    .logs-container:hover {
+        height: calc(100vh - 200px);
+        position: absolute;
+        right: 1rem;
+        width: calc(50% - 2rem);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .log-entry {
