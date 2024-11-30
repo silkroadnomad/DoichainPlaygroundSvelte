@@ -100,8 +100,16 @@ export class ElectrumxClient {
 
 	request(method, params) {
 		if (this.status === 0) {
-			return Promise.reject(new Error('ESOCKET'));
+			return this.connect().then(() => {
+				return this._sendRequest(method, params);
+			}).catch(() => {
+				return Promise.reject(new Error('ESOCKET'));
+			});
 		}
+		return this._sendRequest(method, params);
+	}
+
+	_sendRequest(method, params) {
 		return new Promise((resolve, reject) => {
 			const id = ++this.id;
 			const content = makeRequest(method, params, id);
@@ -112,8 +120,16 @@ export class ElectrumxClient {
 
 	requestBatch(method, params, secondParam) {
 		if (this.status === 0) {
-			return Promise.reject(new Error('ESOCKET'));
+			return this.connect().then(() => {
+				return this._sendBatchRequest(method, params, secondParam);
+			}).catch(() => {
+				return Promise.reject(new Error('ESOCKET'));
+			});
 		}
+		return this._sendBatchRequest(method, params, secondParam);
+	}
+
+	_sendBatchRequest(method, params, secondParam) {
 		return new Promise((resolve, reject) => {
 			let arguments_far_calls = {};
 			let contents = [];
