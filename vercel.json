@@ -6,6 +6,18 @@
         {
           "key": "x-ipfs-path",
           "value": "/ipfs/QmXKdfFNZGE1gcenRA5kvUCuKhx6vq6eFAkBTUDv2vRcAk"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires",
+          "value": "0"
         }
       ]
     },
@@ -15,20 +27,20 @@
         {
           "key": "x-ipfs-path",
           "value": "/ipfs/QmXKdfFNZGE1gcenRA5kvUCuKhx6vq6eFAkBTUDv2vRcAk"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires",
+          "value": "0"
         }
       ]
-    },
-    {
-      "key": "Cache-Control",
-      "value": "no-cache, no-store, must-revalidate"
-    },
-    {
-      "key": "Pragma",
-      "value": "no-cache"
-    },
-    {
-      "key": "Expires",
-      "value": "0"
     }
   ]
 }
