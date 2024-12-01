@@ -1,6 +1,6 @@
 services:
   regtest:
-    image: "doichain/core:dc0.20.1.13"
+    image: "doichain/core:dc0.20.1.14"
     container_name: regtest
     ports:
       - "18332:18332"
@@ -9,11 +9,10 @@ services:
     stdin_open: true
     volumes:
       - ./.doichain/:/home/doichain/.doichain/
-      - ./doichain-regtest.conf:/home/doichain/data/doichain/doichain.conf
-      - ./doichain-start.sh:/home/doichain/scripts/doichain-start.sh
+      - ./doichain-regtest.conf:/home/doichain/.doichain/doichain.conf
     tty: true
     privileged: true
-    command: "./scripts/start.sh"
+    command: "/bin/bash"
     networks:
       - doichain_regtest-network
 
@@ -27,7 +26,6 @@ services:
       - ./db:/var/lib/electrumx
       - ./startElectrumDOIRegTest.sh:/startElectrumDOIRegTest.sh
     entrypoint: ["/startElectrumDOIRegTest.sh"]
-    command: "/bin/bash"
     ports:
       - "50001:50001"
       - "50002:50002"

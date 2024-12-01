@@ -84,23 +84,8 @@ RUN mkdir .doichain && \
 	sudo make && \
 	sudo make install
 
-#Copy start scripts
-WORKDIR /home/doichain/scripts/
-COPY entrypoint.sh entrypoint.sh
-COPY start.sh start.sh
-COPY getblocktimes.sh getblocktimes.sh
-COPY doichain-start.sh doichain-start.sh
 
-RUN sudo dos2unix \
-	entrypoint.sh \
-	start.sh \
-	doichain-start.sh && \
-	sudo chmod +x \
-	entrypoint.sh \
-	start.sh \
-	doichain-start.sh \
-	getblocktimes.sh && \
-	sudo apt-get purge -y dos2unix && \
+RUN sudo apt-get purge -y dos2unix && \
 	sudo rm -rf /var/lib/apt/lists/*
 
 #Create data dir
@@ -116,7 +101,7 @@ WORKDIR /home/doichain
 #ENTRYPOINT ["scripts/entrypoint.sh"]
 
 #Start doichain and meteor
-CMD ["scripts/start.sh"]
+CMD ["/usr/local/bin/doichaind"]
 
 #Expose ports
 EXPOSE $NODE_PORT $RPC_PORT $RPC_PORT_REGTEST
