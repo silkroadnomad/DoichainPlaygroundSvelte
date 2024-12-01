@@ -14,12 +14,13 @@
         Toolbar,
         ToolbarBatchActions,
         ToolbarContent,
-        ToolbarSearch
+        ToolbarSearch,
+        Modal
     } from 'carbon-components-svelte';
     import Scan from "carbon-icons-svelte/lib/Scan.svelte";
 
     // Local imports (alphabetically ordered)
-    import { getAddressTxs, getTotalBalance } from '$lib/getAddressTxs.js';
+    import { getAddressTxs, getTotalBalance, derivationPaths } from '$lib/getAddressTxs.js';
     import ScanModal from '$lib/components/ScanModal.svelte';
     import { sign } from '$lib/components/signTransactionModal.js';
     import { path } from './router.js';
@@ -37,6 +38,7 @@
         outputCount,
         txs,
     } from './store.js';
+    import NameShow from '$lib/components/nameShow.svelte';
 
     // Variables (grouped by type)
     // Addresses and amounts
@@ -82,6 +84,14 @@
     $: if (scanData) xPubOrDoiAddress = scanData;
     $: xPubOrDoiAddress ? localStorage.setItem('xPubOrDoiAddress', xPubOrDoiAddress) : null;
 
+    let showNFTModal = false;
+    let currentNameValue = '';
+
+    // Get unique wallet types from derivationPaths
+    $: walletTypes = Object.keys(derivationPaths);
+    $: console.log("derivationPaths", derivationPaths);
+    $: console.log("walletTypes", walletTypes);
+
     afterUpdate(() => {
         $txs.forEach(tx => {
             if (!tx.utxo) {
@@ -110,6 +120,8 @@
         // balance = await getBalance(xPubOrDoiAddress, $electrumClient, $network);
         await getAddressTxs(xPubOrDoiAddress,$history,$electrumClient,$network);
     }
+    $: console.log("currentNameValue", currentNameValue)
+    $: console.log("showNFTModal", showNFTModal)
 </script>
 
 <div class="two-column-layout">
@@ -175,6 +187,70 @@
                     <span class="message">{log.message}</span>
                 </div>
             {/each}
+        </div>
+        <div class="wallet-badges">
+            {#each walletTypes as walletType}
+                {#if true}
+                    {@const isScanning = $logs.some(log => 
+                        log.message.includes(`Scanning standard: ${walletType}`) && 
+                        !$logs.some(l => l.message.includes(`Finished scanning ${walletType}`))
+                    )}
+                    {@const isFinished = $logs.some(log => 
+                        log.message.includes(`Finished scanning ${walletType}`)
+                    )}
+                    {@const txCount = $logs
+                        .filter(log => log.message.includes(`Found ${walletType}`))
+                        .reduce((sum, log) => {
+                            const match = log.message.match(/Found (\d+) transactions/);
+                            return sum + (match ? parseInt(match[1]) : 0);
+                        }, 0)}
+                    {@const currentPath = $logs
+                        .slice().reverse().find(log => log.message.includes('Base Path:'))
+                        ?.message.split('Base Path: ')[1]}
+                    
+                    <!-- Wallet Type Badge -->
+                    <span class="badge {isScanning ? 'scanning' : ''} {isFinished ? 'finished' : ''}">
+                        {walletType}
+                        {#if txCount > 0}
+                            <span class="count-indicator">{txCount}</span>
+                        {/if}
+                        {#if isScanning}
+                            <span class="scanning-dot"></span>
+                        {/if}
+                    </span>
+
+                    <!-- Current Path Badge -->
+                    {#if isScanning && currentPath}
+                        {@const currentAddressLog = $logs
+                            .slice().reverse().find(log => 
+                                log.message.includes('🔎 Checking address')
+                            )}
+                        {@const currentIndex = currentAddressLog?.message.match(/\(#(\d+)\)/)?.at(1)}
+                        <span class="badge path-badge">
+                            {currentPath} {#if currentIndex}(#{currentIndex}){/if}
+                            <span class="scanning-dot"></span>
+                        </span>
+                    {/if}
+                {/if}
+            {/each}
+
+            {#if true}
+                {@const progress = $logs.slice().reverse().find(log => 
+                    log.message.includes('Progress:')
+                )}
+                {#if progress}
+                    {@const [current, total] = progress.message
+                        .match(/Progress: (\d+)\/(\d+)/)?.slice(1) || []}
+                    {#if current && total}
+                        <span class="badge progress-badge">
+                            Progress: {current}/{total}
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {(current/total) * 100}%"></div>
+                            </div>
+                        </span>
+                    {/if}
+                {/if}
+            {/if}
         </div>
     </div>
 </div>
@@ -243,6 +319,20 @@
     <svelte:fragment slot="cell" let:row let:cell>
         {#if cell.key === "value"}
             <div style="text-align: right;">{cell.value?.toFixed(8)}</div>
+        {:else if cell.key === "nameId"}
+            <div 
+                on:click={() => {
+                    // if (cell.value?.startsWith('ipfs://')) {
+                        currentNameValue = cell.value;
+                        showNFTModal = true;
+                    // }
+                }}
+                on:click={() => {
+                    showNFTModal = false;
+                }}
+            >
+                {cell.value || ''}
+            </div>
         {:else if cell.key === "confirmations"}
             <div style="text-align: right;">{cell.value || '0'}</div>
         {:else if cell.key === "fee"}
@@ -373,6 +463,19 @@
         }}
     />
 {/if}
+{#if showNFTModal && currentNameValue}
+    <Modal
+        open={showNFTModal}
+        modalHeading="NFT Preview"
+        passiveModal
+        on:close={() => {
+            showNFTModal = false;
+            currentNameValue = '';
+        }}
+    >
+        <NameShow nameToCheck={currentNameValue} />
+    </Modal>
+{/if}
 <style>
     :global(.datatable) {
         margin-top: 3rem;
@@ -457,5 +560,89 @@
         padding: 2px 0;
         white-space: pre-wrap;
         border-bottom: 1px solid #333;
+    }
+
+    .wallet-badges {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+
+    .badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        background: #393939;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .badge.scanning {
+        background: #0f62fe;
+        animation: pulse 2s infinite;
+    }
+
+    .badge.finished {
+        background: #42be65;
+    }
+
+    .scanning-dot {
+        width: 6px;
+        height: 6px;
+        background: #ffffff;
+        border-radius: 50%;
+        display: inline-block;
+        animation: blink 1s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+
+    @keyframes blink {
+        0% { opacity: 0; }
+        50% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+
+    .path-badge {
+        background: #8a3ffc; /* Carbon Purple 60 */
+    }
+    .processing-badge {
+        background: #ee538b; /* Carbon Magenta 50 */
+    }
+
+    .progress-badge {
+        background: #08bdba; /* Carbon Teal 40 */
+        min-width: 150px;
+    }
+
+    .count-indicator {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0 4px;
+        border-radius: 8px;
+        margin-left: 4px;
+        font-size: 10px;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        margin-top: 4px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: white;
+        border-radius: 2px;
+        transition: width 0.3s ease;
     }
 </style>
