@@ -132,7 +132,7 @@ export const getAddressTxs = async (xpubOrDoiAddress, _historyStore, _electrumCl
                     index = 0;
                     transactionsFound = true;
 
-                    const MAX_ADDRESSES = 20; // Or whatever reasonable limit you want to set
+                    const MAX_ADDRESSES = 10; // Or whatever reasonable limit you want to set
 
                     while ((transactionsFound || index < gapLimit) && index < MAX_ADDRESSES) {
                         log(`Checking address index: ${index}`);
