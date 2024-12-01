@@ -29,4 +29,5 @@ WORKDIR /electrumx
 # Start ElectrumX server.
 ENTRYPOINT ["./electrumx_server"]
 
-RUN rm -rf /var/lib/apt/lists/*
+# Safely remove the apt lists if they exist
+RUN [ -d /var/lib/apt/lists ] && rm -rf /var/lib/apt/lists/* || true

@@ -113,7 +113,7 @@ RUN mkdir data && \
 
 #Run entrypoint
 WORKDIR /home/doichain
-ENTRYPOINT ["scripts/entrypoint.sh"]
+#ENTRYPOINT ["scripts/entrypoint.sh"]
 
 #Start doichain and meteor
 CMD ["scripts/start.sh"]

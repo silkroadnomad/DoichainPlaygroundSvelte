@@ -3,20 +3,16 @@ services:
     image: "doichain/core:dc0.20.1.13"
     container_name: regtest
     ports:
-      - "18338:18338"
-      - "18339:18339"
+      - "18332:18332"
+      - "18443:18443"
+      - "18445:18445"
     stdin_open: true
     volumes:
       - ./.doichain/:/home/doichain/.doichain/
-      - ./entrypoint.sh:/home/doichain/scripts/entrypoint.sh
+      - ./doichain-regtest.conf:/home/doichain/data/doichain/doichain.conf
       - ./doichain-start.sh:/home/doichain/scripts/doichain-start.sh
-    environment:
-      - RPC_ALLOW_IP=0.0.0.0/0
-      - RPC_PASSWORD=adminpw
-      - REGTEST=true
     tty: true
     privileged: true
-    entrypoint: "./scripts/entrypoint.sh"
     command: "./scripts/start.sh"
     networks:
       - doichain_regtest-network
@@ -24,7 +20,7 @@ services:
   electrumx-doi:
     container_name: electrumx-doi
     hostname: electrumx-doi
-    image: "le-space/electrumx:dc1.2.1"
+    image: "doichain/electrumx:dc1.2.1"
     depends_on:
       - regtest
     volumes:
