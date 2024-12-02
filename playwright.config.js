@@ -22,13 +22,13 @@ export default defineConfig({
         ignoreHTTPSErrors: true
       },
     },
-    // {
-    //   name: 'firefox',
-    //   use: { 
-    //     ...devices['Desktop Firefox'],
-    //     ignoreHTTPSErrors: true
-    //   },
-    // },
+    {
+      name: 'firefox',
+      use: { 
+        ...devices['Desktop Firefox'],
+        ignoreHTTPSErrors: true
+      },
+    },
     // {
     //   name: 'webkit',
     //   use: { 

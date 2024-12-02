@@ -2,15 +2,18 @@ import { expect, test } from '@playwright/test';
 import axios from 'axios';
 import WebSocket from 'ws';
 const websocketUrl = 'wss://127.0.0.1:8443';
-const rpcUrl = 'http://127.0.0.1:18332';
+
+let rpcUrl = 'http://127.0.0.1:18332/';
 const rpcUser = 'admin';
 const rpcPassword = 'adminpw';
 const credentials = Buffer.from(`${rpcUser}:${rpcPassword}`).toString('base64');
 
 
-async function callRpc(method, params = []) {
+
+async function callRpc(method, params = [], alternativeRPCURL) {
+    console.log(alternativeRPCURL?alternativeRPCURL:rpcUrl,method,params);
     try {
-        const response = await axios.post(rpcUrl, {
+        const response = await axios.post(alternativeRPCURL?alternativeRPCURL:rpcUrl, {
             jsonrpc: '1.0',
             id: 'curltest',
             method: method,
@@ -40,6 +43,20 @@ test.use({
 test.describe('Wallet Generation Tests', () => {
 
     test.beforeAll(async () => {
+        const walletName = generateRandomName();
+        console.log(`Creating wallet with name: ${walletName}`);
+        
+        // Create a new wallet with a random name
+        await callRpc('createwallet', [walletName]);
+        // console.log(await callRpc('getwalletinfo'));
+        rpcUrl = `http://127.0.0.1:18332/wallet/${walletName}`;
+        const newAddress = await callRpc('getnewaddress', [], rpcUrl);
+        console.log(newAddress);
+        console.log(await callRpc('getbalance', [], rpcUrl));
+        const mining = await callRpc('generatetoaddress', [200, newAddress], rpcUrl);
+        console.log(mining);
+
+
         const ws = new WebSocket(websocketUrl, {
             headers: {
                 Authorization: `Basic ${credentials}`
@@ -66,14 +83,7 @@ test.describe('Wallet Generation Tests', () => {
         });
 
         // Wait for the connection to be established or fail
-        await connectionPromise;
-        
-        const walletName = generateRandomName();
-        console.log(`Creating wallet with name: ${walletName}`);
-        
-        // Create a new wallet with a random name
-        // // await callRpc('createwallet', [walletName]);
-        // console.log(await callRpc('getwalletinfo'));
+       await connectionPromise;
         // console.log(await callRpc('getnewaddress'));
         // // Generate 200 blocks to mine 200 DOI
         // // Replace 'your_address_here' with a valid address from the created wallet
