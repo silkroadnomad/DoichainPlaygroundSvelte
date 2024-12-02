@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 import axios from 'axios';
 import WebSocket from 'ws';
-const websocketUrl = 'wss://localhost:8443';
-const rpcUrl = 'http://localhost:18332';
+const websocketUrl = 'wss://127.0.0.1:8443';
+const rpcUrl = 'http://127.0.0.1:18332';
 const rpcUser = 'admin';
 const rpcPassword = 'adminpw';
 const credentials = Buffer.from(`${rpcUser}:${rpcPassword}`).toString('base64');
