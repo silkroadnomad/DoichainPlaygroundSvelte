@@ -5,12 +5,15 @@
   "private": true,
   "scripts": {
     "dev": "vite dev",
+    "start": "vite preview",
     "build": "vite build",
     "ipfs-publish": "npm version patch && npm run build && ./ipfs-publish.sh",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
-    "test": "npm run test:integration && npm run test:unit",
+    "playwright": "npx playwright test tests/playground.spec.js",
+    "test-local": "npm run test:integration && npm run test:unit",
+    "test": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && npx playwright test e2e/playground.spec.js\"",
     "lint": "prettier --check . && eslint .",
     "format": "prettier --write .",
     "test:integration": "playwright test",
@@ -25,6 +28,7 @@
     "@types/node": "^22.10.1",
     "carbon-components-svelte": "^0.85.4",
     "carbon-icons-svelte": "^12.13.0",
+    "concurrently": "^9.1.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-svelte": "^2.35.1",
@@ -37,7 +41,8 @@
     "vite-plugin-node-polyfills": "^0.21.0",
     "vite-plugin-top-level-await": "^1.4.1",
     "vite-plugin-wasm": "^3.3.0",
-    "vitest": "^1.2.0"
+    "vitest": "^1.2.0",
+    "wait-on": "^8.0.1"
   },
   "type": "module",
   "dependencies": {

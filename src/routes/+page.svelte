@@ -322,6 +322,17 @@
             }}>Decrypt</Button></Column>
     </Row>
     <Row>
+        <Column><h2>2. Derivation Standard</h2></Column>
+        <Column>
+            <Select labelText="Select Wallet" bind:selected={ selectedDerivationStandard }>
+                <SelectItem value="0" text="Choose derivation standard" />
+                {#each derivationStandards as ds}
+                    <SelectItem value={ds.id} text={`${ds.name}`} />
+                {/each}
+            </Select>
+        </Column>
+    </Row>
+    <Row>
         <Column>&nbsp;</Column>
         <Column>
             <Select labelText="Select Wallet" bind:selected={ selectedMnemonic } on:change={ 
@@ -332,8 +343,13 @@
                     <SelectItem value={wallet.id.toString()} text={`${decryptMnemonic(wallet.mnemonic,password)?.substring(0,20)}  ${wallet.date.toLocaleString()}`} />
                 {/each}
             </Select>
-            <TextArea labelText="Mnemonic" rows={2} bind:value={mnemonic} />
+            <TextArea id="mnemonicTextarea" labelText="Mnemonic" rows={2} bind:value={mnemonic} />
             <Button size="small"  on:click={async () => {
+                if(!selectedDerivationStandard || selectedDerivationStandard === '0'){
+                    toastNotification = "Please select a derivation standard";
+                    timeout = 3000;
+                    return;
+                }
                console.log("generating mnemonic ",selectedDerivationStandard)
                 if(selectedDerivationStandard === 'bip32'){
                       mnemonic = generateMnemonic()
@@ -351,7 +367,7 @@
         </Column>
     </Row>
     <Row>
-        <Column><h2>2. Get XPriv and XPub from mnemonic</h2></Column>
+        <Column><h2>3. Get XPriv and XPub from mnemonic</h2></Column>
         <Column>&nbsp;</Column>
     </Row>
     <Row>
@@ -373,17 +389,6 @@
     <Row>
         <Column><h2>Next Unused Change Address</h2></Column>
         <Column><TextInput labelText="Next Unused Change Address" bind:value={nextUnusedChangeAddress} readonly /></Column>
-    </Row>
-    <Row>
-        <Column><h2>3. Derivation Standard</h2></Column>
-        <Column>
-            <Select labelText="Select Wallet" bind:selected={ selectedDerivationStandard }>
-                <SelectItem value="0" text="Choose derivation standard" />
-                {#each derivationStandards as ds}
-                    <SelectItem value={ds.id} text={`${ds.name}`} />
-                {/each}
-            </Select>
-        </Column>
     </Row>
 </Grid>
 <Grid>

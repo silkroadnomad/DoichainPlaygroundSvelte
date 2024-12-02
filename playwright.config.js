@@ -9,6 +9,7 @@ export default defineConfig({
   reporter: 'html',
   use: {
     trace: 'on-first-retry',
+    baseURL: 'http://localhost:5173',
   },
   projects: [
     {
@@ -24,7 +25,6 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-  // Uncomment and configure the web server if needed
   // webServer: {
   //   command: 'npm run start',
   //   url: 'http://127.0.0.1:3000',
