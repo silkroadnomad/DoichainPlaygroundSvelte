@@ -1,18 +1,14 @@
 services:
   regtest:
-    image: "doichain/core:dc0.20.1.14"
+    image: "doichain/core:dc0.20.1.15"
     container_name: regtest
     ports:
       - "18332:18332"
       - "18443:18443"
       - "18445:18445"
-    stdin_open: true
     volumes:
       - ./.doichain/:/home/doichain/.doichain/
       - ./doichain-regtest.conf:/home/doichain/.doichain/doichain.conf
-    tty: true
-    privileged: true
-    command: "/bin/bash"
     networks:
       - doichain_regtest-network
 

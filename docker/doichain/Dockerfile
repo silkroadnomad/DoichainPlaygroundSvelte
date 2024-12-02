@@ -1,4 +1,3 @@
-
 FROM ubuntu:18.04
 
 ARG DOICHAIN_VER=master
@@ -91,6 +90,7 @@ RUN sudo apt-get purge -y dos2unix && \
 #Create data dir
 WORKDIR /home/doichain
 RUN mkdir data && \
+	mkdir scripts && \
 	cd data && \
 	mkdir doichain &&\
 	sudo rm -rf /home/doichain/.doichain && \
@@ -98,10 +98,8 @@ RUN mkdir data && \
 
 #Run entrypoint
 WORKDIR /home/doichain
-#ENTRYPOINT ["scripts/entrypoint.sh"]
-
 #Start doichain and meteor
-CMD ["/usr/local/bin/doichaind"]
+CMD ["/usr/local/bin/doichaind", "-daemon=0"]
 
 #Expose ports
 EXPOSE $NODE_PORT $RPC_PORT $RPC_PORT_REGTEST
