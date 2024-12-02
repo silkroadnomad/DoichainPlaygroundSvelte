@@ -107,6 +107,7 @@
 		</div>
 		<div>
 			<Dropdown
+			id="network-dropdown"
 				size="sm"
 				label="Select Network"	
 				items={networks}

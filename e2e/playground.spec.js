@@ -1,57 +1,98 @@
 import { expect, test } from '@playwright/test';
+import axios from 'axios';
+import WebSocket from 'ws';
+const websocketUrl = 'wss://localhost:8443';
+const rpcUrl = 'http://localhost:18332';
+const rpcUser = 'admin';
+const rpcPassword = 'adminpw';
+const credentials = Buffer.from(`${rpcUser}:${rpcPassword}`).toString('base64');
+
+
+async function callRpc(method, params = []) {
+    try {
+        const response = await axios.post(rpcUrl, {
+            jsonrpc: '1.0',
+            id: 'curltest',
+            method: method,
+            params: params
+        }, {
+            auth: {
+                username: rpcUser,
+                password: rpcPassword
+            }
+        });
+        return response.data.result;
+    } catch (error) {
+        console.error(`Error calling RPC method ${method}:`, error.message);
+        throw error;
+    }
+}
+
+function generateRandomName() {
+    return 'wallet_' + Math.random().toString(36).substring(2, 15);
+}
+
+test.use({
+    ignoreHTTPSErrors: true,
+});
+
 
 test.describe('Wallet Generation Tests', () => {
 
-    test('test', async ({ page }) => {
+    test.beforeAll(async () => {
+        const ws = new WebSocket(websocketUrl, {
+            headers: {
+                Authorization: `Basic ${credentials}`
+            },
+            rejectUnauthorized: false // Allows connections to servers with self-signed certificates
+        });
+
+        // Create a promise that resolves when the connection is open
+        const connectionPromise = new Promise((resolve, reject) => {
+            ws.on('open', () => {
+                console.log('WebSocket connection established');
+                ws.send('Hello Server!');
+                resolve();
+            });
+
+            ws.on('error', (err) => {
+                console.error('WebSocket error:', err);
+                reject(new Error('WebSocket connection failed'));
+            });
+
+            ws.on('close', () => {
+                console.log('WebSocket connection closed');
+            });
+        });
+
+        // Wait for the connection to be established or fail
+        await connectionPromise;
+        
+        const walletName = generateRandomName();
+        console.log(`Creating wallet with name: ${walletName}`);
+        
+        // Create a new wallet with a random name
+        // // await callRpc('createwallet', [walletName]);
+        // console.log(await callRpc('getwalletinfo'));
+        // console.log(await callRpc('getnewaddress'));
+        // // Generate 200 blocks to mine 200 DOI
+        // // Replace 'your_address_here' with a valid address from the created wallet
+        // await callRpc('generatetoaddress', [200, 'your_address_here']);
+    });
+
+
+    test('Change to ElectrumX-Doi Regtest', async ({ page, browser }) => {
+   
         await page.goto('http://localhost:5173/');
         await page.waitForSelector('text=You are connected to an', { state: 'visible' });
+        await page.getByRole('button', { name: 'Doichain-Mainnet Open menu' }).click();
+        await page.getByText('Doichain-Regtest').click();
         await page.getByLabel('Select Wallet').first().selectOption('electrum-legacy');
-        //await page.getByRole('button', { name: 'Decrypt' }).click();
         await page.getByRole('button', { name: 'Generate Mnemonic' }).click();
-        //await expect(page.getByLabel('Mnemonic')).toBeVisible();
         const mnemonic = await page.inputValue('#mnemonicTextarea');
         await page.getByLabel('Mnemonic').click();
         expect(mnemonic).not.toBe('');
-        // await expect(page.getByLabel('Mnemonic')).toHaveValue('gentle model squirrel point soldier suit daring april ketchup soon lemon year');
     });
-    // test('should generate a new mnemonic and test all wallet types', async ({ page }) => {
-    //     // Navigate to the page
-    //     await page.goto('/');
-    //     await page.waitForSelector('text=You are connected to an', { state: 'visible' });
 
-
-    //     // Ensure the button is visible
-    //     await page.waitForSelector('button:has-text("Generate Mnemonic")', { state: 'visible' });
-
-    //     // Generate a new mnemonic
-    //     await page.click('button:has-text("Generate Mnemonic")');
-    //     await page.waitForFunction(() => document.querySelector('#mnemonicTextarea').value !== '');
-    //     const mnemonic = await page.inputValue('#mnemonicTextarea');
-    //     console.log('mnemonic', mnemonic);
-    //     expect(mnemonic).not.toBe('');
-
-    //     // Test each derivation standard
-    //     const derivationStandards = [
-    //         'electrum-legacy',
-    //         'electrum-segwit',
-    //         'bip32',
-    //         'bip32-p2wpkh',
-    //         'bip84'
-    //     ];
-
-    //     for (const standard of derivationStandards) {
-    //         // Select the derivation standard
-    //         await page.selectOption('select[labelText="Select Wallet"]', { value: standard });
-
-    //         // Generate addresses
-    //         await page.click('button:has-text("Save")');
-
-    //         // Verify that addresses are generated
-    //         const addresses = await page.$$eval('.datatable .address', nodes => nodes.map(n => n.textContent));
-    //         expect(addresses.length).toBeGreaterThan(0);
-
-    //         // Optionally, verify the first address format or other properties
-    //         console.log(`Addresses for ${standard}:`, addresses);
-    //     }
-    // });
+    // ... other tests ...
 });

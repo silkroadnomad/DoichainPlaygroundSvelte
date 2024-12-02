@@ -27,7 +27,6 @@
 	$:walletName = multiSigConfig?.walletName
 	$:walletAmounts =  multiSigConfig?.pubKeyInputs.length || 3;
 	$:m = multiSigConfig?.m || 2;
-	console.log("multiSigConfig?.pubKeyInputs",multiSigConfig?.pubKeyInputs)
 	$:pubKeyInputs = multiSigConfig?.pubKeyInputs || Array.from({ length: walletAmounts }, (_, i) => ({
 		i:i,
 		label: `Wallet No ${i}`,
