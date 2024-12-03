@@ -1,5 +1,5 @@
 FROM mcr.microsoft.com/playwright:v1.49.0-noble
-
+RUN apt update && apt install -y telnet vi git net-tools iputils-ping curl wget
 USER root
 
 RUN mkdir /playground
@@ -11,3 +11,4 @@ RUN yarn run build
 RUN npx @playwright/test install
 RUN npx playwright install-deps
 RUN ls -l /playground/* && npx playwright test
+#RUN sleep infinity

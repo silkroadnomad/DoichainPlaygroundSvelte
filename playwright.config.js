@@ -11,7 +11,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     baseURL: 'http://localhost:5173',
     ignoreHTTPSErrors: true,
-    headless: false,
+    headless: true,
     bypassCSP: true
   },
   projects: [
