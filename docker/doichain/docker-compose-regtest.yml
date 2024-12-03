@@ -39,13 +39,17 @@ services:
       dockerfile: ./docker/doichain/playwright/Dockerfile
     container_name: playwright
     hostname: playwright
+    ports:
+      - "9323:9323"
     image: "doichain/playwright:latest"
     depends_on:
       - regtest
       - electrumx-doi
     networks:
       - doichain_regtest-network
-
+    links:
+      - regtest:localhost
+      - electrumx-doi:localhost
 networks:
  doichain_regtest-network:
   driver: bridge
