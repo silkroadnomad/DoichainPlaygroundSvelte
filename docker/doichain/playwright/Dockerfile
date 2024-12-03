@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/playwright:v1.49.0-noble
 USER root
 
 RUN mkdir /playground
-COPY ./files /playground
+COPY . /playground
 WORKDIR /playground
 
 RUN yarn install --frozen-lockfile
