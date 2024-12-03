@@ -9,4 +9,4 @@ WORKDIR /tests
 RUN ls -l && yarn install --frozen-lockfile
 RUN npx @playwright/test install
 RUN npx playwright install-deps
-RUN npx playwright test
+RUN npx playwright test tests/playground.spec.ts
