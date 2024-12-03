@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/playwright:v1.49.0-noble
 USER root
 
 RUN mkdir /tests
-# COPY . /tests
+COPY ./files /tests
 WORKDIR /tests
 
 RUN ls -l && yarn install --frozen-lockfile
