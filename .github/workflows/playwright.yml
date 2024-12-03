@@ -19,20 +19,20 @@ jobs:
         sudo apt-get install -y docker-compose
     - name: Set up Docker
       run: docker-compose -f "docker/doichain/docker-compose-regtest.yml" up -d
-    - uses: actions/setup-node@v4
-      with:
-           node-version: '20'
-    - name: Install dependencies
-      run: yarn install --frozen-lockfile
-    - name: Start the development server
-      run: npm run dev & npx wait-on http://localhost:5173
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: docker/healthcheck.sh regtest 120 && npx playwright test
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+    # - uses: actions/setup-node@v4
+    #   with:
+    #        node-version: '20'
+    # - name: Install dependencies
+    #   run: yarn install --frozen-lockfile
+    # - name: Start the development server
+    #   run: npm run dev & npx wait-on http://localhost:5173
+    # - name: Install Playwright Browsers
+    #   run: npx playwright install --with-deps
+    # - name: Run Playwright tests
+    #   run: docker/healthcheck.sh regtest 120 && npx playwright test
+    # - uses: actions/upload-artifact@v4
+    #   if: ${{ !cancelled() }}
+    #   with:
+    #     name: playwright-report
+    #     path: playwright-report/
+    #     retention-days: 30

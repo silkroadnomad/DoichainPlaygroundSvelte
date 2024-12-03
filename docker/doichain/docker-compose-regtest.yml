@@ -33,6 +33,19 @@ services:
     networks:
       - doichain_regtest-network
 
+  playwright:
+    build: ./playwright    
+    container_name: playwright
+    hostname: playwright
+    image: "doichain/playwright:latest"
+    volumes:
+      - ../../../tests:/tests
+    depends_on:
+      - regtest
+      - electrumx-doi
+    networks:
+      - doichain_regtest-network
+
 networks:
-  doichain_regtest-network:
-    driver: bridge
+ doichain_regtest-network:
+  driver: bridge
