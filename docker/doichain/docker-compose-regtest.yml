@@ -39,7 +39,7 @@ services:
     hostname: playwright
     image: "doichain/playwright:latest"
     volumes:
-      - ../../../tests:/tests
+      - ../../../:/tests
     depends_on:
       - regtest
       - electrumx-doi
