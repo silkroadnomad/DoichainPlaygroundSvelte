@@ -1,5 +1,5 @@
 FROM mcr.microsoft.com/playwright:v1.49.0-noble
-RUN apt update && apt install -y telnet vi git net-tools iputils-ping curl wget
+RUN apt update && apt install -y telnet vim git net-tools iputils-ping curl wget
 USER root
 
 RUN mkdir /playground
