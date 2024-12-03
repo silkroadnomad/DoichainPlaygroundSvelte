@@ -9,14 +9,9 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v2
     - name: Install Docker Compose
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker-compose
-    - name: Start containers
+      uses: actions/checkout@v2
+    - name: Set up Docker
       run: docker-compose -f "docker/doichain/docker-compose-regtest.yml" up -d
     - uses: actions/setup-node@v4
       with:
