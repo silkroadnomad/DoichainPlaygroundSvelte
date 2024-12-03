@@ -35,13 +35,11 @@ services:
 
   playwright:
     build:
-      context: ../../../
-      dockerfile: ./playwright/Dockerfile
+      context: ../../
+      dockerfile: ./docker/doichain/playwright/Dockerfile
     container_name: playwright
     hostname: playwright
     image: "doichain/playwright:latest"
-    volumes:
-      - ../../../:/tests
     depends_on:
       - regtest
       - electrumx-doi

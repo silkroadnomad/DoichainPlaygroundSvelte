@@ -7,6 +7,7 @@ COPY . /playground
 WORKDIR /playground
 
 RUN yarn install --frozen-lockfile
+RUN yarn run build
 RUN npx @playwright/test install
 RUN npx playwright install-deps
-RUN ls -l /playground/* && npx playwright test tests/playground.spec.ts
+RUN ls -l /playground/* && npx playwright test
