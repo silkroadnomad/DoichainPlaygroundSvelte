@@ -16,3 +16,4 @@ vite.config.ts.timestamp-*
 /blob-report/
 /playwright/.cache/
 /public
+/docker/komodo/komodo_data/
