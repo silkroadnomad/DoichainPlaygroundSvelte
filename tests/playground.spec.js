@@ -46,7 +46,7 @@ test.describe('Wallet Generation Tests', () => {
         // Create a new wallet with a random name
         await callRpc('createwallet', [walletName]);
         // console.log(await callRpc('getwalletinfo'));
-        rpcUrl = `http://127.0.0.1:18332/wallet/${walletName}`;
+        rpcUrl = `http://regtest:18332/wallet/${walletName}`;
         const newAddress = await callRpc('getnewaddress', [], rpcUrl);
         console.log(newAddress);
         console.log(await callRpc('getbalance', [], rpcUrl));
@@ -90,7 +90,7 @@ test.describe('Wallet Generation Tests', () => {
 
     test('Change to ElectrumX-Doi Regtest', async ({ page, browser }) => {
    
-        await page.goto('http://localhost:5173/');
+        await page.goto('/');
         await page.waitForSelector('text=You are connected to an', { state: 'visible' });
         await page.getByRole('button', { name: 'Doichain-Mainnet Open menu' }).click();
         await page.getByText('Doichain-Regtest').click();

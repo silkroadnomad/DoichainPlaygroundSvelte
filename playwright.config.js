@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: 'html',
   use: {
     trace: 'on-first-retry',
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:4173',
     ignoreHTTPSErrors: true,
     headless: true,
     bypassCSP: true
@@ -31,8 +31,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
+    command: 'npm run preview',
+    url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
   },
 });

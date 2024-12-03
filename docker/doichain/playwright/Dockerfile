@@ -10,5 +10,5 @@ RUN yarn install --frozen-lockfile
 RUN yarn run build
 RUN npx @playwright/test install
 RUN npx playwright install-deps
-RUN ls -l /playground/* && npx playwright test
+RUN npx playwright test
 #RUN sleep infinity

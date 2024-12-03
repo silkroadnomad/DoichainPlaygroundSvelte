@@ -1,0 +1,25 @@
+services:
+  komodo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: komodo
+    ports:
+      - "7770:7770"
+      - "7771:7771"
+    volumes:
+      - ./komodo_data/:/home/komodo/.komodo/
+      - ./komodo.conf:/home/komodo/.komodo/komodo.conf
+    networks:
+      - komodo_network
+    stdin_open: true
+    tty: true
+    environment:
+      - RPC_USER=admin
+      - RPC_PASSWORD=your_rpc_password
+      - RPC_ALLOW_IP=0.0.0.0/0
+      - REGTEST=true
+
+networks:
+  komodo_network:
+    driver: bridge
