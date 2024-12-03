@@ -47,9 +47,6 @@ services:
       - electrumx-doi
     networks:
       - doichain_regtest-network
-    links:
-      - regtest:localhost
-      - electrumx-doi:localhost
 networks:
  doichain_regtest-network:
   driver: bridge
