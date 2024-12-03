@@ -11,4 +11,5 @@ RUN yarn run build
 RUN npx @playwright/test install
 RUN npx playwright install-deps
 # RUN npx playwright test
-RUN sleep infinity
+#RUN sleep infinity
+CMD [ "echo", "Hello from Playwright" ]
