@@ -125,16 +125,19 @@ test.describe('Wallet Generation Tests', () => {
     });
 
 
-    test('Basic Wallet Generation Test', async ({ page, browser }) => {
-   
+    test.only('Basic Wallet Generation Test', async ({ page, browser }) => {
         await page.goto('/');
         await page.waitForSelector('text=You are connected to an', { state: 'visible' });
         await page.getByRole('button', { name: 'Doichain-Mainnet Open menu' }).click();
         await page.getByText('Doichain-Regtest').click();
         await page.selectOption('#derivationStandardSelect', 'electrum-legacy');
         await page.getByRole('button', { name: 'Generate Mnemonic' }).click();
+        await page.waitForFunction(() => {
+            const textarea = document.querySelector('#mnemonicTextarea');
+            return textarea && textarea.value !== '';
+        });
         const mnemonic = await page.inputValue('#mnemonicTextarea');
-        await page.getByLabel('Mnemonic').click();
+        console.log(mnemonic);
         expect(mnemonic).not.toBe('');
     });
 
