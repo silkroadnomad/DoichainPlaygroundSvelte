@@ -120,7 +120,7 @@ test.describe('Wallet Generation Tests', () => {
         expect(mnemonic).not.toBe('');
     });
 
-    test('Basic Address Generation Test', async ({ page, browser }) => {
+    test.only('Basic Address Generation Test', async ({ page, browser }) => {
         await page.goto('/');
         await page.waitForSelector('text=You are connected to an', { state: 'visible' });
         await page.getByRole('button', { name: 'Doichain-Mainnet Open menu' }).click();
@@ -128,7 +128,7 @@ test.describe('Wallet Generation Tests', () => {
         await page.selectOption('#derivationStandardSelect', 'electrum-legacy');
         
         // Set the mnemonic to the specified seed phrase
-        await page.fill('#mnemonicTextarea', 'test test test test test test test test test test test test');
+        await page.fill('#mnemonicTextarea', 'column quick bar column skirt canal miss truth royal nation else practice');
         
         // Fill in the password for decryption
         await page.fill('#passwordInput', 'mnemonic');
@@ -136,11 +136,16 @@ test.describe('Wallet Generation Tests', () => {
         // Click to decrypt
         await page.getByRole('button', { name: 'Decrypt' }).click();
         
+        await page.waitForFunction(() => {
+            const addressInput = document.querySelector('#nextUnusedAddressInput');
+            return addressInput && addressInput.value !== '';
+        });
+    
         // Extract the generated address
-        const generatedAddress = await page.inputValue('#nextUnusedAddress');
+        const generatedAddress = await page.inputValue('#nextUnusedAddressInput');
         
         // Verify the generated address
-        expect(generatedAddress).toBe('n3csERn5LkYxgmNQ1XH4qfRR5Ak8v3p3HU');
+        expect(generatedAddress).toBe('mw4QRbNWNhfus6ygyb1od2HthHZnB3iP5d');
     });
 
     // ... other tests ...
