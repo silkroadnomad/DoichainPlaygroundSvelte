@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   regtest:
     image: "doichain/core:dc0.20.1.15"
@@ -7,7 +8,7 @@ services:
       - "18443:18443"
       - "18445:18445"
     volumes:
-      - ./.doichain/:/home/doichain/.doichain/
+      - ${ENABLE_VOLUME:-true} == "true" && "./.doichain/:/home/doichain/.doichain/"
       - ./doichain-regtest.conf:/home/doichain/.doichain/doichain.conf
     networks:
       - doichain_regtest-network

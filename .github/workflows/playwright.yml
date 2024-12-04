@@ -22,13 +22,13 @@ jobs:
     - name: Check Docker Containers
       run: |
         echo "🔍 Checking Docker Containers..."
-        docker-compose -f "docker/doichain/docker-compose-regtest.yml" ps
+        ENABLE_VOLUME=false docker-compose -f "docker/doichain/docker-compose-regtest.yml" ps
     - name: Get Regtest Container Logs
       run: |
         echo "📜 Fetching logs for regtest container..."
         docker-compose -f "docker/doichain/docker-compose-regtest.yml" logs regtest
     - name: Run Playwright tests
-      run: docker/healthcheck.sh regtest 120 && docker-compose -f "docker/doichain/docker-compose-regtest.yml" exec playwright npx playwright test
+      run: docker-compose -f "docker/doichain/docker-compose-regtest.yml" exec playwright npx playwright test
     # - uses: actions/setup-node@v4
     #   with:
     #        node-version: '20'
