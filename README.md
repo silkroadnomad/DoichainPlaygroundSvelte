@@ -1,5 +1,6 @@
 [![Vercel](https://vercelbadge.vercel.app/api/silkroadnomad/DoichainPlaygroundSvelte)](https://doichain-playground-svelte.vercel.app/)
 [![Playwright Tests](https://github.com/silkroadnomad/DoichainPlaygroundSvelte/actions/workflows/playwright.yml/badge.svg)](https://github.com/silkroadnomad/DoichainPlaygroundSvelte/actions/workflows/playwright.yml)
+[![License](https://img.shields.io/github/license/silkroadnomad/DoichainPlaygroundSvelte)](https://github.com/silkroadnomad/DoichainPlaygroundSvelte/blob/main/LICENSE)
 
 # Doichain Developer Playground Svelte
 
