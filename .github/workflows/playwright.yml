@@ -13,10 +13,6 @@ jobs:
       uses: actions/checkout@v2
     - name: Set up Docker
       uses: docker/setup-buildx-action@v2
-    - name: Install Docker Compose
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker-compose
     - name: Modify and Show Docker Compose File
       run: |
         # Remove the specific volume line and save changes in place
@@ -26,16 +22,17 @@ jobs:
         echo "📄 Displaying modified docker-compose-regtest.yml contents..."
         cat ./docker/doichain/docker-compose-regtest.yml
     - name: Set up Docker
-      run: |
-        docker-compose -f "docker/doichain/docker-compose-regtest.yml" up -d
-    - name: Check Docker Containers
-      run: |
-        echo "🔍 Checking Docker Containers..."
-        docker-compose -f "docker/doichain/docker-compose-regtest.yml" ps
-    - name: Get Regtest Container Logs
-      run: |
-        echo "📜 Fetching logs for regtest container..."
-        docker-compose -f "docker/doichain/docker-compose-regtest.yml" logs regtest
+      uses: hoverkraft-tech/compose-action@v2.0.2
+        with:
+          compose-file: "docker/doichain/docker-compose-regtest.yml"
+    # - name: Check Docker Containers
+    #   run: |
+    #     echo "🔍 Checking Docker Containers..."
+    #     docker-compose -f "docker/doichain/docker-compose-regtest.yml" ps
+    # - name: Get Regtest Container Logs
+    #   run: |
+    #     echo "📜 Fetching logs for regtest container..."
+    #     docker-compose -f "docker/doichain/docker-compose-regtest.yml" logs regtest
     - name: Modify Run Command and Run Playwright tests
       run: |
         sed -i.bak \
@@ -46,7 +43,7 @@ jobs:
           -e '/build:/,+2d' \
           ./docker/doichain/docker-compose-regtest.yml
         cat ./docker/doichain/docker-compose-regtest.yml
-        docker-compose -f "docker/doichain/docker-compose-regtest.yml" up -d playwright 
+        docker compose -f "docker/doichain/docker-compose-regtest.yml" up -d playwright 
     # - uses: actions/setup-node@v4
     #   with:
     #        node-version: '20'
