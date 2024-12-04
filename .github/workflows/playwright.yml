@@ -38,8 +38,8 @@ jobs:
         docker-compose -f "docker/doichain/docker-compose-regtest.yml" logs regtest
     - name: Modify Run Command and Run Playwright tests
       run: |
-        sed -i.bak '/playwright:/ {n;N;N;d}' ./docker/doichain/docker-compose-regtest.yml
         sed -i.bak \
+          -e '/playwright:/ {n;N;N;d}' \
           -e 's/^    # command: \["npx", "playwright", "test"\]/    command: \["npx", "playwright", "test"\]/' \
           -e 's/^    command: \["echo", "finished building"\]/     # command: \["echo", "finished building"\]/' \
           ./docker/doichain/docker-compose-regtest.yml
