@@ -46,7 +46,7 @@ jobs:
           -e '/build:/,+2d' \
           ./docker/doichain/docker-compose-regtest.yml
         cat ./docker/doichain/docker-compose-regtest.yml
-        docker-compose -f "docker/doichain/docker-compose-regtest.yml" up -d
+        docker-compose -f "docker/doichain/docker-compose-regtest.yml" up playwright -d
     # - uses: actions/setup-node@v4
     #   with:
     #        node-version: '20'
