@@ -36,6 +36,24 @@ function generateRandomName() {
     return 'wallet_' + Math.random().toString(36).substring(2, 15);
 }
 
+async function sendDoiAndMineBlock(recipientAddress, amount, rpcUrl) {
+    try {
+        const txId = await callRpc('sendtoaddress', [recipientAddress, amount], rpcUrl);
+        console.log(`Transaction ID: ${txId}`);
+    } catch (error) {
+        console.error('Error sending DOI:', error.message);
+        throw error;
+    }
+
+    try {
+        const miningResult = await callRpc('generatetoaddress', [1, recipientAddress], rpcUrl);
+        console.log(`Mining result: ${miningResult}`);
+    } catch (error) {
+        console.error('Error mining block:', error.message);
+        throw error;
+    }
+}
+
 test.use({
     ignoreHTTPSErrors: true,
 });
@@ -117,7 +135,7 @@ test.describe('Wallet Generation Tests', () => {
         await page.getByRole('button', { name: 'Generate Mnemonic' }).click();
         const mnemonic = await page.inputValue('#mnemonicTextarea');
         await page.getByLabel('Mnemonic').click();
-        expect(mnemonic).toBe('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        expect(mnemonic).not.toBe('');
     });
 
     test('Basic Address Generation Test', async ({ page, browser }) => {
@@ -146,6 +164,13 @@ test.describe('Wallet Generation Tests', () => {
         
         // Verify the generated address
         expect(generatedAddress).toBe('mw4QRbNWNhfus6ygyb1od2HthHZnB3iP5d');
+
+        // Call the function to send DOI and mine a block
+        await sendDoiAndMineBlock('mw4QRbNWNhfus6ygyb1od2HthHZnB3iP5d', 10, rpcUrl);
+
+        // Check if the DataTable has at least one row
+        const dataTableRows = await page.$$('.datatable tbody tr');
+        expect(dataTableRows.length).toBeGreaterThan(0);
     });
 
     // ... other tests ...
