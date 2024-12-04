@@ -17,7 +17,8 @@ jobs:
       run: |
         # Remove the specific volume line and save changes in place
         sed -i '/- \.\/\.doichain\/:\/home\/doichain\/\.doichain\//d' ./docker/doichain/docker-compose-regtest.yml
-        sed -i '/[[:space:]]*- \.\/db\/:\/var\/lib\/electrumx/d' ./docker/doichain/docker-compose-regtest.yml
+        grep -v './db:/var/lib/electrumx' ./docker/doichain/docker-compose-regtest.yml > temp.yml
+        mv temp.yml ./docker/doichain/docker-compose-regtest.yml
         # Display the modified file contents
         echo "📄 Displaying modified docker-compose-regtest.yml contents..."
         cat ./docker/doichain/docker-compose-regtest.yml
@@ -61,3 +62,7 @@ jobs:
     #     name: playwright-report
     #     path: playwright-report/
     #     retention-days: 30
+    - name: Remove Specific Line from Docker Compose File
+      run: |
+        grep -v './db:/var/lib/electrumx' ./docker/doichain/docker-compose-regtest.yml > temp.yml
+        mv temp.yml ./docker/doichain/docker-compose-regtest.yml
