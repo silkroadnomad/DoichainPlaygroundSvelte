@@ -41,7 +41,7 @@ services:
     ports:
       - "9323:9323"
     image: "doichain/playwright:latest"
-    # command: ["sh", "-c", "set -e; npx playwright test'"]
+    # command: ["npx", "playwright", "test"]
     command: ["echo", "finished building"]
     stdin_open: true
     tty: true

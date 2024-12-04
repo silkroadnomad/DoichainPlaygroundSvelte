@@ -33,11 +33,11 @@ jobs:
     - name: Modify Run Command and Run Playwright tests
       run: |
         sed -i.bak \
-          -e 's/^    # command: /    command: /' \
+          -e 's/^    # command: \["npx", "playwright", "test"\]/    command: \["npx", "playwright", "test"\]/' \
           -e 's/^    command: \["echo", "finished building"\]/     # command: \["echo", "finished building"\]/' \
           ./docker/doichain/docker-compose-regtest.yml
         sed -i.bak \
           -e '/build:/,+2d' \
           ./docker/doichain/docker-compose-regtest.yml
         cat ./docker/doichain/docker-compose-regtest.yml
-        set -e; docker compose -f "docker/doichain/docker-compose-regtest.yml" up playwright
+        set -e docker compose -f "docker/doichain/docker-compose-regtest.yml" up playwright

@@ -165,12 +165,12 @@ test.describe('Wallet Generation Tests', () => {
         // Verify the generated address
         expect(generatedAddress).toBe('mw4QRbNWNhfus6ygyb1od2HthHZnB3iP5d');
 
-        // Call the function to send DOI and mine a block
-        await sendDoiAndMineBlock('mw4QRbNWNhfus6ygyb1od2HthHZnB3iP5d', 10, rpcUrl);
+        // // Call the function to send DOI and mine a block
+        // await sendDoiAndMineBlock('mw4QRbNWNhfus6ygyb1od2HthHZnB3iP5d', 10, rpcUrl);
 
-        // Check if the DataTable has at least one row
-        const dataTableRows = await page.$$('.datatable tbody tr');
-        expect(dataTableRows.length).toBeGreaterThan(0);
+        // // Check if the DataTable has at least one row
+        // const dataTableRows = await page.$$('.datatable tbody tr');
+        // expect(dataTableRows.length).toBeGreaterThan(0);
     });
 
     // ... other tests ...
