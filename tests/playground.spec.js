@@ -107,7 +107,7 @@ test.describe('Wallet Generation Tests', () => {
     });
 
 
-    test('Change to ElectrumX-Doi Regtest', async ({ page, browser }) => {
+    test('Basic Wallet Generation Test', async ({ page, browser }) => {
    
         await page.goto('/');
         await page.waitForSelector('text=You are connected to an', { state: 'visible' });
@@ -118,6 +118,29 @@ test.describe('Wallet Generation Tests', () => {
         const mnemonic = await page.inputValue('#mnemonicTextarea');
         await page.getByLabel('Mnemonic').click();
         expect(mnemonic).not.toBe('');
+    });
+
+    test('Basic Address Generation Test', async ({ page, browser }) => {
+        await page.goto('/');
+        await page.waitForSelector('text=You are connected to an', { state: 'visible' });
+        await page.getByRole('button', { name: 'Doichain-Mainnet Open menu' }).click();
+        await page.getByText('Doichain-Regtest').click();
+        await page.selectOption('#derivationStandardSelect', 'electrum-legacy');
+        
+        // Set the mnemonic to the specified seed phrase
+        await page.fill('#mnemonicTextarea', 'test test test test test test test test test test test test');
+        
+        // Fill in the password for decryption
+        await page.fill('#passwordInput', 'mnemonic');
+        
+        // Click to decrypt
+        await page.getByRole('button', { name: 'Decrypt' }).click();
+        
+        // Extract the generated address
+        const generatedAddress = await page.inputValue('#nextUnusedAddress');
+        
+        // Verify the generated address
+        expect(generatedAddress).toBe('n3csERn5LkYxgmNQ1XH4qfRR5Ak8v3p3HU');
     });
 
     // ... other tests ...
