@@ -18,7 +18,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y docker-compose
     - name: Set up Docker
-      run: docker-compose -f "docker/doichain/docker-compose-regtest.yml" up -d
+      run: sed -i.bak '/- \.\/\.doichain\/:\/home\/doichain\/\.doichain\//d' ./docker/doichain/docker-compose-regtest.yml && docker-compose -f "docker/doichain/docker-compose-regtest.yml" up -d
     - name: Check Docker Containers
       run: |
         echo "🔍 Checking Docker Containers..."
