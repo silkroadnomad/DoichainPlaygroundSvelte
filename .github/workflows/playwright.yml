@@ -30,10 +30,6 @@ jobs:
       run: |
         echo "🔍 Checking Docker Containers..."
         docker compose -f "docker/doichain/docker-compose-regtest.yml" ps
-    # - name: Get Regtest Container Logs
-    #   run: |
-    #     echo "📜 Fetching logs for regtest container..."
-    #     docker-compose -f "docker/doichain/docker-compose-regtest.yml" logs regtest
     - name: Modify Run Command and Run Playwright tests
       run: |
         sed -i.bak \
