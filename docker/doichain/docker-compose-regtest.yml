@@ -25,7 +25,6 @@ services:
     ports:
       - "50001:50001"
       - "50002:50002"
-      - "8080:8080"
       - "8443:8443"
     stdin_open: true
     tty: true
@@ -42,7 +41,7 @@ services:
     ports:
       - "9323:9323"
     image: "doichain/playwright:latest"
-    # command: ["npx", "playwright", "test"]
+    # command: ["sh", "-c", "set -e; npx playwright test'"]
     command: ["echo", "finished building"]
     stdin_open: true
     tty: true
