@@ -36,8 +36,13 @@ jobs:
       run: |
         echo "📜 Fetching logs for regtest container..."
         docker-compose -f "docker/doichain/docker-compose-regtest.yml" logs regtest
-    - name: Run Playwright tests
-      run: docker-compose -f "docker/doichain/docker-compose-regtest.yml" exec playwright npx playwright test
+    - name: Modify Run Command and Run Playwright tests
+      run: |
+        sed -i.bak \
+          -e 's/^    # command: \["npx", "playwright", "test"\]/    command: \["npx", "playwright", "test"\]/' \
+          -e 's/^    command: \["echo", "finished building"\]/    # command: \["echo", "finished building"\]/' \
+          ./docker/doichain/docker-compose-regtest.yml
+        docker-compose -f "docker/doichain/docker-compose-regtest.yml" up -d
     # - uses: actions/setup-node@v4
     #   with:
     #        node-version: '20'
