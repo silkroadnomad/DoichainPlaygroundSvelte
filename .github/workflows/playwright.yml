@@ -29,7 +29,7 @@ jobs:
     - name: Check Docker Containers
       run: |
         echo "🔍 Checking Docker Containers..."
-        dockercompose -f "docker/doichain/docker-compose-regtest.yml" ps
+        docker compose -f "docker/doichain/docker-compose-regtest.yml" ps
     # - name: Get Regtest Container Logs
     #   run: |
     #     echo "📜 Fetching logs for regtest container..."
