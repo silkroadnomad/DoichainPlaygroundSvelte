@@ -39,7 +39,7 @@ jobs:
     - name: Modify Run Command and Run Playwright tests
       run: |
         sed -i.bak \
-          -e 's/^    # command: \["npx", "playwright", "test"\]/      command: \["npx", "playwright", "test"\]/' \
+          -e 's/^    # command: \["npx", "playwright", "test"\]/    command: \["npx", "playwright", "test"\]/' \
           -e 's/^    command: \["echo", "finished building"\]/     # command: \["echo", "finished building"\]/' \
           ./docker/doichain/docker-compose-regtest.yml
         cat ./docker/doichain/docker-compose-regtest.yml
