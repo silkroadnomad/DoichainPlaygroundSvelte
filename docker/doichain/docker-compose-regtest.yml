@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   regtest:
     image: "doichain/core:dc0.20.1.15"
