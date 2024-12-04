@@ -13,8 +13,8 @@ services:
       - doichain_regtest-network
 
   electrumx:
-    container_name: electrumx-doi
-    hostname: electrumx-doi
+    container_name: electrumx
+    hostname: electrumx
     image: "doichain/electrumx:dc1.2.1"
     depends_on:
       - regtest
@@ -48,7 +48,7 @@ services:
     tty: true
     depends_on:
       - regtest
-      - electrumx-doi
+      - electrumx
     networks:
       - doichain_regtest-network
 networks:
