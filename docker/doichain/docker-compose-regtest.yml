@@ -12,7 +12,7 @@ services:
     networks:
       - doichain_regtest-network
 
-  electrumx-doi:
+  electrumx:
     container_name: electrumx-doi
     hostname: electrumx-doi
     image: "doichain/electrumx:dc1.2.1"

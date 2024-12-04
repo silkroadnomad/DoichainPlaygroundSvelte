@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import axios from 'axios';
 import WebSocket from 'ws';
-const websocketUrl = 'wss://electrumx-doi:8443';
+const websocketUrl = 'wss://electrumx:8443';
 let rpcUrl = 'http://regtest:18332/';
 const rpcUser = 'admin';
 const rpcPassword = 'adminpw';
