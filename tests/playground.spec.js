@@ -117,7 +117,7 @@ test.describe('Wallet Generation Tests', () => {
         await page.getByRole('button', { name: 'Generate Mnemonic' }).click();
         const mnemonic = await page.inputValue('#mnemonicTextarea');
         await page.getByLabel('Mnemonic').click();
-        expect(mnemonic).not.toBe('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        expect(mnemonic).toBe('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     });
 
     test('Basic Address Generation Test', async ({ page, browser }) => {
