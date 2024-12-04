@@ -305,6 +305,46 @@
     $: if (addresses.length) {
         findNextUnusedAddresses();
     }
+
+    let unsubscribe;
+
+    onMount(() => {
+        // Subscribe to block headers
+        unsubscribe = electrumClient.subscribe(client => {
+            if (client) {
+                client.subscribe('blockchain.headers.subscribe', [], async (err, header) => {
+                    if (err) {
+                        console.error('Error subscribing to block headers:', err);
+                        return;
+                    }
+                    console.log('New block header:', header);
+
+                    // Fetch the block details
+                    const block = await client.call('blockchain.block.get', [header.height]);
+                    console.log('Block details:', block);
+
+                    // Process each transaction in the block
+                    block.tx.forEach(tx => {
+                        tx.vout.forEach(output => {
+                            // Check if the transaction involves any address of interest
+                            // Replace this condition with your logic to identify relevant transactions
+                            if (output.scriptPubKey && output.scriptPubKey.addresses) {
+                                const address = output.scriptPubKey.addresses[0];
+                                console.log('Transaction involving address:', address);
+                                addresses = [...addresses, { address, ...tx }];
+                            }
+                        });
+                    });
+                });
+            }
+        });
+    });
+
+    onDestroy(() => {
+        if (unsubscribe) {
+            unsubscribe();
+        }
+    });
 </script>
 
 <h1>Welcome to Doichain Developer Playground</h1>
@@ -324,7 +364,7 @@
     <Row>
         <Column><h2>2. Derivation Standard</h2></Column>
         <Column>
-            <Select id="derivationStandardSelect" labelText="Select Wallet" bind:selected={selectedDerivationStandard}>
+            <Select id="derivationStandardSelect" labelText="Select Derivation Standard" bind:selected={selectedDerivationStandard}>
                 <SelectItem value="0" text="Choose derivation standard" />
                 {#each derivationStandards as ds}
                     <SelectItem value={ds.id} text={`${ds.name}`} />
@@ -335,7 +375,7 @@
     <Row>
         <Column>&nbsp;</Column>
         <Column>
-            <Select id="derivationStandardSelect" labelText="Select Derivation Standard" bind:selected={selectedMnemonic} on:change={ 
+            <Select id="selectWallet" labelText="Select Wallet" bind:selected={selectedMnemonic} on:change={ 
             (e) => { selectedDerivationStandard = wallets.find((w) => w.id.toString() === e.target.value)?.derivationStandard}
             }>
             <SelectItem value="0" text="Choose a wallet" />

@@ -27,7 +27,7 @@ With the Doichain Playground you can:
 
 # Usage:
 1. Clone this repo. 
-2. Optionally for local development, start local Doichaind & Electrumx using ```docker-compose up -d.```
+2. Optionally for local development, start local Doichaind & Electrumx using ```docker-compose -f ./docker/doichain/doichain-compose-regtest.yml up```
 3. Connect to the regtest container and:
    - Run ```doichain-cli help``` to see command help.
    - Run ```doichain-cli getblockchaininfo``` to view initial blocks.
@@ -39,10 +39,11 @@ With the Doichain Playground you can:
    - Run ```doichain-cli generatetoaddress 100 [address]``` to mature the first block and receive 50 DOI.
    - Run ```doichain-cli getbalance``` to see updated balance. 
 4. Run ```npm install```
-5. Run npm run dev to start the Doichain Developer Playground. 
+5. Run ```npm run dev``` to start the Doichain Developer Playground. 
 6. Go to the "Transactions" menu to query your Doichain address
 7. Mark an unspent output (UTXO) and send it to another address  
 8. Create a new block to observe the transaction.
+9. If you started the docker-compose-regtest.yml you can then run ```npx playwright test``` inside your local console 
 
 ## References:
 - Crypto 101 is an introductory course on cryptography, freely available for programmers of all ages and skill levels. 
