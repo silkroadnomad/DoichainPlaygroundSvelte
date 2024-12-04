@@ -23,8 +23,8 @@ jobs:
         cat ./docker/doichain/docker-compose-regtest.yml
     - name: Set up Docker
       uses: hoverkraft-tech/compose-action@v2.0.2
-        with:
-          compose-file: "docker/doichain/docker-compose-regtest.yml"
+      with:
+        compose-file: "docker/doichain/docker-compose-regtest.yml"
     # - name: Check Docker Containers
     #   run: |
     #     echo "🔍 Checking Docker Containers..."
