@@ -17,7 +17,7 @@ jobs:
       run: |
         # Remove the specific volume line and save changes in place
         sed -i '/- \.\/\.doichain\/:\/home\/doichain\/\.doichain\//d' ./docker/doichain/docker-compose-regtest.yml
-        sed -i '/- \.\/db\/:\/var\/lib\/electrumx/d' ./docker/doichain/docker-compose-regtest.yml
+        sed -i '/[[:space:]]*- \.\/db\/:\/var\/lib\/electrumx/d' ./docker/doichain/docker-compose-regtest.yml
         # Display the modified file contents
         echo "📄 Displaying modified docker-compose-regtest.yml contents..."
         cat ./docker/doichain/docker-compose-regtest.yml
