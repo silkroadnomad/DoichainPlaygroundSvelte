@@ -42,6 +42,7 @@ jobs:
           -e 's/^    # command: \["npx", "playwright", "test"\]/    command: \["npx", "playwright", "test"\]/' \
           -e 's/^    command: \["echo", "finished building"\]/    # command: \["echo", "finished building"\]/' \
           ./docker/doichain/docker-compose-regtest.yml
+        cat ./docker/doichain/docker-compose-regtest.yml
         docker-compose -f "docker/doichain/docker-compose-regtest.yml" up -d
     # - uses: actions/setup-node@v4
     #   with:
