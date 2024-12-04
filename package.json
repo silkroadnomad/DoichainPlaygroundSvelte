@@ -13,7 +13,7 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
     "playwright": "npx playwright test tests/playground.spec.js",
     "test-local": "npm run test:integration && npm run test:unit",
-    "test": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && npx playwright test e2e/playground.spec.js\"",
+    "test": "npx playwright test\"",
     "lint": "prettier --check . && eslint .",
     "format": "prettier --write .",
     "test:integration": "playwright test",

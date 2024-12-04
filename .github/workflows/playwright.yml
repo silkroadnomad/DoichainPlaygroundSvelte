@@ -19,8 +19,6 @@ jobs:
         chmod 777 ./docker/doichain/db
         # Remove the specific volume line and save changes in place
         sed -i '/- \.\/\.doichain\/:\/home\/doichain\/\.doichain\//d' ./docker/doichain/docker-compose-regtest.yml
-        # grep -v './db:/var/lib/electrumx' ./docker/doichain/docker-compose-regtest.yml > temp.yml
-        # mv temp.yml ./docker/doichain/docker-compose-regtest.yml
         # Display the modified file contents
         echo "📄 Displaying modified docker-compose-regtest.yml contents..."
         cat ./docker/doichain/docker-compose-regtest.yml
@@ -49,24 +47,3 @@ jobs:
         docker compose -f "docker/doichain/docker-compose-regtest.yml" logs electrumx
         echo "🔍 Checking Docker Containers..."
         docker compose -f "docker/doichain/docker-compose-regtest.yml" ps
-    # - uses: actions/setup-node@v4
-    #   with:
-    #        node-version: '20'
-    # - name: Install dependencies
-    #   run: yarn install --frozen-lockfile
-    # - name: Start the development server
-    #   run: npm run dev & npx wait-on http://localhost:5173
-    # - name: Install Playwright Browsers
-    #   run: npx playwright install --with-deps
-    # - name: Run Playwright tests
-    #   run: docker/healthcheck.sh regtest 120 && npx playwright test
-    # - uses: actions/upload-artifact@v4
-    #   if: ${{ !cancelled() }}
-    #   with:
-    #     name: playwright-report
-    #     path: playwright-report/
-    #     retention-days: 30
-    - name: Remove Specific Line from Docker Compose File
-      run: |
-        grep -v './db:/var/lib/electrumx' ./docker/doichain/docker-compose-regtest.yml > temp.yml
-        mv temp.yml ./docker/doichain/docker-compose-regtest.yml

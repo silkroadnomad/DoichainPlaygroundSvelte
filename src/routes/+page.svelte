@@ -315,7 +315,7 @@
 <Grid>
     <Row>
         <Column><h2>1. Generate mnemonic for a new wallet</h2></Column>
-        <Column><TextInput labelText="Password" bind:value={password} />
+        <Column><TextInput id="passwordInput" labelText="Password" bind:value={password} />
             <Button size="small" on:click={ () => {
                        const selectedWallet = wallets.find(w => w.id.toString() === selectedMnemonic)
                        mnemonic = decryptMnemonic(selectedWallet.mnemonic,password)
@@ -324,7 +324,7 @@
     <Row>
         <Column><h2>2. Derivation Standard</h2></Column>
         <Column>
-            <Select labelText="Select Wallet" bind:selected={ selectedDerivationStandard }>
+            <Select id="derivationStandardSelect" labelText="Select Wallet" bind:selected={selectedDerivationStandard}>
                 <SelectItem value="0" text="Choose derivation standard" />
                 {#each derivationStandards as ds}
                     <SelectItem value={ds.id} text={`${ds.name}`} />
@@ -335,7 +335,7 @@
     <Row>
         <Column>&nbsp;</Column>
         <Column>
-            <Select labelText="Select Wallet" bind:selected={ selectedMnemonic } on:change={ 
+            <Select id="derivationStandardSelect" labelText="Select Derivation Standard" bind:selected={selectedMnemonic} on:change={ 
             (e) => { selectedDerivationStandard = wallets.find((w) => w.id.toString() === e.target.value)?.derivationStandard}
             }>
             <SelectItem value="0" text="Choose a wallet" />
@@ -372,29 +372,30 @@
     </Row>
     <Row>
         <Column><h2>xpriv (HD node root key) (base58)</h2></Column>
-        <Column><TextInput labelText="xpriv" bind:value={xpriv}/></Column>
+        <Column><TextInput id="xprivInput" labelText="xpriv" bind:value={xpriv}/></Column>
     </Row>
     <Row>
         <Column><h2>xpub</h2></Column>
-        <Column><TextInput labelText="xpub" bind:value={xpub} /></Column>
+        <Column><TextInput id="xpubInput" labelText="xpub" bind:value={xpub} /></Column>
     </Row>
     <Row>
         <Column><h2>zpub</h2></Column>
-        <Column><TextInput labelText="zpub" bind:value={zpub} /></Column>
+        <Column><TextInput id="zpubInput" labelText="zpub" bind:value={zpub} /></Column>
     </Row>
     <Row>
         <Column><h2>Next Unused Address</h2></Column>
-        <Column><TextInput labelText="Next Unused Address" bind:value={nextUnusedAddress} readonly /></Column>
+        <Column><TextInput id="nextUnusedAddressInput" labelText="Next Unused Address" bind:value={nextUnusedAddress} readonly /></Column>
     </Row>
     <Row>
         <Column><h2>Next Unused Change Address</h2></Column>
-        <Column><TextInput labelText="Next Unused Change Address" bind:value={nextUnusedChangeAddress} readonly /></Column>
+        <Column><TextInput id="nextUnusedChangeAddressInput" labelText="Next Unused Change Address" bind:value={nextUnusedChangeAddress} readonly /></Column>
     </Row>
 </Grid>
 <Grid>
     <Row>
         <Column>
             <TextInput 
+                id="numberOfAddressesInput"
                 type="number" 
                 labelText="Number of Addresses" 
                 min="1" 
@@ -404,6 +405,7 @@
         </Column>
         <Column>
             <Checkbox 
+                id="includeChangeAddressesCheckbox"
                 labelText="Include Change Addresses" 
                 bind:checked={includeChangeAddresses} 
                 on:change={() => generateAddresses()}

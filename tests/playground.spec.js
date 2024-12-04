@@ -1,8 +1,12 @@
 import { expect, test } from '@playwright/test';
 import axios from 'axios';
 import WebSocket from 'ws';
-const websocketUrl = 'wss://electrumx:8443';
-let rpcUrl = 'http://regtest:18332/';
+import { hostname } from 'os';
+
+const isPlaywright = hostname() === 'playwright';
+
+const websocketUrl = isPlaywright ? 'wss://electrumx:8443' : 'wss://localhost:8443';
+let rpcUrl = isPlaywright ? 'http://regtest:18332/' : 'http://localhost:18332/';
 const rpcUser = 'admin';
 const rpcPassword = 'adminpw';
 const credentials = Buffer.from(`${rpcUser}:${rpcPassword}`).toString('base64');
@@ -40,19 +44,34 @@ test.use({
 test.describe('Wallet Generation Tests', () => {
 
     test.beforeAll(async () => {
-        const walletName = generateRandomName();
-        console.log(`Creating wallet with name: ${walletName}`);
-        
-        // Create a new wallet with a random name
-        await callRpc('createwallet', [walletName]);
-        // console.log(await callRpc('getwalletinfo'));
-        rpcUrl = `http://regtest:18332/wallet/${walletName}`;
-        const newAddress = await callRpc('getnewaddress', [], rpcUrl);
-        console.log(newAddress);
-        console.log(await callRpc('getbalance', [], rpcUrl));
-        const mining = await callRpc('generatetoaddress', [200, newAddress], rpcUrl);
-        console.log(mining);
+        try {
+            // Check the current block height
+            const blockHeight = await callRpc('getblockcount', [], rpcUrl);
 
+            if (blockHeight === 0) {
+                const walletName = generateRandomName();
+                console.log(`Creating wallet with name: ${walletName}`);
+                
+                // Create a new wallet with a random name
+                await callRpc('createwallet', [walletName]);
+
+                // Update rpcUrl based on the hostname
+                rpcUrl = isPlaywright 
+                    ? `http://regtest:18332/wallet/${walletName}` 
+                    : `http://localhost:18332/wallet/${walletName}`;
+
+                const newAddress = await callRpc('getnewaddress', [], rpcUrl);
+                console.log(newAddress);
+                console.log(await callRpc('getbalance', [], rpcUrl));
+                const mining = await callRpc('generatetoaddress', [200, newAddress], rpcUrl);
+                console.log(mining);
+            } else {
+                console.log(`Block height is already greater than 0: ${blockHeight}`);
+            }
+        } catch (error) {
+            console.error('Error during setup:', error.message);
+            throw error;
+        }
 
         const ws = new WebSocket(websocketUrl, {
             headers: {
@@ -94,7 +113,7 @@ test.describe('Wallet Generation Tests', () => {
         await page.waitForSelector('text=You are connected to an', { state: 'visible' });
         await page.getByRole('button', { name: 'Doichain-Mainnet Open menu' }).click();
         await page.getByText('Doichain-Regtest').click();
-        await page.getByLabel('Select Wallet').first().selectOption('electrum-legacy');
+        await page.selectOption('#derivationStandardSelect', 'electrum-legacy');
         await page.getByRole('button', { name: 'Generate Mnemonic' }).click();
         const mnemonic = await page.inputValue('#mnemonicTextarea');
         await page.getByLabel('Mnemonic').click();
