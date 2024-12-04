@@ -28,7 +28,7 @@ jobs:
     - name: Get Regtest Container Logs
       run: |
         echo "📜 Fetching logs for regtest container..."
-        docker-compose -f "docker/doichain/docker-compose-regtest.yml" logs regtes
+        docker-compose -f "docker/doichain/docker-compose-regtest.yml" logs regtest
     - name: View Docker Compose File
       run: |
         cat docker/doichain/docker-compose-regtest.yml"
