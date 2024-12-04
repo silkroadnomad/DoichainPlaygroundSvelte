@@ -117,10 +117,10 @@ test.describe('Wallet Generation Tests', () => {
         await page.getByRole('button', { name: 'Generate Mnemonic' }).click();
         const mnemonic = await page.inputValue('#mnemonicTextarea');
         await page.getByLabel('Mnemonic').click();
-        expect(mnemonic).not.toBe('');
+        expect(mnemonic).not.toBe('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
     });
 
-    test.only('Basic Address Generation Test', async ({ page, browser }) => {
+    test('Basic Address Generation Test', async ({ page, browser }) => {
         await page.goto('/');
         await page.waitForSelector('text=You are connected to an', { state: 'visible' });
         await page.getByRole('button', { name: 'Doichain-Mainnet Open menu' }).click();
