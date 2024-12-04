@@ -17,9 +17,16 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y docker-compose
+    - name: Modify and Show Docker Compose File
+      run: |
+        # Remove the specific volume line and save changes in place
+        sed -i '/- \.\/\.doichain\/:\/home\/doichain\/\.doichain\//d' ./docker/doichain/docker-compose-regtest.yml
+        
+        # Display the modified file contents
+        echo "📄 Displaying modified docker-compose-regtest.yml contents..."
+        cat ./docker/doichain/docker-compose-regtest.yml
     - name: Set up Docker
       run: |
-        sed -i.bak '/- \.\/\.doichain\/:\/home\/doichain\/\.doichain\//d' ./docker/doichain/docker-compose-regtest.yml
         docker-compose -f "docker/doichain/docker-compose-regtest.yml" up -d
     - name: Check Docker Containers
       run: |
@@ -29,9 +36,6 @@ jobs:
       run: |
         echo "📜 Fetching logs for regtest container..."
         docker-compose -f "docker/doichain/docker-compose-regtest.yml" logs regtest
-    - name: View Docker Compose File
-      run: |
-        cat docker/doichain/docker-compose-regtest.yml"
     - name: Run Playwright tests
       run: docker-compose -f "docker/doichain/docker-compose-regtest.yml" exec playwright npx playwright test
     # - uses: actions/setup-node@v4
