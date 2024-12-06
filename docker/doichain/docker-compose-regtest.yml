@@ -7,7 +7,7 @@ services:
       - "18443:18443"
       - "18445:18445"
     volumes:
-      - ./.doichain/:/home/doichain/.doichain/
+      - ${DOICHAIN_DATA}:/home/doichain/.doichain/
       - ./doichain-regtest.conf:/home/doichain/.doichain/doichain.conf
     networks:
       - doichain_regtest-network
@@ -19,13 +19,13 @@ services:
     depends_on:
       - regtest
     volumes:
+      - ${ELECTRUM_DB_VOLUME}:/home/doichain/.doichain/
       - ./db:/var/lib/electrumx
       - ./startElectrumDOIRegTest.sh:/startElectrumDOIRegTest.sh
     entrypoint: ["/startElectrumDOIRegTest.sh"]
     ports:
       - "50001:50001"
       - "50002:50002"
-      - "8080:8080"
       - "8443:8443"
     stdin_open: true
     tty: true
@@ -35,15 +35,14 @@ services:
 
   playwright:
     build:
-      context: ../../
-      dockerfile: ./docker/doichain/playwright/Dockerfile
+      context: ${PLAYWRIGHT_BUILD_CONTEXT}
+      dockerfile: ${PLAYWRIGHT_DOCKERFILE}
     container_name: playwright
     hostname: playwright
     ports:
       - "9323:9323"
     image: "doichain/playwright:latest"
-    # command: ["npx", "playwright", "test"]
-    command: ["echo", "finished building"]
+    command: ${PLAYWRIGHT_COMMAND}
     stdin_open: true
     tty: true
     depends_on:
@@ -51,7 +50,11 @@ services:
       - electrumx
     networks:
       - doichain_regtest-network
+
 networks:
  doichain_regtest-network:
   driver: bridge
-####end of file
+volumes:
+  doichain:
+  db:
+  regtest:
